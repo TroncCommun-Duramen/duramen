@@ -15,9 +15,6 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
@@ -2042,7 +2039,6 @@ function afficherTerritoire() {
 // ═══════════ AUTHENTIFICATION ═══════════
 const SUPABASE_URL = 'https://zeadibimbdztpmsesaiw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplYWRpYmltYmR6dHBtc2VzYWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4OTI2MTcsImV4cCI6MjA5MDQ2ODYxN30.xEHLNTROTu9QJ7c_vV3S54P76EXfpnx2VbhxznbQmmU';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let communeConnectee = null;
 
@@ -2104,24 +2100,27 @@ async function tentativeConnexion() {
 
   erreur.textContent = '⏳ Vérification…';
 
-  const { data, error } = await sb
-    .from('codes_acces')
-    .select('code, commune')
-    .eq('code', code)
-    .eq('actif', true)
-    .single();
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/codes_acces?code=eq.${encodeURIComponent(code)}&actif=eq.true&select=code,commune&limit=1`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
+    );
+    const data = await res.json();
 
-  if (data) {
-    communeConnectee = { code: data.code, nom: data.commune };
-    localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
-    if (!localStorage.getItem('duramen_commune')) {
-      localStorage.setItem('duramen_commune', communeConnectee.nom);
+    if (data && data.length > 0) {
+      communeConnectee = { code: data[0].code, nom: data[0].commune };
+      localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
+      if (!localStorage.getItem('duramen_commune')) {
+        localStorage.setItem('duramen_commune', communeConnectee.nom);
+      }
+      ouvrirApp();
+    } else {
+      erreur.textContent = '⚠ Code invalide. Contactez votre référent DURAMEN.';
+      document.getElementById('login-code').value = '';
+      document.getElementById('login-code').focus();
     }
-    ouvrirApp();
-  } else {
-    erreur.textContent = '⚠ Code invalide. Contactez votre référent DURAMEN.';
-    document.getElementById('login-code').value = '';
-    document.getElementById('login-code').focus();
+  } catch(e) {
+    erreur.textContent = '⚠ Erreur réseau. Vérifiez votre connexion.';
   }
 }
 
