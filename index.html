@@ -780,7 +780,7 @@ tr:hover td { background: var(--craie); }
   border-radius: 0;
   font-size: 1rem; font-family: var(--font-display);
   font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase; text-align: center;
+  text-transform: none; text-align: center;
   color: var(--encre); background: transparent;
   outline: none; margin-bottom: 20px;
   transition: border-color 0.2s;
@@ -2183,7 +2183,7 @@ function fermerMentions() {
   document.querySelector('.bottom-nav').style.display='';
   document.querySelector('main').style.display='';
   document.querySelector('footer').style.display='';
-  if (!sessionStorage.getItem('duramen_session')) {
+  if (!localStorage.getItem('duramen_session')) {
     document.getElementById('ecran-connexion').classList.add('visible');
   }
 }
