@@ -2097,7 +2097,7 @@ function verifierAcces() {
 }
 
 async function tentativeConnexion() {
-  const code = document.getElementById('login-code').value.trim();
+  const code = document.getElementById('login-code').value.trim().toUpperCase();
   const erreur = document.getElementById('login-erreur');
   erreur.textContent = '';
   if (!code) { erreur.textContent = 'Veuillez saisir votre code d\'accès.'; return; }
@@ -2167,25 +2167,11 @@ function ouvrirApp() {
 
 // ═══════════ MENTIONS LÉGALES ═══════════
 function afficherMentions() {
-  document.getElementById('ecran-connexion').classList.remove('visible');
-  document.querySelector('header').style.display='none';
-  document.querySelector('.tabs-wrap').style.display='none';
-  document.querySelector('.bottom-nav').style.display='none';
-  document.querySelector('main').style.display='none';
-  document.querySelector('footer').style.display='none';
   const pm = document.getElementById('panel-mentions');
-  pm.style.cssText = 'display:block;padding:32px 20px;max-width:760px;margin:0 auto';
+  pm.style.cssText = 'display:block;position:fixed;inset:0;z-index:2000;overflow-y:auto;background:var(--craie);padding:32px 20px 80px';
 }
 function fermerMentions() {
-  document.getElementById('panel-mentions').style.display='none';
-  document.querySelector('header').style.display='';
-  document.querySelector('.tabs-wrap').style.display='';
-  document.querySelector('.bottom-nav').style.display='';
-  document.querySelector('main').style.display='';
-  document.querySelector('footer').style.display='';
-  if (!localStorage.getItem('duramen_session')) {
-    document.getElementById('ecran-connexion').classList.add('visible');
-  }
+  document.getElementById('panel-mentions').style.cssText = 'display:none';
 }
 
 // ═══════════ INIT ═══════════
