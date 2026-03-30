@@ -775,7 +775,7 @@ tr:hover td { background: var(--craie); }
   width: 100%; padding: 12px 0;
   border: none; border-bottom: var(--border);
   border-radius: 0;
-  font-size: 1rem; font-family: var(--font-sans);
+  font-size: 1rem; font-family: var(--font-display);
   font-weight: 700; letter-spacing: 0.08em;
   text-transform: none; text-align: center;
   color: var(--encre); background: transparent;
@@ -1432,7 +1432,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <h2>Mentions légales &amp; Conditions d'utilisation</h2>
       <div class="date">Version 1.0 — 2026</div>
       <h3>1. Éditeur</h3>
-      <p><strong>Tronc Commun</strong><br>La Montagne — 44620 · <a href="/cdn-cgi/l/email-protection#74171b1a001517005a00061b1a17171b1919011a341319151d185a171b19"><span class="__cf_email__" data-cfemail="abc8c4c5dfcac8df85dfd9c4c5c8c8c4c6c6dec5ebccc6cac2c785c8c4c6">[email&#160;protected]</span></a> · SIRET 985 323 146 00011<br>Responsable de publication : Tronc Commun</p>
+      <p><strong>Tronc Commun</strong><br>La Montagne — 44620 · <a href="/cdn-cgi/l/email-protection#34575b5a405557401a40465b5a57575b5959415a745359555d581a575b59"><span class="__cf_email__" data-cfemail="593a36372d383a2d772d2b36373a3a3634342c37193e34383035773a3634">[email&#160;protected]</span></a> · SIRET 985 323 146 00011<br>Responsable de publication : Tronc Commun</p>
       <h3>2. Hébergement</h3>
       <p><strong>GitHub Pages</strong> — GitHub, Inc., San Francisco, CA, États-Unis.</p>
       <p><strong>Supabase</strong> — Supabase Inc. Données stockées dans l'Union européenne (région eu-west).</p>
@@ -1449,7 +1449,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <h3>8. Propriété intellectuelle</h3>
       <p>L'application DURAMEN, son interface, ses graphismes et son code source sont la propriété exclusive de l'éditeur. Toute reproduction sans autorisation est interdite.</p>
       <h3>9. Contact</h3>
-      <p><a href="/cdn-cgi/l/email-protection#9dfef2f3e9fcfee9b3e9eff2f3fefef2f0f0e8f3ddfaf0fcf4f1b3fef2f0"><span class="__cf_email__" data-cfemail="5a3935342e3b392e742e28353439393537372f341a3d373b333674393537">[email&#160;protected]</span></a></p>
+      <p><a href="/cdn-cgi/l/email-protection#5e3d31302a3f3d2a702a2c31303d3d3133332b301e39333f3732703d3133"><span class="__cf_email__" data-cfemail="563539382237352278222439383535393b3b233816313b373f3a7835393b">[email&#160;protected]</span></a></p>
       <div style="margin-top:28px">
         <button class="btn btn-outline" onclick="fermerMentions()">← Retour</button>
       </div>
@@ -2096,17 +2096,14 @@ async function tentativeConnexion() {
   const code = document.getElementById('login-code').value.trim().toUpperCase();
   const erreur = document.getElementById('login-erreur');
   erreur.textContent = '';
-  if (!code) { erreur.textContent = 'Veuillez saisir votre code d\'accès.'; return; }
-
+  if (!code) { erreur.textContent = "Veuillez saisir votre code d'accès."; return; }
   erreur.textContent = '⏳ Vérification…';
-
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/codes_acces?code=eq.${encodeURIComponent(code)}&actif=eq.true&select=code,commune&limit=1`,
+      SUPABASE_URL + '/rest/v1/codes_acces?code=eq.' + encodeURIComponent(code) + '&actif=eq.true&select=code,commune&limit=1',
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
     );
     const data = await res.json();
-
     if (data && data.length > 0) {
       communeConnectee = { code: data[0].code, nom: data[0].commune };
       localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
@@ -2178,4 +2175,16 @@ function switchTab(panel, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.bnav-btn').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' 
+  document.getElementById('panel-' + panel).classList.add('active');
+  document.querySelectorAll('[data-panel="' + panel + '"]').forEach(el => el.classList.add('active'));
+  btn.classList.add('active');
+  if (panel === 'stock')      afficherStock();
+  if (panel === 'extraction') afficherExtractions();
+  if (panel === 'historique') afficherHistorique();
+  if (panel === 'territoire') afficherTerritoire();
+}
+
+verifierAcces();
+</script>
+</body>
+</html>
