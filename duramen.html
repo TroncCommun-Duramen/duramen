@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DURAMEN — Tronc Commun</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A1814">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DURAMEN">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   DESIGN SYSTEM — Duramen / theme.js
+═══════════════════════════════════════ */
+:root {
+  --craie:        #F2EDE4;
+  --sable:        #E0D5C4;
+  --lin:          #C9BAA3;
+  --cendre:       #7A7469;
+  --encre:        #1A1814;
+  --signal:       #4B6FBF;
+  --signal-clair: #D4DCF2;
+  --rouge:        #c0392b;
+  --orange:       #d35400;
+
+  --font-display: 'Unbounded', sans-serif;
+  --font-serif:   'Instrument Serif', serif;
+  --font-sans:    'DM Sans', sans-serif;
+
+  --r-sm: 2px;
+  --r-md: 4px;
+  --r-lg: 8px;
+
+  --border:        1.5px solid var(--encre);
+  --border-light:  1px solid var(--lin);
+  --border-signal: 1.5px solid var(--signal);
+
+  --shadow-sm: 0 1px 4px rgba(26,24,20,0.08);
+  --shadow-md: 0 4px 16px rgba(26,24,20,0.12);
+  --shadow-lg: 0 12px 40px rgba(26,24,20,0.18);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--craie);
+  color: var(--encre);
+  min-height: 100vh;
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+/* ─── HEADER ─── */
+header {
+  background: var(--encre);
+  position: relative;
+  overflow: hidden;
+}
+header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--signal) 0%, var(--lin) 50%, transparent 100%);
+}
+
+.header-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 20px 32px 18px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.logo-mark {
+  flex-shrink: 0;
+  width: 64px; height: 64px;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-mark svg {
+  width: 64px; height: 64px;
+  color: var(--craie);
+  opacity: 0.9;
+}
+
+.header-title { flex: 1; min-width: 0; }
+
+.title-duramen {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: var(--craie);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.title-sub {
+  font-family: var(--font-serif);
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--cendre);
+  letter-spacing: 0.02em;
+  margin-top: 5px;
+  line-height: 1.4;
+}
+.title-tc {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  color: var(--signal);
+  font-weight: 400;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-top: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.title-tc::before {
+  content: '';
+  display: inline-block;
+  width: 16px; height: 1px;
+  background: var(--signal);
+}
+
+.header-right { text-align: right; flex-shrink: 0; }
+.header-stats-mobile { display: none; }
+.stat-pill {
+  background: rgba(201,186,163,0.08);
+  border: 1px solid rgba(201,186,163,0.18);
+  border-radius: var(--r-sm);
+  padding: 5px 12px;
+  margin-bottom: 5px;
+  font-size: 0.72rem;
+  color: var(--cendre);
+  letter-spacing: 0.06em;
+}
+.stat-pill strong {
+  color: var(--craie);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ─── TABS desktop ─── */
+.tabs-wrap {
+  background: var(--encre);
+  border-bottom: var(--border);
+}
+.tabs {
+  display: flex;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 32px;
+  gap: 0;
+}
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--cendre);
+  border: none;
+  background: none;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 7px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--craie); }
+.tab.active { color: var(--craie); border-bottom-color: var(--signal); }
+.tab .tab-icon { font-size: 0.85rem; flex-shrink: 0; }
+
+/* ─── BOTTOM NAV mobile ─── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--encre);
+  border-top: 1px solid rgba(201,186,163,0.15);
+  z-index: 50;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav-inner { display: flex; justify-content: space-around; }
+.bnav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--cendre);
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.bnav-btn svg { width: 22px; height: 22px; }
+.bnav-btn.active { color: var(--craie); }
+.bnav-btn.active svg { color: var(--signal); }
+
+/* ─── MAIN ─── */
+main {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ══════════════════════
+   MOBILE
+══════════════════════ */
+@media (max-width: 600px) {
+  .header-inner { padding: 12px 14px 10px; gap: 10px; }
+  .logo-mark { width: 42px; height: 42px; }
+  .logo-mark svg { width: 42px; height: 42px; }
+  .title-duramen { font-size: 1.2rem; }
+  .title-sub { display: none; }
+  .title-tc { font-size: 0.6rem; margin-top: 4px; letter-spacing: 0.06em; }
+  .header-right { display: none; }
+  .header-stats-mobile {
+    display: flex !important;
+    gap: 6px;
+    padding: 0 14px 10px;
+    background: var(--encre);
+  }
+  .header-stats-mobile .stat-pill {
+    flex: 1; text-align: center; margin-bottom: 0; font-size: 0.62rem; padding: 4px 6px;
+  }
+  .tabs-wrap { display: none; }
+  .bottom-nav { display: block; }
+  main { padding: 14px 12px 84px; }
+  .card { padding: 14px 13px; }
+  .card-title { font-size: 0.65rem; }
+  .step-indicator { gap: 5px; }
+  .step { font-size: 0.6rem; }
+}
+
+/* ─── CARD ─── */
+.card {
+  background: #fff;
+  border-radius: var(--r-lg);
+  padding: 24px 26px;
+  margin-bottom: 16px;
+  border: var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--encre);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 9px;
+  padding-bottom: 12px;
+  border-bottom: var(--border-light);
+}
+.card-title .icon { font-size: 0.9rem; }
+
+/* ─── FORM ─── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-grid.four  { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.form-grid.full  { grid-template-columns: 1fr; }
+@media(max-width:680px){
+  .form-grid,.form-grid.three,.form-grid.four { grid-template-columns: 1fr; }
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: var(--cendre);
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+}
+.field input, .field select, .field textarea {
+  padding: 9px 0;
+  border: none;
+  border-bottom: var(--border);
+  border-radius: 0;
+  font-size: 0.88rem;
+  font-family: var(--font-sans);
+  font-weight: 300;
+  background: transparent;
+  color: var(--encre);
+  transition: border-color 0.2s;
+  outline: none;
+  appearance: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-bottom-color: var(--signal);
+}
+.field textarea { resize: vertical; min-height: 70px; line-height: 1.5; border: var(--border); border-radius: var(--r-md); padding: 9px 12px; }
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237A7469'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  padding-right: 22px;
+  cursor: pointer;
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+  padding: 10px 20px;
+  border: var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 7px;
+  background: transparent;
+  color: var(--encre);
+}
+.btn:hover { background: var(--sable); }
+
+.btn-primary {
+  background: var(--encre);
+  color: var(--craie);
+  border-color: var(--encre);
+}
+.btn-primary:hover { background: #000; }
+
+.btn-signal {
+  background: var(--signal);
+  color: #fff;
+  border-color: var(--signal);
+}
+.btn-signal:hover { background: #3a5aaa; border-color: #3a5aaa; }
+
+.btn-success {
+  background: var(--encre);
+  color: var(--craie);
+  border-color: var(--encre);
+}
+.btn-success:hover { background: #000; }
+
+.btn-orange {
+  background: var(--encre);
+  color: var(--craie);
+  border-color: var(--encre);
+}
+.btn-orange:hover { background: #000; }
+
+.btn-danger {
+  background: transparent;
+  color: var(--rouge);
+  border: 1.5px solid var(--rouge);
+  padding: 5px 10px;
+  font-size: 0.65rem;
+}
+.btn-danger:hover { background: var(--rouge); color: white; }
+
+.btn-outline {
+  background: transparent;
+  color: var(--encre);
+  border: var(--border);
+}
+.btn-outline:hover { background: var(--sable); }
+
+.btn-sm { padding: 5px 12px; font-size: 0.65rem; }
+
+/* ─── GRUMES LIST ─── */
+.grume-item {
+  background: var(--craie);
+  border: var(--border-light);
+  border-radius: var(--r-md);
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.grume-num {
+  background: var(--encre);
+  color: var(--craie);
+  border-radius: 50%;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700; font-size: 0.68rem;
+  flex-shrink: 0;
+}
+.grume-info { flex: 1; display: flex; gap: 16px; flex-wrap: wrap; }
+.grume-field { display: flex; flex-direction: column; gap: 2px; }
+.grume-field span:first-child { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.13em; color: var(--cendre); }
+.grume-field span:last-child { font-size: 0.88rem; font-weight: 400; }
+
+/* ─── RESULTS ─── */
+.result-block {
+  background: var(--encre);
+  color: var(--craie);
+  border-radius: var(--r-lg);
+  padding: 24px 26px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.result-block::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 20%, rgba(75,111,191,0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+.result-block > * { position: relative; z-index: 1; }
+.result-block h3 {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  color: var(--lin);
+  display: flex; align-items: center; gap: 8px;
+}
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+.result-stat {
+  background: rgba(201,186,163,0.06);
+  border: 1px solid rgba(201,186,163,0.15);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  text-align: center;
+}
+.result-stat .val {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--craie);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.result-stat .unit { font-size: 0.62rem; color: var(--signal); margin-top: 4px; letter-spacing: 0.1em; text-transform: uppercase; }
+.result-stat .lbl { font-size: 0.62rem; color: rgba(242,237,228,0.45); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.1em; }
+
+.dechets-block {
+  background: rgba(192,57,43,0.12);
+  border: 1px solid rgba(192,57,43,0.3);
+  border-radius: var(--r-md);
+  padding: 12px 16px;
+  margin-top: 14px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.82rem;
+}
+.dechets-block strong { color: #e8a090; }
+
+/* ─── TABLE ─── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th {
+  background: var(--encre);
+  color: var(--lin);
+  padding: 9px 12px;
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  font-weight: 400;
+}
+th:first-child { border-radius: var(--r-md) 0 0 0; }
+th:last-child { border-radius: 0 var(--r-md) 0 0; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--sable); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--craie); }
+
+/* ─── BADGE ─── */
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--r-sm);
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+.badge-int    { background: var(--signal-clair); color: var(--signal); }
+.badge-ext    { background: var(--sable); color: var(--encre); }
+.badge-struct { background: var(--encre); color: var(--craie); }
+.badge-mob    { background: var(--lin); color: var(--encre); }
+.badge-autre  { background: var(--sable); color: var(--cendre); }
+
+/* ─── LOT CARDS ─── */
+.lot-card {
+  background: #fff;
+  border-radius: var(--r-md);
+  border: var(--border-light);
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  transition: all 0.15s;
+}
+.lot-card:hover { border-color: var(--encre); box-shadow: var(--shadow-sm); }
+.lot-card-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+.lot-card-title { font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: -0.01em; color: var(--encre); }
+.lot-card-meta { font-size: 0.75rem; color: var(--cendre); margin-top: 3px; }
+.lot-card-stats { display: flex; gap: 14px; margin-top: 11px; flex-wrap: wrap; }
+.lot-stat { font-size: 0.78rem; color: var(--cendre); }
+.lot-stat strong { color: var(--encre); }
+
+/* ─── STOCK ─── */
+.stock-header {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+}
+.stock-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--encre);
+}
+.stock-subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--cendre);
+  font-size: 0.9rem;
+  margin-top: 2px;
+}
+
+.essence-row {
+  background: #fff;
+  border-radius: var(--r-md);
+  border: var(--border-light);
+  padding: 14px 18px;
+  margin-bottom: 8px;
+  transition: all 0.15s;
+}
+.essence-row:hover { border-color: var(--encre); }
+.essence-row-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.essence-name {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex: 1; min-width: 120px;
+  display: flex; align-items: center; gap: 8px;
+  letter-spacing: -0.01em;
+}
+.essence-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.essence-stats { display: flex; gap: 20px; flex-wrap: wrap; }
+.essence-stat { text-align: center; min-width: 70px; }
+.essence-stat .es-val { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--encre); letter-spacing: -0.02em; }
+.essence-stat .es-lbl { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.13em; color: var(--cendre); }
+.essence-bar-wrap { height: 3px; background: var(--sable); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+.essence-bar { height: 100%; border-radius: 2px; background: var(--encre); transition: width 0.5s ease; }
+
+.stock-total-card {
+  background: var(--encre);
+  border-radius: var(--r-md);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+  position: relative; overflow: hidden;
+}
+.stock-total-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(75,111,191,0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+.stock-total-card > * { position: relative; z-index: 1; }
+.stock-total-item { text-align: center; flex: 1; min-width: 100px; }
+.stock-total-item .tv { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--craie); line-height: 1; letter-spacing: -0.03em; }
+.stock-total-item .tu { font-size: 0.62rem; color: var(--signal); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.1em; }
+.stock-total-item .tl { font-size: 0.62rem; color: rgba(201,186,163,0.5); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.1em; }
+.stock-divider { width: 1px; background: rgba(201,186,163,0.1); align-self: stretch; min-height: 50px; }
+
+/* ─── MODAL ─── */
+.extract-modal-bg {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(26,24,20,0.7);
+  z-index: 100;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.extract-modal-bg.open { display: flex; }
+.extract-modal {
+  background: var(--craie);
+  border-radius: var(--r-lg);
+  padding: 28px 30px;
+  max-width: 580px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  border-top: 3px solid var(--encre);
+}
+.extract-modal h2 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--encre);
+  margin-bottom: 4px;
+}
+.extract-modal .modal-sub {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--cendre);
+  font-size: 0.88rem;
+  margin-bottom: 22px;
+}
+.extract-modal .modal-close {
+  float: right;
+  background: none; border: none;
+  font-size: 1.2rem;
+  cursor: pointer; color: var(--cendre); margin-top: -4px;
+}
+.extract-modal .modal-close:hover { color: var(--encre); }
+
+/* ─── EXTRACTION LIST ─── */
+.extraction-list { margin-top: 16px; }
+.extraction-item {
+  background: #fff;
+  border: var(--border-light);
+  border-radius: var(--r-md);
+  padding: 13px 16px;
+  margin-bottom: 8px;
+}
+.extraction-item .ei-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 7px; }
+.extraction-item .ei-title { font-family: var(--font-display); font-size: 0.72rem; font-weight: 700; letter-spacing: -0.01em; color: var(--encre); }
+.extraction-item .ei-meta { font-size: 0.72rem; color: var(--cendre); margin-top: 2px; }
+.extraction-item .ei-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; padding-top: 8px; border-top: var(--border-light); }
+.extraction-item .ei-stat { font-size: 0.75rem; color: var(--cendre); }
+.extraction-item .ei-stat strong { color: var(--encre); }
+
+/* ─── INFO BOX ─── */
+.info-box {
+  background: var(--sable);
+  border-left: 3px solid var(--encre);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  padding: 9px 13px;
+  font-family: var(--font-serif);
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--encre);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+/* ─── STEP INDICATOR ─── */
+.step-indicator { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+.step { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; color: var(--cendre); text-transform: uppercase; letter-spacing: 0.1em; }
+.step-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--sable);
+  color: var(--cendre);
+  border: 1.5px solid var(--lin);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.6rem; font-weight: 700;
+}
+.step.done .step-dot { background: var(--encre); color: var(--craie); border-color: var(--encre); }
+.step.active .step-dot { background: var(--signal); color: white; border-color: var(--signal); }
+.step.active { color: var(--encre); }
+.step-sep { color: var(--lin); font-size: 0.8rem; }
+
+/* ─── FORMULA BADGE ─── */
+.formule-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--signal);
+  color: white;
+  border-radius: var(--r-sm);
+  padding: 4px 10px;
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: help;
+  position: relative;
+}
+.formule-badge::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 120%; left: 50%;
+  transform: translateX(-50%);
+  background: var(--encre);
+  color: var(--craie);
+  padding: 8px 12px;
+  border-radius: var(--r-md);
+  font-size: 0.72rem;
+  width: 260px;
+  text-align: left;
+  line-height: 1.5;
+  font-weight: 300;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+  white-space: pre-line;
+  font-family: var(--font-sans);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.formule-badge:hover::after { opacity: 1; }
+
+/* ─── EMPTY STATE ─── */
+.empty-state { text-align: center; padding: 44px 20px; color: var(--cendre); }
+.empty-state .icon { font-size: 2rem; margin-bottom: 12px; }
+.empty-state p { font-size: 0.85rem; line-height: 1.6; }
+
+/* ─── UTIL ─── */
+.mt-16 { margin-top: 16px; }
+.mt-10 { margin-top: 10px; }
+.flex-end { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.separator { border: none; border-top: var(--border-light); margin: 18px 0; }
+
+/* ─── ÉCRAN DE CONNEXION ─── */
+#ecran-connexion {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--encre);
+  z-index: 1000;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px;
+}
+#ecran-connexion.visible { display: flex; }
+.login-card {
+  background: var(--craie);
+  border-radius: var(--r-lg);
+  padding: 44px 40px 36px;
+  max-width: 400px; width: 100%;
+  box-shadow: var(--shadow-lg);
+  border-top: 3px solid var(--encre);
+  text-align: center;
+}
+.login-logo { margin-bottom: 22px; }
+.login-logo svg { width: 64px; height: 64px; color: var(--encre); }
+.login-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem; font-weight: 900;
+  color: var(--encre); letter-spacing: -0.02em; line-height: 1;
+}
+.login-sub {
+  font-family: var(--font-serif); font-style: italic;
+  color: var(--cendre); font-size: 0.82rem;
+  margin: 8px 0 28px; line-height: 1.6;
+}
+.login-field-label {
+  font-size: 0.62rem; font-weight: 400; color: var(--cendre);
+  text-transform: uppercase; letter-spacing: 0.13em;
+  text-align: left; display: block; margin-bottom: 8px;
+}
+.login-input {
+  width: 100%; padding: 12px 0;
+  border: none; border-bottom: var(--border);
+  border-radius: 0;
+  font-size: 1rem; font-family: var(--font-display);
+  font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; text-align: center;
+  color: var(--encre); background: transparent;
+  outline: none; margin-bottom: 20px;
+  transition: border-color 0.2s;
+}
+.login-input:focus { border-bottom-color: var(--signal); }
+.login-input::placeholder { font-family: var(--font-sans); font-weight: 300; letter-spacing: 0.05em; color: var(--lin); font-size: 0.82rem; text-transform: none; }
+.login-btn {
+  width: 100%; padding: 13px;
+  background: var(--encre); color: var(--craie);
+  border: var(--border); border-radius: var(--r-sm);
+  font-family: var(--font-sans); font-size: 0.72rem;
+  font-weight: 400; letter-spacing: 0.13em; text-transform: uppercase;
+  cursor: pointer; transition: background 0.15s;
+}
+.login-btn:hover { background: #000; }
+.login-error { color: var(--rouge); font-size: 0.78rem; margin-top: 12px; min-height: 18px; }
+.login-footer-links {
+  margin-top: 24px; padding-top: 18px;
+  border-top: var(--border-light);
+  font-size: 0.62rem; color: var(--cendre);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.login-footer-links a { color: var(--signal); text-decoration: none; }
+.commune-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--signal-clair); color: var(--signal);
+  border-radius: var(--r-sm); padding: 3px 10px;
+  font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase;
+  font-weight: 400;
+}
+
+/* ─── NOM DU LOT HERO ─── */
+.lot-nom-hero {
+  background: var(--encre);
+  border-radius: var(--r-md);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 16px;
+}
+.lot-nom-hero-label {
+  font-family: var(--font-display);
+  font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--lin); margin-bottom: 6px;
+}
+.lot-nom-hero-input {
+  width: 100%; padding: 8px 0;
+  border: none; border-bottom: 2px solid var(--cendre);
+  background: transparent; color: var(--craie);
+  font-family: var(--font-display); font-size: 1.1rem;
+  font-weight: 700; letter-spacing: -0.01em;
+  outline: none; transition: border-color 0.2s;
+}
+.lot-nom-hero-input:focus { border-bottom-color: var(--signal); }
+.lot-nom-hero-input::placeholder { color: rgba(201,186,163,0.35); font-weight: 300; font-size: 0.9rem; font-family: var(--font-serif); font-style: italic; letter-spacing: 0; }
+.lot-nom-required {
+  font-size: 0.62rem; color: var(--signal); margin-top: 4px; letter-spacing: 0.06em;
+}
+
+/* ─── PARTAGE COMMUNE ─── */
+.partage-toggle-wrap {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--craie); border: var(--border-light);
+  border-radius: var(--r-md); margin-top: 16px;
+  gap: 16px; flex-wrap: wrap;
+}
+.partage-toggle-label { font-size: 0.82rem; color: var(--encre); line-height: 1.5; }
+.partage-toggle-label strong { font-weight: 500; display: block; font-size: 0.88rem; }
+.partage-toggle-label small { color: var(--cendre); font-size: 0.72rem; }
+.toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--lin); border-radius: 12px;
+  cursor: pointer; transition: background 0.2s;
+}
+.toggle-slider::after {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: white; top: 3px; left: 3px;
+  transition: transform 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--signal); }
+.toggle-switch input:checked + .toggle-slider::after { transform: translateX(20px); }
+
+/* ─── VUE TERRITOIRE ─── */
+.territoire-card {
+  background: #fff; border: var(--border-light);
+  border-radius: var(--r-md); padding: 16px 20px;
+  margin-bottom: 10px;
+}
+.territoire-commune-name {
+  font-family: var(--font-display); font-size: 0.72rem;
+  font-weight: 700; color: var(--encre); letter-spacing: -0.01em;
+  margin-bottom: 8px; display: flex; align-items: center;
+  justify-content: space-between;
+}
+.territoire-commune-name .chip-partage {
+  font-family: var(--font-sans); font-size: 0.58rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--signal-clair); color: var(--signal);
+  padding: 2px 7px; border-radius: var(--r-sm);
+}
+.territoire-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+.territoire-stat { font-size: 0.75rem; color: var(--cendre); }
+.territoire-stat strong { color: var(--encre); font-weight: 500; }
+
+/* ─── MENTIONS LÉGALES ─── */
+#panel-mentions {
+  max-width: 760px; margin: 0 auto; padding: 28px 20px 80px;
+}
+.mentions-body {
+  background: #fff; border: var(--border-light);
+  border-radius: var(--r-lg); padding: 36px 40px;
+  font-size: 0.85rem; line-height: 1.8; color: var(--encre);
+}
+.mentions-body h2 {
+  font-family: var(--font-display); font-size: 1.1rem;
+  font-weight: 900; letter-spacing: -0.02em; margin-bottom: 4px;
+}
+.mentions-body .date { font-family: var(--font-serif); font-style: italic; color: var(--cendre); font-size: 0.78rem; margin-bottom: 28px; }
+.mentions-body h3 {
+  font-family: var(--font-display); font-size: 0.68rem;
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--cendre); margin: 24px 0 8px;
+  padding-bottom: 6px; border-bottom: var(--border-light);
+}
+.mentions-body p { margin-bottom: 8px; }
+.mentions-highlight {
+  background: var(--sable); border-left: 3px solid var(--encre);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  padding: 12px 16px; margin: 14px 0; font-size: 0.82rem;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  background: var(--encre);
+  color: var(--cendre);
+  text-align: center;
+  padding: 14px;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+footer span { color: var(--lin); font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; }
+
+/* ─── ESSENCE COLORS ─── */
+.ec-chene        { background: #8B6914; }
+.ec-hetre        { background: #d4a843; }
+.ec-frene        { background: #5aaa8e; }
+.ec-chataignier  { background: #7a5c2e; }
+.ec-douglas      { background: #3d6e4a; }
+.ec-meleze       { background: #e07b30; }
+.ec-pin-s        { background: #9B8040; }
+.ec-pin-m        { background: #c49a30; }
+.ec-epicea       { background: #4A9059; }
+.ec-peuplier     { background: #78c850; }
+.ec-noyer        { background: #5c3d1f; }
+.ec-merisier     { background: #d04060; }
+.ec-aulne        { background: #6a9a50; }
+.ec-robinier     { background: #50a040; }
+.ec-sequoia      { background: #a0522d; }
+.ec-cypres       { background: #4e7a4e; }
+.ec-platane      { background: #85a855; }
+.ec-tilleul      { background: #b5cc44; }
+.ec-autre        { background: #8a9f74; }
+
+/* ─── ICON ACCENT ─── */
+.icon-inline {
+  display: inline-block;
+  width: 20px; height: 20px;
+  vertical-align: middle;
+  margin-right: 4px;
+  color: var(--encre);
+}
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header>
+  <div class="header-inner">
+
+    <!-- Logo : bouton noir + duramen blanc -->
+    <div class="logo-mark">
+      <!-- Duramen SVG en blanc -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" aria-label="Duramen" style="color:#fff">
+        <g transform="translate(100,100)">
+          <circle cx="0" cy="0" r="88" stroke="currentColor" stroke-width="5"/>
+          <rect x="-96" y="-14" width="20" height="8" rx="2" fill="currentColor"/>
+          <rect x="76"  y="-14" width="20" height="8" rx="2" fill="currentColor"/>
+          <rect x="-14" y="-96" width="8" height="20" rx="2" fill="currentColor"/>
+          <rect x="-14" y="76"  width="8" height="20" rx="2" fill="currentColor"/>
+          <circle cx="0" cy="0" r="64" stroke="currentColor" stroke-width="3.5"/>
+          <circle cx="0" cy="0" r="38" stroke="currentColor" stroke-width="3"/>
+          <circle cx="0" cy="0" r="12" stroke="currentColor" stroke-width="3"/>
+          <circle cx="0" cy="0" r="4" fill="currentColor"/>
+          <line x1="-88" y1="0" x2="-12" y2="0" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="12"  y1="0" x2="88"  y2="0" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="-52" y1="-52" x2="-9"  y2="-9"  stroke="currentColor" stroke-width="2.5"/>
+          <line x1="9"   y1="9"   x2="52"  y2="52"  stroke="currentColor" stroke-width="2.5"/>
+          <line x1="0"   y1="-88" x2="0"   y2="-12" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="0"   y1="88"  x2="0"   y2="12"  stroke="currentColor" stroke-width="2.5"/>
+          <line x1="76"  y1="-44" x2="44"  y2="-25" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="76"  y1="44"  x2="44"  y2="25"  stroke="currentColor" stroke-width="2.5"/>
+          <line x1="-76" y1="-44" x2="-44" y2="-25" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="-76" y1="44"  x2="-44" y2="25"  stroke="currentColor" stroke-width="2.5"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="header-title">
+      <div class="title-duramen">DURAMEN</div>
+      <div class="title-sub">Dynamique pour un Usage Raisonné des Arbres de la MEtropole Nantaise</div>
+      <div class="title-tc">Tronc Commun — Gestion du stock bois d'œuvre</div>
+    </div>
+
+    <div class="header-right" id="header-stats">
+      <div class="stat-pill">Stock : <strong id="hs-vol">—</strong> m³ utiles</div>
+      <div class="stat-pill"><strong id="hs-lots">—</strong> lots · <strong id="hs-essences">—</strong> essences</div>
+    </div>
+  </div>
+</header>
+
+<!-- ─── STATS MOBILE ─── -->
+<div class="header-stats-mobile">
+  <div class="stat-pill">Stock : <strong id="hs-vol-m">—</strong> m³</div>
+  <div class="stat-pill"><strong id="hs-lots-m">—</strong> lots</div>
+  <div class="stat-pill"><strong id="hs-essences-m">—</strong> essences</div>
+</div>
+
+<!-- ─── TABS ─── -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('saisie',this)">
+      <span class="tab-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </span>
+      Nouveau lot
+    </button>
+    <button class="tab" onclick="switchTab('stock',this)">
+      <span class="tab-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+      </span>
+      Stock par essence
+    </button>
+    <button class="tab" onclick="switchTab('extraction',this)">
+      <span class="tab-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 11L11 3M11 3H5M11 3V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      Extractions
+    </button>
+    <button class="tab" onclick="switchTab('historique',this)">
+      <span class="tab-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="2" y1="3" x2="12" y2="3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="7" x2="12" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="11" x2="8" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </span>
+      Historique
+    </button>
+    <button class="tab" onclick="switchTab('territoire',this)">
+      <span class="tab-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 1.5C7 1.5 5 4 5 7s2 5.5 2 5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M7 1.5C7 1.5 9 4 9 7s-2 5.5-2 5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="1.5" y1="7" x2="12.5" y2="7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </span>
+      Territoire
+    </button>
+  </div>
+</div>
+
+<!-- ─── BOTTOM NAV mobile ─── -->
+<nav class="bottom-nav" aria-label="Navigation principale">
+  <div class="bottom-nav-inner">
+    <button class="bnav-btn active" onclick="switchTab('saisie',this)" data-panel="saisie">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Nouveau
+    </button>
+    <button class="bnav-btn" onclick="switchTab('stock',this)" data-panel="stock">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+      Stock
+    </button>
+    <button class="bnav-btn" onclick="switchTab('extraction',this)" data-panel="extraction">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 19L19 5M19 5H9M19 5V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Extractions
+    </button>
+    <button class="bnav-btn" onclick="switchTab('historique',this)" data-panel="historique">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="18" x2="14" y2="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Historique
+    </button>
+    <button class="bnav-btn" onclick="switchTab('territoire',this)" data-panel="territoire">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 3C12 3 9 7 9 12s3 9 3 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M12 3c0 0 3 4 3 9s-3 9-3 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Territoire
+    </button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ═══ ONGLET 1 : NOUVEAU LOT ═══ -->
+  <div class="panel active" id="panel-saisie">
+
+    <div class="step-indicator" id="steps">
+      <div class="step active" id="step1"><div class="step-dot">1</div> Informations du lot</div>
+      <div class="step-sep">›</div>
+      <div class="step" id="step2"><div class="step-dot">2</div> Grumes</div>
+      <div class="step-sep">›</div>
+      <div class="step" id="step3"><div class="step-dot">3</div> Calcul de débit</div>
+    </div>
+
+    <!-- ÉTAPE 1 -->
+    <div id="etape1">
+      <!-- NOM DU LOT — champ hero, obligatoire et visible -->
+      <div class="lot-nom-hero">
+        <div style="flex:1">
+          <div class="lot-nom-hero-label">Nom du lot *</div>
+          <input class="lot-nom-hero-input" type="text" id="lot-nom"
+            placeholder="Ex : Chênes bord du chemin de la Haie…"
+            autocomplete="off">
+          <div class="lot-nom-required" id="lot-nom-required" style="display:none">⚠ Le nom du lot est obligatoire</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg class="icon-inline" viewBox="0 0 104 132" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M28 120 L28 86" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M28 92 C28 60 4 54 8 40 C12 26 44 26 48 40 C52 54 28 60 28 92Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M52 125 L52 82" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M52 90 C52 52 22 44 26 26 C30 8 74 8 78 26 C82 44 52 52 52 90Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M76 120 L76 88" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M76 94 C76 62 52 56 56 42 C60 28 92 28 96 42 C100 56 76 62 76 94Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M8 126 Q52 118 96 126" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          Informations générales du lot
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Essence de l'arbre *</label>
+            <select id="essence">
+              <option value="">— Choisir —</option>
+              <option value="Aulne">Aulne</option>
+              <option value="Châtaignier">Châtaignier</option>
+              <option value="Chêne">Chêne</option>
+              <option value="Cyprès">Cyprès</option>
+              <option value="Douglas">Douglas</option>
+              <option value="Épicéa">Épicéa</option>
+              <option value="Frêne">Frêne</option>
+              <option value="Hêtre">Hêtre</option>
+              <option value="Mélèze">Mélèze</option>
+              <option value="Merisier">Merisier</option>
+              <option value="Noyer">Noyer</option>
+              <option value="Peuplier">Peuplier</option>
+              <option value="Pin maritime">Pin maritime</option>
+              <option value="Pin sylvestre">Pin sylvestre</option>
+              <option value="Platane">Platane</option>
+              <option value="Robinier (Acacia)">Robinier (Acacia)</option>
+              <option value="Séquoia">Séquoia</option>
+              <option value="Tilleul">Tilleul</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Commune</label>
+            <input type="text" id="commune" placeholder="Ex : Saint-Hilaire-de-Chaléons" autocomplete="off">
+            <span id="commune-hint" style="font-size:0.62rem;color:var(--cendre);display:none">
+              <a href="#" onclick="reinitialiserCommune();return false;" style="color:var(--signal)">Modifier la commune</a>
+            </span>
+          </div>
+          <div class="field">
+            <label>Cause d'abattage *</label>
+            <select id="cause">
+              <option value="">— Choisir —</option>
+              <option value="Coupe sanitaire">Coupe sanitaire</option>
+              <option value="Intempérie">Intempérie (chablis, neige…)</option>
+              <option value="Entretien">Entretien courant</option>
+              <option value="Aménagement">Aménagement urbain</option>
+              <option value="Plantation">Renouvellement plantation</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Provenance *</label>
+            <select id="provenance">
+              <option value="">— Choisir —</option>
+              <option value="Alignement">Alignement urbain</option>
+              <option value="Bosquet">Bosquet</option>
+              <option value="Forêt">Forêt</option>
+              <option value="Haie bocagère">Haie bocagère</option>
+              <option value="Parc">Parc municipal</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Année de coupe *</label>
+            <input type="number" id="annee" min="2000" max="2100" placeholder="Ex : 2025">
+          </div>
+          <div class="field">
+            <label>Usage prévu du bois *</label>
+            <select id="usage">
+              <option value="">— Choisir —</option>
+              <option value="Intérieur">Intérieur</option>
+              <option value="Extérieur">Extérieur</option>
+              <option value="Non défini">Non défini</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- PARTAGE VOLONTAIRE -->
+        <div class="partage-toggle-wrap">
+          <div class="partage-toggle-label">
+            <strong>Rendre ce lot visible aux autres communes</strong>
+            <small>Si activé, les autres communes pourront consulter ce lot en lecture seule dans la vue Territoire</small>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="lot-partage">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="flex-end">
+          <button class="btn btn-primary" onclick="goToEtape2()">Continuer → Saisie des grumes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 2 -->
+    <div id="etape2" style="display:none">
+      <div class="card">
+        <div class="card-title">
+          <svg class="icon-inline" viewBox="0 0 130 110" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="22" y1="28" x2="112" y2="33" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="92" x2="112" y2="87" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M72 33 Q80 18 96 8" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><ellipse cx="22" cy="60" rx="14" ry="32" fill="white" stroke="currentColor" stroke-width="3"/><ellipse cx="22" cy="60" rx="9" ry="21" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="22" cy="60" rx="4.5" ry="11" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="112" cy="60" rx="10" ry="27" fill="white" stroke="currentColor" stroke-width="3"/></svg>
+          Saisie des grumes
+          <span id="nb-grumes-badge" style="margin-left:auto;background:var(--encre);color:var(--craie);padding:2px 9px;border-radius:2px;font-size:0.65rem;font-weight:400;letter-spacing:0.1em;">0 grume</span>
+        </div>
+        <div class="info-box">Saisissez les dimensions de chaque grume. Le diamètre est mesuré au petit bout, sans l'écorce.</div>
+        <div class="form-grid three">
+          <div class="field">
+            <label>Longueur (m) *</label>
+            <input type="number" id="g-longueur" min="0.1" max="30" step="0.01" placeholder="Ex : 4.20">
+          </div>
+          <div class="field">
+            <label>Ø petit bout (cm) *</label>
+            <input type="number" id="g-diametre" min="5" max="200" step="1" placeholder="Ex : 28">
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="ajouterGrume()">+ Ajouter la grume</button>
+          </div>
+        </div>
+        <div id="grumes-container" style="margin-top:18px">
+          <div class="empty-state">
+            <div class="icon">
+              <svg width="40" height="35" viewBox="0 0 130 110" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="22" y1="28" x2="112" y2="33" stroke="#C9BAA3" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="92" x2="112" y2="87" stroke="#C9BAA3" stroke-width="3" stroke-linecap="round"/><ellipse cx="22" cy="60" rx="14" ry="32" fill="none" stroke="#C9BAA3" stroke-width="3"/><ellipse cx="22" cy="60" rx="9" ry="21" fill="none" stroke="#C9BAA3" stroke-width="2"/><ellipse cx="112" cy="60" rx="10" ry="27" fill="none" stroke="#C9BAA3" stroke-width="3"/></svg>
+            </div>
+            <p>Aucune grume saisie pour l'instant.<br>Ajoutez votre première grume ci-dessus.</p>
+          </div>
+        </div>
+        <div class="flex-between mt-16">
+          <button class="btn btn-outline" onclick="goToEtape1()">← Retour</button>
+          <button class="btn btn-primary" onclick="goToEtape3()">Continuer → Calcul de débit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 3 -->
+    <div id="etape3" style="display:none">
+      <div class="card">
+        <div class="card-title">⚙ Paramètres de sciage</div>
+        <div id="info-essence-debit" class="info-box"></div>
+        <div class="form-grid four">
+          <div class="field">
+            <label>Épaisseur planches (mm) *</label>
+            <input type="number" id="epaisseur" min="5" max="200" step="1" placeholder="Ex : 27" oninput="calculerDebit()">
+          </div>
+          <div class="field">
+            <label>Delta perte sciage (%) *</label>
+            <input type="number" id="delta" min="0" max="60" step="1" placeholder="Ex : 18" oninput="calculerDebit()">
+          </div>
+          <div class="field">
+            <label>Trait de scie (mm)</label>
+            <input type="number" id="trait-scie" min="1" max="10" step="0.5" value="3" oninput="calculerDebit()">
+          </div>
+          <div class="field">
+            <label>Nom du lot (optionnel)</label>
+            <input type="text" id="lot-nom" placeholder="Ex : Chênes bord de chemin">
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <span class="formule-badge" style="align-self:flex-end" data-tip="Méthode du cylindre inscrit :&#10;1. Volume grume = π × (D/2)² × L&#10;2. Volume utile = Volume × (1 - delta/100)&#10;3. Nb planches = D / (e + trait de scie)&#10;Le trait de scie est de 3mm par défaut.">📐 Formule utilisée</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultats-container" style="display:none">
+        <div class="result-block">
+          <h3>📊 Résultats du débit</h3>
+          <div class="result-grid" id="result-grid"></div>
+          <div class="dechets-block" id="dechets-block"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Détail par grume</div>
+          <div class="table-wrap">
+            <table id="result-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Longueur</th><th>Ø petit bout</th>
+                  <th>Volume grume</th><th>Nb planches</th>
+                  <th>Linéaire total</th><th>Largeur moy.</th>
+                </tr>
+              </thead>
+              <tbody id="result-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-between mt-16">
+        <button class="btn btn-outline" onclick="goToEtape2()">← Retour</button>
+        <button class="btn btn-primary" onclick="sauvegarderLot()">💾 Sauvegarder ce lot</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ ONGLET 2 : STOCK ═══ -->
+  <div class="panel" id="panel-stock">
+    <div class="stock-header">
+      <div>
+        <div class="stock-title">Stock par essence</div>
+        <div class="stock-subtitle">Volumes disponibles après déduction des extractions</div>
+      </div>
+      <button class="btn btn-outline" onclick="exporterStockCSV()">⬇ Exporter le stock CSV</button>
+    </div>
+    <div id="stock-totals"></div>
+    <div id="stock-essences"></div>
+  </div>
+
+  <!-- ═══ ONGLET 3 : EXTRACTIONS ═══ -->
+  <div class="panel" id="panel-extraction">
+    <div class="flex-between" style="margin-bottom:20px">
+      <div>
+        <div class="stock-title">Extractions de lots</div>
+        <div class="stock-subtitle">Enregistrez les sorties de bois avec usage et destination</div>
+      </div>
+      <button class="btn btn-primary" onclick="ouvrirModalExtraction()">↗ Nouvelle extraction</button>
+    </div>
+    <div id="extraction-list"></div>
+  </div>
+
+  <!-- ═══ ONGLET 5 : TERRITOIRE ═══ -->
+  <div class="panel" id="panel-territoire">
+    <div class="flex-between" style="margin-bottom:20px">
+      <div>
+        <div class="stock-title">Vue Territoire</div>
+        <div class="stock-subtitle">Lots partagés volontairement par les communes partenaires</div>
+      </div>
+    </div>
+    <div class="info-box" style="margin-bottom:18px">
+      Seuls les lots dont les communes ont activé le partage sont visibles ici. Chaque commune reste libre de partager ou non ses données.
+    </div>
+    <div id="territoire-container"></div>
+  </div>
+
+</main>
+
+<!-- ─── MODAL EXTRACTION ─── -->
+<div class="extract-modal-bg" id="modal-extraction">
+  <div class="extract-modal">
+    <button class="modal-close" onclick="fermerModalExtraction()">✕</button>
+    <h2>Nouvelle extraction</h2>
+    <p class="modal-sub">Enregistrez la sortie d'un lot ou d'un volume de bois</p>
+    <div class="form-grid" style="gap:14px">
+      <div class="field">
+        <label>Essence concernée *</label>
+        <select id="ext-essence"><option value="">— Choisir —</option></select>
+      </div>
+      <div class="field">
+        <label>Volume extrait (m³ utiles) *</label>
+        <input type="number" id="ext-volume" min="0.001" step="0.001" placeholder="Ex : 0.850">
+      </div>
+      <div class="field">
+        <label>Usage / Destination fonctionnelle *</label>
+        <select id="ext-usage">
+          <option value="">— Choisir —</option>
+          <option value="Mobilier intérieur">Mobilier intérieur</option>
+          <option value="Mobilier urbain">Mobilier urbain</option>
+          <option value="Charpente">Charpente / Structure</option>
+          <option value="Bardage">Bardage / Extérieur</option>
+          <option value="Parquet">Parquet / Plancher</option>
+          <option value="Menuiserie">Menuiserie (portes, fenêtres)</option>
+          <option value="Ébénisterie">Ébénisterie fine</option>
+          <option value="Sculpture">Sculpture / Art</option>
+          <option value="Pédagogie">Usage pédagogique</option>
+          <option value="Autre">Autre usage</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Lieu de destination *</label>
+        <input type="text" id="ext-destination" placeholder="Ex : Atelier municipal de Vertavien">
+      </div>
+      <div class="field">
+        <label>Commune de destination</label>
+        <input type="text" id="ext-commune" placeholder="Ex : Saint-Jean-de-Boiseau">
+      </div>
+      <div class="field">
+        <label>Responsable / Contact</label>
+        <input type="text" id="ext-contact" placeholder="Ex : Jean Dupont, menuisier">
+      </div>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label>Notes complémentaires</label>
+      <textarea id="ext-notes" placeholder="Détails sur la commande, conditions particulières…"></textarea>
+    </div>
+    <div id="ext-disponible" class="info-box" style="margin-top:14px;display:none"></div>
+    <div class="flex-end" style="margin-top:20px">
+      <button class="btn btn-outline" onclick="fermerModalExtraction()">Annuler</button>
+      <button class="btn btn-primary" onclick="enregistrerExtraction()">↗ Enregistrer l'extraction</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ÉCRAN DE CONNEXION ─── -->
+<div id="ecran-connexion" class="visible">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+        <g transform="translate(100,100)">
+          <circle cx="0" cy="0" r="88" stroke="currentColor" stroke-width="5"/>
+          <rect x="-96" y="-14" width="20" height="8" rx="2" fill="currentColor"/>
+          <rect x="76" y="-14" width="20" height="8" rx="2" fill="currentColor"/>
+          <rect x="-14" y="-96" width="8" height="20" rx="2" fill="currentColor"/>
+          <rect x="-14" y="76" width="8" height="20" rx="2" fill="currentColor"/>
+          <circle cx="0" cy="0" r="64" stroke="currentColor" stroke-width="3.5"/>
+          <circle cx="0" cy="0" r="38" stroke="currentColor" stroke-width="3"/>
+          <circle cx="0" cy="0" r="12" stroke="currentColor" stroke-width="3"/>
+          <circle cx="0" cy="0" r="4" fill="currentColor"/>
+          <line x1="-88" y1="0" x2="-12" y2="0" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="12" y1="0" x2="88" y2="0" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="0" y1="-88" x2="0" y2="-12" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="0" y1="12" x2="0" y2="88" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="-52" y1="-52" x2="-9" y2="-9" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="9" y1="9" x2="52" y2="52" stroke="currentColor" stroke-width="2.5"/>
+        </g>
+      </svg>
+    </div>
+    <div class="login-title">DURAMEN</div>
+    <div class="login-sub">Outil de recensement du bois d'œuvre<br>Accès réservé aux communes partenaires</div>
+    <label class="login-field-label" for="login-code">Code d'accès commune</label>
+    <input class="login-input" type="text" id="login-code"
+      placeholder="ex : DURAMEN-01"
+      autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+      onkeydown="if(event.key==='Enter') tentativeConnexion()">
+    <button class="login-btn" onclick="tentativeConnexion()">Accéder →</button>
+    <div class="login-error" id="login-erreur"></div>
+    <div class="login-footer-links">
+      <a href="#" onclick="afficherMentions();return false;">Mentions légales &amp; Conditions d'utilisation</a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MENTIONS LÉGALES ─── -->
+<div id="panel-mentions" style="display:none">
+  <div id="panel-mentions-inner">
+    <div class="mentions-body">
+      <h2>Mentions légales &amp; Conditions d'utilisation</h2>
+      <div class="date">Version 1.0 — 2026</div>
+      <h3>1. Éditeur</h3>
+      <p><strong>Tronc Commun</strong><br>La Montagne — 44620 · <a href="mailto:contact.tronccommun@gmail.com">contact.tronccommun@gmail.com</a> · SIRET 985 323 146 00011<br>Responsable de publication : Tronc Commun</p>
+      <h3>2. Hébergement</h3>
+      <p><strong>GitHub Pages</strong> — GitHub, Inc., San Francisco, CA, États-Unis.</p>
+      <p><strong>Supabase</strong> — Supabase Inc. Données stockées dans l'Union européenne (région eu-west).</p>
+      <h3>3. Nature de l'application</h3>
+      <div class="mentions-highlight">DURAMEN est un <strong>outil expérimental de recensement de ressources naturelles</strong>, mis à disposition gratuitement dans le cadre d'une phase de test. Il ne constitue pas un logiciel certifié et ne saurait engager la responsabilité de son éditeur en cas d'interruption de service, de perte de données ou d'inexactitude des informations saisies.</div>
+      <h3>4. Données collectées</h3>
+      <p>DURAMEN ne collecte <strong>aucune donnée personnelle</strong> au sens du RGPD. Les données enregistrées sont exclusivement : volumes et essences de bois d'œuvre, noms de communes (données publiques), informations techniques sur les lots, codes d'accès anonymisés.</p>
+      <h3>5. Partage des données entre communes</h3>
+      <p>Chaque commune <strong>choisit librement</strong> de rendre visibles ses lots aux autres communes partenaires, lot par lot, via un bouton de partage. Les données non partagées restent strictement privées et accessibles uniquement aux agents de la commune concernée. Aucune donnée n'est partagée par défaut.</p>
+      <h3>6. Accès et contrôle</h3>
+      <p>L'accès est conditionné à un code d'accès communal attribué par l'éditeur. Ce code est partageable uniquement avec les agents habilités de la même commune (maximum 3 agents par code). L'éditeur se réserve le droit de désactiver tout code sans préavis en cas d'usage non conforme.</p>
+      <h3>7. Responsabilité</h3>
+      <p>La responsabilité de l'éditeur ne peut être engagée en cas d'interruption de service (GitHub, Supabase), de perte de données consécutive à une défaillance technique, d'usage non conforme, ou de dommages indirects.</p>
+      <h3>8. Propriété intellectuelle</h3>
+      <p>L'application DURAMEN, son interface, ses graphismes et son code source sont la propriété exclusive de l'éditeur. Toute reproduction sans autorisation est interdite.</p>
+      <h3>9. Contact</h3>
+      <p><a href="mailto:contact.tronccommun@gmail.com">contact.tronccommun@gmail.com</a></p>
+      <div style="margin-top:28px">
+        <button class="btn btn-outline" onclick="fermerMentions()">← Retour</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>DURAMEN</span> · Tronc Commun · Outil expérimental de recensement du bois d'œuvre ·
+  <a href="#" onclick="afficherMentions();return false;" style="color:var(--lin);text-decoration:none;letter-spacing:0.08em">Mentions légales &amp; CGU</a>
+</footer>
+
+<script>
+// ═══════════ DONNÉES ═══════════
+let grumes = [];
+let lots        = JSON.parse(localStorage.getItem('duramen_lots')        || localStorage.getItem('grumes_lots') || '[]');
+let extractions = JSON.parse(localStorage.getItem('duramen_extractions') || '[]');
+
+if (localStorage.getItem('grumes_lots') && !localStorage.getItem('duramen_lots')) {
+  localStorage.setItem('duramen_lots', JSON.stringify(lots));
+}
+
+const ESSENCES_INFO = {
+  'Aulne':              { delta: 20, usage: 'Ébénisterie, tournage',                          color: 'ec-aulne' },
+  'Châtaignier':        { delta: 18, usage: 'Piquets, charpente, lambris, ext.',              color: 'ec-chataignier' },
+  'Chêne':              { delta: 20, usage: 'Mobilier, parquet, charpente, tonnellerie',      color: 'ec-chene' },
+  'Cyprès':             { delta: 17, usage: 'Menuiserie extérieure, bardage, mobilier',       color: 'ec-cypres' },
+  'Douglas':            { delta: 16, usage: 'Charpente, bardage, terrasse',                   color: 'ec-douglas' },
+  'Épicéa':             { delta: 17, usage: 'Charpente légère, coffrage',                     color: 'ec-epicea' },
+  'Frêne':              { delta: 20, usage: "Manches d'outils, parquet, sports",              color: 'ec-frene' },
+  'Hêtre':              { delta: 22, usage: 'Ameublement, jouets, parquet',                   color: 'ec-hetre' },
+  'Mélèze':             { delta: 16, usage: 'Bardage, terrasse, ext. résistant',              color: 'ec-meleze' },
+  'Merisier':           { delta: 25, usage: 'Ébénisterie fine, veneer',                       color: 'ec-merisier' },
+  'Noyer':              { delta: 25, usage: 'Ébénisterie, mobilier haut de gamme',            color: 'ec-noyer' },
+  'Peuplier':           { delta: 22, usage: "Caisserie, contreplaqué, allumettes",            color: 'ec-peuplier' },
+  'Pin maritime':       { delta: 18, usage: 'Charpente, emballage, caisserie',                color: 'ec-pin-m' },
+  'Pin sylvestre':      { delta: 18, usage: 'Charpente, menuiserie intérieure',               color: 'ec-pin-s' },
+  'Platane':            { delta: 20, usage: 'Ébénisterie, parquet, lambris',                  color: 'ec-platane' },
+  'Robinier (Acacia)':  { delta: 15, usage: 'Poteaux, terrasse, ext. très résistant',        color: 'ec-robinier' },
+  'Séquoia':            { delta: 15, usage: 'Bardage, mobilier de jardin',                    color: 'ec-sequoia' },
+  'Tilleul':            { delta: 22, usage: 'Sculpture, lutherie, jouets',                    color: 'ec-tilleul' },
+  'Autre':              { delta: 20, usage: 'Usage à définir selon les caractéristiques',     color: 'ec-autre' },
+};
+
+function sauver() {
+  localStorage.setItem('duramen_lots',        JSON.stringify(lots));
+  localStorage.setItem('duramen_extractions', JSON.stringify(extractions));
+  mettreAJourHeaderStats();
+}
+
+// ═══════════ NAVIGATION ═══════════
+function setStep(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('step'+i);
+    el.classList.remove('active','done');
+    if (i < n)  el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  });
+}
+
+function goToEtape1() {
+  document.getElementById('etape1').style.display='';
+  document.getElementById('etape2').style.display='none';
+  document.getElementById('etape3').style.display='none';
+  setStep(1);
+}
+function goToEtape2() {
+  const nom = document.getElementById('lot-nom').value.trim();
+  const ess = document.getElementById('essence').value;
+  const com = document.getElementById('commune').value.trim();
+  const cau = document.getElementById('cause').value;
+  const pro = document.getElementById('provenance').value;
+  const ann = document.getElementById('annee').value;
+  const usa = document.getElementById('usage').value;
+
+  if (!nom) {
+    document.getElementById('lot-nom-required').style.display = '';
+    document.getElementById('lot-nom').focus();
+    return;
+  }
+  document.getElementById('lot-nom-required').style.display = 'none';
+
+  if (!ess||!cau||!pro||!ann||!usa) {
+    alert('⚠️ Merci de renseigner tous les champs obligatoires.'); return;
+  }
+
+  // Mémoriser et verrouiller la commune si saisie
+  if (com && !localStorage.getItem('duramen_commune')) {
+    localStorage.setItem('duramen_commune', com);
+    appliquerCommuneLocked();
+  }
+
+  document.getElementById('etape1').style.display='none';
+  document.getElementById('etape2').style.display='';
+  document.getElementById('etape3').style.display='none';
+  setStep(2);
+}
+function goToEtape3() {
+  if (grumes.length === 0) { alert('⚠️ Veuillez saisir au moins une grume.'); return; }
+  const info = ESSENCES_INFO[document.getElementById('essence').value] || { delta: 20, usage: '' };
+  document.getElementById('epaisseur').value = document.getElementById('epaisseur').value || '27';
+  document.getElementById('delta').value     = document.getElementById('delta').value     || info.delta;
+  document.getElementById('info-essence-debit').textContent =
+    `Essence : ${document.getElementById('essence').value} — Delta conseillé : ${info.delta}% — Usage typique : ${info.usage}`;
+  document.getElementById('etape1').style.display='none';
+  document.getElementById('etape2').style.display='none';
+  document.getElementById('etape3').style.display='';
+  setStep(3);
+  calculerDebit();
+}
+
+// ═══════════ GRUMES ═══════════
+function ajouterGrume() {
+  const l = parseFloat(document.getElementById('g-longueur').value);
+  const d = parseFloat(document.getElementById('g-diametre').value);
+  if (!l || !d || l <= 0 || d <= 0) { alert('⚠️ Longueur et diamètre sont obligatoires.'); return; }
+  grumes.push({ longueur: l, diametre: d });
+  document.getElementById('g-longueur').value = '';
+  document.getElementById('g-diametre').value = '';
+  document.getElementById('g-longueur').focus();
+  afficherGrumes();
+}
+
+function supprimerGrume(i) {
+  grumes.splice(i, 1);
+  afficherGrumes();
+}
+
+function afficherGrumes() {
+  const c = document.getElementById('grumes-container');
+  document.getElementById('nb-grumes-badge').textContent = grumes.length + ' grume' + (grumes.length>1?'s':'');
+  if (grumes.length === 0) {
+    c.innerHTML = `<div class="empty-state"><div class="icon">🪵</div><p>Aucune grume saisie.<br>Ajoutez votre première grume ci-dessus.</p></div>`;
+    return;
+  }
+  c.innerHTML = grumes.map((g, i) => `
+    <div class="grume-item">
+      <div class="grume-num">${i+1}</div>
+      <div class="grume-info">
+        <div class="grume-field"><span>Longueur</span><span>${g.longueur} m</span></div>
+        <div class="grume-field"><span>Ø petit bout</span><span>${g.diametre} cm</span></div>
+        <div class="grume-field"><span>Vol. grume</span><span>${(Math.PI * Math.pow(g.diametre/200,2) * g.longueur).toFixed(3)} m³</span></div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="supprimerGrume(${i})">✕</button>
+    </div>`).join('');
+}
+
+// ═══════════ CALCUL ═══════════
+function calculerDebit() {
+  const epaisseur  = parseFloat(document.getElementById('epaisseur').value);
+  const delta      = parseFloat(document.getElementById('delta').value);
+  const traitScie  = parseFloat(document.getElementById('trait-scie').value) || 3;
+  const container  = document.getElementById('resultats-container');
+  if (!epaisseur || isNaN(delta) || grumes.length === 0) { container.style.display='none'; return; }
+
+  let totalVolBrut=0, totalVolUtile=0, totalPlanches=0, totalLineaire=0;
+  const rows = grumes.map((g,i) => {
+    const r = g.diametre / 200;
+    const volBrut = Math.PI * r * r * g.longueur;
+    const volUtile = volBrut * (1 - delta/100);
+    const nbPlanches = Math.floor(g.diametre / (epaisseur/10 + traitScie/10));
+    const lineaire = nbPlanches * g.longueur;
+    const largMoy = nbPlanches > 0 ? (g.diametre / nbPlanches).toFixed(1) : '—';
+    totalVolBrut    += volBrut;
+    totalVolUtile   += volUtile;
+    totalPlanches   += nbPlanches;
+    totalLineaire   += lineaire;
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${g.longueur} m</td>
+      <td>${g.diametre} cm</td>
+      <td>${volBrut.toFixed(3)} m³</td>
+      <td>${nbPlanches}</td>
+      <td>${lineaire.toFixed(1)} m</td>
+      <td>${largMoy} cm</td>
+    </tr>`;
+  });
+
+  const totalDechets = totalVolBrut - totalVolUtile;
+  document.getElementById('result-grid').innerHTML = `
+    <div class="result-stat"><div class="val">${totalVolUtile.toFixed(3)}</div><div class="unit">m³</div><div class="lbl">Volume utile</div></div>
+    <div class="result-stat"><div class="val">${grumes.length}</div><div class="unit">grume${grumes.length>1?'s':''}</div><div class="lbl">Billes saisies</div></div>
+    <div class="result-stat"><div class="val">${totalPlanches}</div><div class="unit">planches</div><div class="lbl">Débit théorique</div></div>
+    <div class="result-stat"><div class="val">${totalLineaire.toFixed(1)}</div><div class="unit">m lin.</div><div class="lbl">Linéaire total</div></div>
+    <div class="result-stat"><div class="val">${delta}</div><div class="unit">%</div><div class="lbl">Delta perte</div></div>`;
+  document.getElementById('dechets-block').innerHTML = `
+    <span>♻️</span>
+    <span class="txt">Volume brut : <strong>${totalVolBrut.toFixed(3)} m³</strong> · Déchets estimés : <strong>${totalDechets.toFixed(3)} m³</strong> (sciure, dosses, délignures)</span>`;
+  document.getElementById('result-tbody').innerHTML = rows.join('');
+  container.style.display = '';
+}
+
+// ═══════════ SAUVEGARDE LOT ═══════════
+function sauvegarderLot() {
+  const epaisseur = parseFloat(document.getElementById('epaisseur').value);
+  const delta     = parseFloat(document.getElementById('delta').value);
+  const traitScie = parseFloat(document.getElementById('trait-scie').value) || 3;
+  if (!epaisseur || isNaN(delta)) { alert('⚠️ Veuillez renseigner les paramètres de sciage.'); return; }
+
+  let totalVolBrut=0, totalVolUtile=0, totalPlanches=0, totalLineaire=0;
+  grumes.forEach(g => {
+    const r = g.diametre / 200;
+    const vb = Math.PI * r * r * g.longueur;
+    const vu = vb * (1 - delta/100);
+    const nb = Math.floor(g.diametre / (epaisseur/10 + traitScie/10));
+    totalVolBrut  += vb;
+    totalVolUtile += vu;
+    totalPlanches += nb;
+    totalLineaire += nb * g.longueur;
+  });
+
+  const essence    = document.getElementById('essence').value;
+  const info       = ESSENCES_INFO[essence] || { delta: 20, usage: '', color: 'ec-autre' };
+  const usages     = [];
+  lots.filter(l => l.essence === essence).forEach(l => { if (l.usage && !usages.includes(l.usage)) usages.push(l.usage); });
+
+  const lot = {
+    id:          Date.now(),
+    nom:         document.getElementById('lot-nom').value.trim() || `${essence} — ${document.getElementById('commune').value.trim()}`,
+    essence,
+    commune:     document.getElementById('commune').value.trim(),
+    cause:       document.getElementById('cause').value,
+    provenance:  document.getElementById('provenance').value,
+    annee:       document.getElementById('annee').value,
+    usage:       document.getElementById('usage').value,
+    partage:     document.getElementById('lot-partage').checked,
+    epaisseur,   delta,
+    nbGrumes:    grumes.length,
+    volBrut:     totalVolBrut,
+    volUtile:    totalVolUtile,
+    volDechets:  totalVolBrut - totalVolUtile,
+    nbPlanches:  totalPlanches,
+    lineaire:    totalLineaire,
+    date:        new Date().toLocaleDateString('fr-FR'),
+    dateIso:     new Date().toISOString(),
+    grumes:      [...grumes],
+    usages,
+  };
+
+  lots.unshift(lot);
+  sauver();
+
+  grumes = [];
+  afficherGrumes();
+  document.getElementById('essence').value    = '';
+  // commune conservée intentionnellement
+  document.getElementById('cause').value      = '';
+  document.getElementById('provenance').value = '';
+  document.getElementById('annee').value      = '';
+  document.getElementById('usage').value      = '';
+  document.getElementById('epaisseur').value  = '';
+  document.getElementById('delta').value      = '';
+  document.getElementById('lot-nom').value    = '';
+  document.getElementById('lot-partage').checked = false;
+  document.getElementById('resultats-container').style.display = 'none';
+  goToEtape1();
+
+  alert(`✅ Lot sauvegardé !\n${lot.nom}\n${lot.volUtile.toFixed(3)} m³ utiles — ${lot.nbPlanches} planches${lot.partage ? '\n🌐 Visible dans la vue Territoire' : ''}`);
+}
+
+// ═══════════ STOCK ═══════════
+function getStockParEssence() {
+  const stock = {};
+  lots.forEach(l => {
+    if (!stock[l.essence]) stock[l.essence] = { entree:0, sorti:0, dispo:0, nbLots:0, nbGrumes:0, color: (ESSENCES_INFO[l.essence]||{color:'ec-autre'}).color, usages:[] };
+    stock[l.essence].entree   += l.volUtile;
+    stock[l.essence].nbLots   += 1;
+    stock[l.essence].nbGrumes += l.nbGrumes;
+    if (l.usage && !stock[l.essence].usages.includes(l.usage)) stock[l.essence].usages.push(l.usage);
+  });
+  extractions.forEach(e => {
+    if (stock[e.essence]) stock[e.essence].sorti += e.volume;
+  });
+  Object.keys(stock).forEach(k => { stock[k].dispo = Math.max(0, stock[k].entree - stock[k].sorti); });
+  return stock;
+}
+
+function afficherStock() {
+  const stock  = getStockParEssence();
+  const keys   = Object.keys(stock);
+  const totalE = keys.reduce((s,k)=>s+stock[k].entree,0);
+  const totalS = keys.reduce((s,k)=>s+stock[k].sorti,0);
+  const totalD = keys.reduce((s,k)=>s+stock[k].dispo,0);
+
+  document.getElementById('stock-totals').innerHTML = keys.length === 0 ? '' : `
+    <div class="stock-total-card">
+      <div class="stock-total-item"><div class="tv">${totalD.toFixed(2)}</div><div class="tu">m³</div><div class="tl">Disponible</div></div>
+      <div class="stock-divider"></div>
+      <div class="stock-total-item"><div class="tv">${totalE.toFixed(2)}</div><div class="tu">m³</div><div class="tl">Entrés</div></div>
+      <div class="stock-divider"></div>
+      <div class="stock-total-item"><div class="tv">${totalS.toFixed(2)}</div><div class="tu">m³</div><div class="tl">Sortis</div></div>
+      <div class="stock-divider"></div>
+      <div class="stock-total-item"><div class="tv">${keys.length}</div><div class="tu">essences</div><div class="tl">En stock</div></div>
+    </div>`;
+
+  if (keys.length === 0) {
+    document.getElementById('stock-essences').innerHTML = `<div class="empty-state"><div class="icon">📦</div><p>Aucun stock disponible.<br>Créez votre premier lot dans l'onglet "Nouveau lot".</p></div>`;
+    return;
+  }
+
+  document.getElementById('stock-essences').innerHTML = keys.sort((a,b)=>stock[b].dispo-stock[a].dispo).map(essence => {
+    const s    = stock[essence];
+    const pct  = totalD > 0 ? (s.dispo / totalD * 100) : 0;
+    const info = ESSENCES_INFO[essence] || { delta: 20, usage: 'Usage à définir' };
+    return `
+      <div class="essence-row">
+        <div class="essence-row-top">
+          <div class="essence-name">
+            <div class="essence-dot ${s.color}"></div>
+            ${essence}
+          </div>
+          <div class="essence-stats">
+            <div class="essence-stat"><div class="es-val">${s.dispo.toFixed(3)}</div><div class="es-lbl">m³ dispo.</div></div>
+            <div class="essence-stat"><div class="es-val">${s.entree.toFixed(3)}</div><div class="es-lbl">m³ entrés</div></div>
+            <div class="essence-stat"><div class="es-val">${s.sorti.toFixed(3)}</div><div class="es-lbl">m³ sortis</div></div>
+            <div class="essence-stat"><div class="es-val">${s.nbLots}</div><div class="es-lbl">lot${s.nbLots>1?'s':''}</div></div>
+            <div class="essence-stat"><div class="es-val">${s.nbGrumes}</div><div class="es-lbl">grume${s.nbGrumes>1?'s':''}</div></div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="ouvrirModalExtractionEssence('${essence}')">↗ Extraire</button>
+        </div>
+        <div class="essence-bar-wrap"><div class="essence-bar" style="width:${pct.toFixed(1)}%"></div></div>
+        <div style="margin-top:7px;font-size:0.72rem;color:var(--cendre);font-family:var(--font-serif);font-style:italic">
+          ${info.usage}${s.usages.length ? ' · Usages enregistrés : ' + s.usages.join(', ') : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ═══════════ EXTRACTIONS ═══════════
+function ouvrirModalExtraction() {
+  const stock = getStockParEssence();
+  const sel   = document.getElementById('ext-essence');
+  sel.innerHTML = '<option value="">— Choisir —</option>' +
+    Object.keys(stock).filter(e => stock[e].dispo > 0).map(e =>
+      `<option value="${e}">${e} (${stock[e].dispo.toFixed(3)} m³ dispo.)</option>`
+    ).join('');
+  ['ext-essence','ext-volume','ext-usage','ext-destination','ext-commune','ext-contact','ext-notes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.tagName === 'SELECT') el.value = '';
+    else el.value = '';
+  });
+  document.getElementById('ext-disponible').style.display = 'none';
+  document.getElementById('modal-extraction').classList.add('open');
+}
+
+function ouvrirModalExtractionEssence(essence) {
+  ouvrirModalExtraction();
+  setTimeout(() => { document.getElementById('ext-essence').value = essence; majDisponible(); }, 50);
+}
+
+function fermerModalExtraction() {
+  document.getElementById('modal-extraction').classList.remove('open');
+}
+
+function majDisponible() {
+  const essence = document.getElementById('ext-essence').value;
+  const box = document.getElementById('ext-disponible');
+  if (!essence) { box.style.display = 'none'; return; }
+  const stock = getStockParEssence();
+  if (stock[essence]) {
+    box.innerHTML = `Stock disponible pour <strong>${essence}</strong> : <strong>${stock[essence].dispo.toFixed(3)} m³ utiles</strong> (${stock[essence].entree.toFixed(3)} entrés — ${stock[essence].sorti.toFixed(3)} sortis)`;
+    box.style.display = '';
+  }
+}
+document.getElementById('ext-essence').addEventListener('change', majDisponible);
+
+function enregistrerExtraction() {
+  const essence     = document.getElementById('ext-essence').value;
+  const volume      = parseFloat(document.getElementById('ext-volume').value);
+  const usage       = document.getElementById('ext-usage').value;
+  const destination = document.getElementById('ext-destination').value.trim();
+  const commune     = document.getElementById('ext-commune').value.trim();
+  const contact     = document.getElementById('ext-contact').value.trim();
+  const notes       = document.getElementById('ext-notes').value.trim();
+  if (!essence||!volume||!usage||!destination) { alert('⚠️ Merci de renseigner tous les champs obligatoires.'); return; }
+  const stock = getStockParEssence();
+  if (volume > stock[essence].dispo) { alert(`⚠️ Volume demandé (${volume} m³) supérieur au stock disponible (${stock[essence].dispo.toFixed(3)} m³).`); return; }
+  const ext = { id: Date.now(), essence, volume, usage, destination, commune, contact, notes, date: new Date().toLocaleDateString('fr-FR'), dateIso: new Date().toISOString() };
+  extractions.unshift(ext);
+  sauver();
+  fermerModalExtraction();
+  alert(`✅ Extraction enregistrée !\n${volume} m³ de ${essence} → ${destination}`);
+  afficherExtractions();
+  if (document.getElementById('panel-stock').classList.contains('active')) afficherStock();
+}
+
+function afficherExtractions() {
+  const container = document.getElementById('extraction-list');
+  if (extractions.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">↗</div><p>Aucune extraction enregistrée.<br>Cliquez sur "Nouvelle extraction" pour enregistrer une sortie de bois.</p></div>`;
+    return;
+  }
+  const totalSorti = extractions.reduce((s,e)=>s+e.volume,0);
+  const nbExt = extractions.length;
+  container.innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+      <div class="card" style="flex:1;min-width:140px;padding:14px 18px;text-align:center;margin-bottom:0">
+        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-0.03em;color:var(--encre)">${totalSorti.toFixed(2)}</div>
+        <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">m³ extraits au total</div>
+      </div>
+      <div class="card" style="flex:1;min-width:140px;padding:14px 18px;text-align:center;margin-bottom:0">
+        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-0.03em;color:var(--encre)">${nbExt}</div>
+        <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">extraction${nbExt>1?'s':''} enregistrée${nbExt>1?'s':''}</div>
+      </div>
+    </div>
+    <div class="extraction-list">
+      ${extractions.map((ext, idx) => `
+        <div class="extraction-item">
+          <div class="ei-header">
+            <div>
+              <div class="ei-title">${ext.destination}${ext.commune?' — '+ext.commune:''}</div>
+              <div class="ei-meta">📅 ${ext.date}${ext.contact?' · 👤 '+ext.contact:''}</div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="supprimerExtraction(${idx})">✕</button>
+          </div>
+          <div class="ei-stats">
+            <div class="ei-stat">Essence : <strong>${ext.essence}</strong></div>
+            <div class="ei-stat">Volume : <strong>${ext.volume} m³</strong></div>
+            <div class="ei-stat">Usage : <strong>${ext.usage}</strong></div>
+            ${ext.notes?`<div class="ei-stat" style="width:100%;font-style:italic">📝 ${ext.notes}</div>`:''}
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function supprimerExtraction(idx) {
+  if (!confirm('Supprimer cette extraction ? Cette action est irréversible.')) return;
+  extractions.splice(idx,1);
+  sauver();
+  afficherExtractions();
+}
+
+// ═══════════ HISTORIQUE ═══════════
+function afficherHistorique() {
+  const container = document.getElementById('historique-container');
+  if (lots.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">📂</div><p>Aucun lot enregistré pour l'instant.<br>Créez votre premier lot dans l'onglet "Nouveau lot".</p></div>`;
+    return;
+  }
+  container.innerHTML = lots.map((lot, idx) => `
+    <div class="lot-card">
+      <div class="lot-card-header">
+        <div>
+          <div class="lot-card-title">${lot.nom}</div>
+          <div class="lot-card-meta">📍 ${lot.commune} · 📅 ${lot.annee} · ${lot.date}
+            &nbsp;·&nbsp; ${lot.cause} · ${lot.provenance}
+            &nbsp;·&nbsp; <span class="badge ${badgeClass(lot.usage)}">${lot.usage}</span>
+          </div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="supprimerLot(${idx});event.stopPropagation()">✕</button>
+      </div>
+      <div class="lot-card-stats">
+        <div class="lot-stat">Essence : <strong>${lot.essence}</strong></div>
+        <div class="lot-stat">${lot.nbGrumes} grume${lot.nbGrumes>1?'s':''}</div>
+        <div class="lot-stat">Planches : <strong>${lot.nbPlanches}</strong></div>
+        <div class="lot-stat">Linéaire : <strong>${lot.lineaire.toFixed(1)} m</strong></div>
+        <div class="lot-stat">Volume utile : <strong>${lot.volUtile.toFixed(3)} m³</strong></div>
+        <div class="lot-stat" style="color:var(--cendre)">Déchets : ${lot.volDechets.toFixed(3)} m³</div>
+        <div class="lot-stat" style="color:var(--cendre)">Ep. ${lot.epaisseur}mm · Δ ${lot.delta}%</div>
+      </div>
+    </div>`).join('');
+}
+
+function badgeClass(usage) {
+  if (!usage) return 'badge-autre';
+  const u = usage.toLowerCase();
+  if (u.includes('intérieur')) return 'badge-int';
+  if (u.includes('extérieur')) return 'badge-ext';
+  if (u.includes('mob')) return 'badge-mob';
+  if (u.includes('struct')||u.includes('charp')) return 'badge-struct';
+  return 'badge-autre';
+}
+
+function supprimerLot(idx) {
+  if (!confirm('Supprimer ce lot ? Cette action est irréversible.')) return;
+  lots.splice(idx,1);
+  sauver();
+  afficherHistorique();
+}
+
+// ═══════════ EXPORTS ═══════════
+function exporterCSV() {
+  if (lots.length === 0) { alert('Aucun lot à exporter.'); return; }
+  const headers = ['Nom','Essence','Commune','Cause','Provenance','Année','Usage','Nb grumes','Vol. brut (m³)','Vol. utile (m³)','Vol. déchets (m³)','Nb planches','Linéaire (m)','Épaisseur (mm)','Delta (%)','Date'];
+  const rows = lots.map(l => [l.nom,l.essence,l.commune,l.cause,l.provenance,l.annee,l.usage,l.nbGrumes,l.volBrut.toFixed(3),l.volUtile.toFixed(3),l.volDechets.toFixed(3),l.nbPlanches,l.lineaire.toFixed(2),l.epaisseur,l.delta,l.date]);
+  const csv = [headers,...rows].map(r=>r.map(v=>`"${v}"`).join(';')).join('\n');
+  telechargerCSV('\ufeff'+csv, `duramen_lots_${new Date().toISOString().slice(0,10)}.csv`);
+}
+
+function exporterStockCSV() {
+  const stock = getStockParEssence();
+  if (Object.keys(stock).length === 0) { alert('Aucun stock à exporter.'); return; }
+  const headers = ['Essence','m³ entrés','m³ sortis','m³ disponibles','Nb lots','Nb grumes'];
+  const rows = Object.keys(stock).map(e=>[e,stock[e].entree.toFixed(3),stock[e].sorti.toFixed(3),stock[e].dispo.toFixed(3),stock[e].nbLots,stock[e].nbGrumes]);
+  const csv = [headers,...rows].map(r=>r.map(v=>`"${v}"`).join(';')).join('\n');
+  telechargerCSV('\ufeff'+csv, `duramen_stock_${new Date().toISOString().slice(0,10)}.csv`);
+}
+
+function telechargerCSV(content, filename) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+// ═══════════ HEADER STATS ═══════════
+function mettreAJourHeaderStats() {
+  const stock = getStockParEssence();
+  const totalDispo = Object.values(stock).reduce((s,e)=>s+e.dispo,0);
+  const nbEssences = Object.keys(stock).length;
+  document.getElementById('hs-vol').textContent      = totalDispo.toFixed(2);
+  document.getElementById('hs-lots').textContent     = lots.length;
+  document.getElementById('hs-essences').textContent = nbEssences;
+  // Mobile stats
+  const vm = document.getElementById('hs-vol-m');
+  const lm = document.getElementById('hs-lots-m');
+  const em = document.getElementById('hs-essences-m');
+  if (vm) vm.textContent = totalDispo.toFixed(2);
+  if (lm) lm.textContent = lots.length;
+  if (em) em.textContent = nbEssences;
+}
+
+// ═══════════ TERRITOIRE ═══════════
+function afficherTerritoire() {
+  const container = document.getElementById('territoire-container');
+  const lotsPartages = lots.filter(l => l.partage);
+
+  if (lotsPartages.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">🌐</div>
+      <p>Aucun lot partagé pour l'instant.<br>
+      Activez le partage lors de la création d'un lot pour le rendre visible ici.<br>
+      Les autres communes feront de même pour enrichir la vue territoire.</p></div>`;
+    return;
+  }
+
+  // Grouper par commune
+  const parCommune = {};
+  lotsPartages.forEach(l => {
+    if (!parCommune[l.commune]) parCommune[l.commune] = [];
+    parCommune[l.commune].push(l);
+  });
+
+  const totalVolTerritoire = lotsPartages.reduce((s,l) => s + l.volUtile, 0);
+  const nbCommunes = Object.keys(parCommune).length;
+
+  container.innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+      <div class="card" style="flex:1;min-width:130px;padding:14px 18px;text-align:center;margin-bottom:0">
+        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-0.03em">${totalVolTerritoire.toFixed(2)}</div>
+        <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">m³ partagés</div>
+      </div>
+      <div class="card" style="flex:1;min-width:130px;padding:14px 18px;text-align:center;margin-bottom:0">
+        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-0.03em">${nbCommunes}</div>
+        <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">commune${nbCommunes>1?'s':''}</div>
+      </div>
+      <div class="card" style="flex:1;min-width:130px;padding:14px 18px;text-align:center;margin-bottom:0">
+        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-0.03em">${lotsPartages.length}</div>
+        <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">lot${lotsPartages.length>1?'s':''}</div>
+      </div>
+    </div>
+    ${Object.keys(parCommune).sort().map(commune => {
+      const lotsC = parCommune[commune];
+      const volC = lotsC.reduce((s,l) => s + l.volUtile, 0);
+      const essences = [...new Set(lotsC.map(l => l.essence))].join(', ');
+      return `<div class="territoire-card">
+        <div class="territoire-commune-name">
+          📍 ${commune}
+          <span class="chip-partage">Partage activé</span>
+        </div>
+        <div class="territoire-stats">
+          <div class="territoire-stat">Volume : <strong>${volC.toFixed(3)} m³</strong></div>
+          <div class="territoire-stat">Lots : <strong>${lotsC.length}</strong></div>
+          <div class="territoire-stat">Essences : <strong>${essences}</strong></div>
+        </div>
+        <div style="margin-top:10px">
+          ${lotsC.map(l => `
+            <div style="font-size:0.75rem;padding:7px 0;border-bottom:var(--border-light);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:700">${l.nom}</span>
+              <span style="color:var(--cendre)">${l.essence} · ${l.volUtile.toFixed(3)} m³ · ${l.annee}</span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ═══════════ AUTHENTIFICATION ═══════════
+// Codes d'accès communes — phase test locale (sera remplacé par Supabase)
+// ⚠ Changez ces codes avant déploiement
+const CODES_COMMUNES = {
+  'DURAMEN-TEST': 'Commune test',
+  // Ajoutez vos communes ici :
+  // 'DURAMEN-01': 'Nom de la commune 1',
+  // 'DURAMEN-02': 'Nom de la commune 2',
+};
+
+let communeConnectee = null;
+
+// ─── COMMUNE PERSISTANTE ───
+function appliquerCommuneLocked() {
+  const input = document.getElementById('commune');
+  const hint  = document.getElementById('commune-hint');
+  if (!input) return;
+  input.readOnly = true;
+  input.style.color = 'var(--cendre)';
+  input.style.cursor = 'default';
+  input.style.borderBottomColor = 'var(--lin)';
+  if (hint) hint.style.display = '';
+}
+
+function chargerCommune() {
+  const commune = localStorage.getItem('duramen_commune');
+  const input   = document.getElementById('commune');
+  if (commune && input) {
+    input.value = commune;
+    appliquerCommuneLocked();
+  }
+}
+
+function reinitialiserCommune() {
+  if (!confirm('Modifier la commune enregistrée ?')) return;
+  localStorage.removeItem('duramen_commune');
+  const input = document.getElementById('commune');
+  const hint  = document.getElementById('commune-hint');
+  input.value = '';
+  input.readOnly = false;
+  input.style.color = '';
+  input.style.cursor = '';
+  input.style.borderBottomColor = '';
+  if (hint) hint.style.display = 'none';
+  input.focus();
+}
+
+function verifierAcces() {
+  // localStorage = persistant (ne redemande plus le code), sessionStorage = fallback
+  const session = localStorage.getItem('duramen_session') || sessionStorage.getItem('duramen_session');
+  if (session) {
+    try {
+      communeConnectee = JSON.parse(session);
+      // Migrer sessionStorage → localStorage si besoin
+      localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
+      ouvrirApp();
+      return;
+    } catch(e) {}
+  }
+  document.getElementById('ecran-connexion').classList.add('visible');
+}
+
+function tentativeConnexion() {
+  const code = document.getElementById('login-code').value.trim().toUpperCase();
+  const erreur = document.getElementById('login-erreur');
+  erreur.textContent = '';
+  if (!code) { erreur.textContent = 'Veuillez saisir votre code d\'accès.'; return; }
+
+  if (CODES_COMMUNES[code]) {
+    communeConnectee = { code, nom: CODES_COMMUNES[code] };
+    // Persistance permanente via localStorage
+    localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
+    // Pré-remplir la commune avec le nom de la commune connectée
+    if (!localStorage.getItem('duramen_commune')) {
+      localStorage.setItem('duramen_commune', communeConnectee.nom);
+    }
+    ouvrirApp();
+  } else {
+    erreur.textContent = '⚠ Code invalide. Contactez votre référent DURAMEN.';
+    document.getElementById('login-code').value = '';
+    document.getElementById('login-code').focus();
+  }
+}
+
+function ouvrirApp() {
+  document.getElementById('ecran-connexion').classList.remove('visible');
+
+  // Afficher commune dans header
+  const chip = document.createElement('div');
+  chip.className = 'commune-chip';
+  chip.style.cssText = 'margin-bottom:5px';
+  chip.textContent = '📍 ' + communeConnectee.nom;
+
+  const btnDeco = document.createElement('button');
+  btnDeco.className = 'btn btn-sm';
+  btnDeco.style.cssText = 'color:var(--cendre);border-color:rgba(201,186,163,0.3);font-size:0.6rem;margin-top:2px;padding:3px 10px';
+  btnDeco.textContent = 'Déconnexion';
+  btnDeco.onclick = () => {
+    if (confirm('Se déconnecter ?')) {
+      localStorage.removeItem('duramen_session');
+      sessionStorage.clear();
+      location.reload();
+    }
+  };
+
+  const hr = document.getElementById('header-stats');
+  hr.innerHTML = '';
+  hr.appendChild(chip);
+  hr.appendChild(document.createElement('br'));
+  hr.appendChild(document.createTextNode('Stock : '));
+  const sv = document.createElement('strong'); sv.id='hs-vol'; sv.textContent='—';
+  hr.appendChild(sv);
+  hr.appendChild(document.createTextNode(' m³ · '));
+  const sl = document.createElement('strong'); sl.id='hs-lots'; sl.textContent='—';
+  hr.appendChild(sl);
+  hr.appendChild(document.createTextNode(' lots'));
+  hr.appendChild(document.createElement('br'));
+  hr.appendChild(btnDeco);
+
+  mettreAJourHeaderStats();
+  afficherHistorique();
+  chargerCommune(); // pré-remplir la commune mémorisée
+}
+
+// ═══════════ MENTIONS LÉGALES ═══════════
+function afficherMentions() {
+  document.getElementById('ecran-connexion').classList.remove('visible');
+  document.querySelector('header').style.display='none';
+  document.querySelector('.tabs-wrap').style.display='none';
+  document.querySelector('.bottom-nav').style.display='none';
+  document.querySelector('main').style.display='none';
+  document.querySelector('footer').style.display='none';
+  const pm = document.getElementById('panel-mentions');
+  pm.style.cssText = 'display:block;padding:32px 20px;max-width:760px;margin:0 auto';
+}
+function fermerMentions() {
+  document.getElementById('panel-mentions').style.display='none';
+  document.querySelector('header').style.display='';
+  document.querySelector('.tabs-wrap').style.display='';
+  document.querySelector('.bottom-nav').style.display='';
+  document.querySelector('main').style.display='';
+  document.querySelector('footer').style.display='';
+  if (!sessionStorage.getItem('duramen_session')) {
+    document.getElementById('ecran-connexion').classList.add('visible');
+  }
+}
+
+// ═══════════ INIT ═══════════
+function switchTab(panel, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + panel).classList.add('active');
+  document.querySelectorAll('[data-panel="' + panel + '"]').forEach(el => el.classList.add('active'));
+  btn.classList.add('active');
+  if (panel === 'stock')      afficherStock();
+  if (panel === 'extraction') afficherExtractions();
+  if (panel === 'historique') afficherHistorique();
+  if (panel === 'territoire') afficherTerritoire();
+}
+
+verifierAcces();
+</script>
+</body>
+</html>
