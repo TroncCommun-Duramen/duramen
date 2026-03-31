@@ -1023,7 +1023,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <span class="tab-icon">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
       </span>
-      Stock par essence
+      Stockage par essence
     </button>
     <button class="tab" onclick="switchTab('extraction',this)">
       <span class="tab-icon">
@@ -1293,7 +1293,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
   <div class="panel" id="panel-stock">
     <div class="stock-header">
       <div>
-        <div class="stock-title">Stock par essence</div>
+        <div class="stock-title">Stockage par essence</div>
         <div class="stock-subtitle">Volumes disponibles après déduction des extractions</div>
       </div>
       <button class="btn btn-outline" onclick="exporterStockCSV()">⬇ Exporter le stock CSV</button>
@@ -1312,18 +1312,6 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <button class="btn btn-primary" onclick="ouvrirModalExtraction()">↗ Nouvelle extraction</button>
     </div>
     <div id="extraction-list"></div>
-  </div>
-
-  <!-- ═══ ONGLET 4 : HISTORIQUE ═══ -->
-  <div class="panel" id="panel-historique">
-    <div class="flex-between" style="margin-bottom:20px">
-      <div>
-        <div class="stock-title">Historique des lots</div>
-        <div class="stock-subtitle">Tous les lots enregistrés par votre commune</div>
-      </div>
-      <button class="btn btn-outline" onclick="exporterCSV()">⬇ Exporter CSV</button>
-    </div>
-    <div id="historique-container"></div>
   </div>
 
   <!-- ═══ ONGLET 5 : TERRITOIRE ═══ -->
@@ -1353,9 +1341,21 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
         <label>Essence concernée *</label>
         <select id="ext-essence"><option value="">— Choisir —</option></select>
       </div>
-      <div class="field">
+      <div class="field" style="grid-column:1/-1">
+        <label>Mode de saisie</label>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button type="button" id="btn-ext-vol" class="btn btn-primary btn-sm" onclick="toggleModeExtraction('volume')">📐 En m³ utiles</button>
+          <button type="button" id="btn-ext-pla" class="btn btn-outline btn-sm" onclick="toggleModeExtraction('planches')">🪵 En nombre de planches</button>
+        </div>
+      </div>
+      <div class="field" id="ext-volume-wrap">
         <label>Volume extrait (m³ utiles) *</label>
         <input type="number" id="ext-volume" min="0.001" step="0.001" placeholder="Ex : 0.850">
+      </div>
+      <div class="field" id="ext-planches-wrap" style="display:none">
+        <label>Nombre de planches *</label>
+        <input type="number" id="ext-nbplanches" min="1" step="1" placeholder="Ex : 12" oninput="majVolumeDepuisPlanches()">
+        <span id="ext-planches-vol" style="font-size:0.72rem;color:var(--signal);margin-top:4px;display:block"></span>
       </div>
       <div class="field">
         <label>Usage / Destination fonctionnelle *</label>
@@ -1444,7 +1444,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <h2>Mentions légales &amp; Conditions d'utilisation</h2>
       <div class="date">Version 1.0 — 2026</div>
       <h3>1. Éditeur</h3>
-      <p><strong>Tronc Commun</strong><br>La Montagne — 44620 · contact@tronccommun.fr · SIRET 985 323 146 00011<br>Responsable de publication : Tronc Commun</p>
+      <p><strong>Tronc Commun</strong><br>La Montagne — 44620 · <a href="/cdn-cgi/l/email-protection#34575b5a405557401a40465b5a57575b5959415a745359555d581a575b59"><span class="__cf_email__" data-cfemail="593a36372d383a2d772d2b36373a3a3634342c37193e34383035773a3634">[email&#160;protected]</span></a> · SIRET 985 323 146 00011<br>Responsable de publication : Tronc Commun</p>
       <h3>2. Hébergement</h3>
       <p><strong>GitHub Pages</strong> — GitHub, Inc., San Francisco, CA, États-Unis.</p>
       <p><strong>Supabase</strong> — Supabase Inc. Données stockées dans l'Union européenne (région eu-west).</p>
@@ -1455,13 +1455,13 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <h3>5. Partage des données entre communes</h3>
       <p>Chaque commune <strong>choisit librement</strong> de rendre visibles ses lots aux autres communes partenaires, lot par lot, via un bouton de partage. Les données non partagées restent strictement privées et accessibles uniquement aux agents de la commune concernée. Aucune donnée n'est partagée par défaut.</p>
       <h3>6. Accès et contrôle</h3>
-      <p>L'accès est conditionné à un code d'accès communal attribué par l'éditeur. Ce code est partageable uniquement avec les agents habilités de la même commune (maximum 3 agents par code). L'éditeur se réserve le droit de désactiver tout code sans préavis en cas d'usage non conforme.</p>
+      <p>L'accès est conditionné à un code d'accès communal attribué par l'éditeur. Ce code est partageable uniquement avec les agents habilités de la même commune (par défaut 3 codes d'accès sont fournis par commune — sur demande, des codes supplémentaires peuvent être débloqués). L'éditeur se réserve le droit de désactiver tout code sans préavis en cas d'usage non conforme.</p>
       <h3>7. Responsabilité</h3>
       <p>La responsabilité de l'éditeur ne peut être engagée en cas d'interruption de service (GitHub, Supabase), de perte de données consécutive à une défaillance technique, d'usage non conforme, ou de dommages indirects.</p>
       <h3>8. Propriété intellectuelle</h3>
       <p>L'application DURAMEN, son interface, ses graphismes et son code source sont la propriété exclusive de l'éditeur. Toute reproduction sans autorisation est interdite.</p>
       <h3>9. Contact</h3>
-      <p>contact@tronccommun.fr</p>
+      <p><a href="/cdn-cgi/l/email-protection#5e3d31302a3f3d2a702a2c31303d3d3133332b301e39333f3732703d3133"><span class="__cf_email__" data-cfemail="563539382237352278222439383535393b3b233816313b373f3a7835393b">[email&#160;protected]</span></a></p>
       <div style="margin-top:28px">
         <button class="btn btn-outline" onclick="fermerMentions()">← Retour</button>
       </div>
@@ -1474,7 +1474,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
   <a href="#" onclick="afficherMentions();return false;" style="color:var(--lin);text-decoration:none;letter-spacing:0.08em">Mentions légales &amp; CGU</a>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ═══════════ DONNÉES ═══════════
 let grumes = [];
 let lots        = JSON.parse(localStorage.getItem('duramen_lots')        || localStorage.getItem('grumes_lots') || '[]');
@@ -1792,6 +1792,7 @@ function afficherStock() {
 
 // ═══════════ EXTRACTIONS ═══════════
 function ouvrirModalExtraction() {
+  toggleModeExtraction('volume');
   const stock = getStockParEssence();
   const sel   = document.getElementById('ext-essence');
   sel.innerHTML = '<option value="">— Choisir —</option>' +
@@ -1826,7 +1827,7 @@ function majDisponible() {
     box.style.display = '';
   }
 }
-document.getElementById('ext-essence').addEventListener('change', majDisponible);
+document.getElementById('ext-essence').addEventListener('change', () => { majDisponible(); if (modeExtraction === 'planches') majVolumeDepuisPlanches(); });
 
 function enregistrerExtraction() {
   const essence     = document.getElementById('ext-essence').value;
@@ -1839,7 +1840,8 @@ function enregistrerExtraction() {
   if (!essence||!volume||!usage||!destination) { alert('⚠️ Merci de renseigner tous les champs obligatoires.'); return; }
   const stock = getStockParEssence();
   if (volume > stock[essence].dispo) { alert(`⚠️ Volume demandé (${volume} m³) supérieur au stock disponible (${stock[essence].dispo.toFixed(3)} m³).`); return; }
-  const ext = { id: Date.now(), essence, volume, usage, destination, commune, contact, notes, date: new Date().toLocaleDateString('fr-FR'), dateIso: new Date().toISOString() };
+  const nbPla = modeExtraction === 'planches' ? (parseInt(document.getElementById('ext-nbplanches').value)||null) : null;
+  const ext = { id: Date.now(), essence, volume, usage, destination, commune, contact, notes, nbPlanches: nbPla, date: new Date().toLocaleDateString('fr-FR'), dateIso: new Date().toISOString() };
   extractions.unshift(ext);
   sauver();
   fermerModalExtraction();
@@ -1880,6 +1882,7 @@ function afficherExtractions() {
           <div class="ei-stats">
             <div class="ei-stat">Essence : <strong>${ext.essence}</strong></div>
             <div class="ei-stat">Volume : <strong>${ext.volume} m³</strong></div>
+            ${ext.nbPlanches?`<div class="ei-stat">Planches : <strong>${ext.nbPlanches}</strong></div>`:''}
             <div class="ei-stat">Usage : <strong>${ext.usage}</strong></div>
             ${ext.notes?`<div class="ei-stat" style="width:100%;font-style:italic">📝 ${ext.notes}</div>`:''}
           </div>
@@ -1911,7 +1914,10 @@ function afficherHistorique() {
             &nbsp;·&nbsp; <span class="badge ${badgeClass(lot.usage)}">${lot.usage}</span>
           </div>
         </div>
-        <button class="btn btn-danger btn-sm" onclick="supprimerLot(${idx});event.stopPropagation()">✕</button>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-sm btn-outline" onclick="ouvrirAjoutGrume(${idx});event.stopPropagation()" style="font-size:0.6rem;padding:3px 9px;letter-spacing:0.07em">＋ Grume</button>
+          <button class="btn btn-danger btn-sm" onclick="supprimerLot(${idx});event.stopPropagation()">✕</button>
+        </div>
       </div>
       <div class="lot-card-stats">
         <div class="lot-stat">Essence : <strong>${lot.essence}</strong></div>
@@ -2001,11 +2007,16 @@ function afficherTerritoire() {
     return;
   }
 
-  // Grouper par commune
+  // Grouper par commune (normalisation casse)
   const parCommune = {};
+  const communeAff = {};
   lotsPartages.forEach(l => {
-    if (!parCommune[l.commune]) parCommune[l.commune] = [];
-    parCommune[l.commune].push(l);
+    const key = l.commune.trim().toLowerCase();
+    if (!parCommune[key]) { parCommune[key] = []; communeAff[key] = l.commune.trim(); }
+    // Préférer version avec majuscule initiale
+    const t = l.commune.trim();
+    if (t.charAt(0) === t.charAt(0).toUpperCase() && t.charAt(0) !== t.charAt(0).toLowerCase()) communeAff[key] = t;
+    parCommune[key].push(l);
   });
 
   const totalVolTerritoire = lotsPartages.reduce((s,l) => s + l.volUtile, 0);
@@ -2026,9 +2037,11 @@ function afficherTerritoire() {
         <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">lot${lotsPartages.length>1?'s':''}</div>
       </div>
     </div>
-    ${Object.keys(parCommune).sort().map(commune => {
-      const lotsC = parCommune[commune];
+    ${Object.keys(parCommune).sort().map(key => {
+      const lotsC = parCommune[key];
+      const commune = communeAff[key];
       const volC = lotsC.reduce((s,l) => s + l.volUtile, 0);
+      const totalGrumes = lotsC.reduce((s,l) => s + (l.nbGrumes||0), 0);
       const essences = [...new Set(lotsC.map(l => l.essence))].join(', ');
       return `<div class="territoire-card">
         <div class="territoire-commune-name">
@@ -2038,12 +2051,16 @@ function afficherTerritoire() {
         <div class="territoire-stats">
           <div class="territoire-stat">Volume : <strong>${volC.toFixed(3)} m³</strong></div>
           <div class="territoire-stat">Lots : <strong>${lotsC.length}</strong></div>
+          <div class="territoire-stat">Grumes : <strong>${totalGrumes}</strong></div>
           <div class="territoire-stat">Essences : <strong>${essences}</strong></div>
         </div>
         <div style="margin-top:10px">
           ${lotsC.map(l => `
             <div style="font-size:0.75rem;padding:7px 0;border-bottom:var(--border-light);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-              <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:700">${l.nom}</span>
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:700">${l.nom}</span>
+                <span style="color:var(--lin);font-size:0.62rem">${l.nbGrumes} grume${l.nbGrumes>1?'s':''}</span>
+              </div>
               <span style="color:var(--cendre)">${l.essence} · ${l.volUtile.toFixed(3)} m³ · ${l.annee}</span>
             </div>`).join('')}
         </div>
@@ -2202,7 +2219,138 @@ function switchTab(panel, btn) {
   if (panel === 'territoire') afficherTerritoire();
 }
 
+
+// ═══════════ MODE EXTRACTION ═══════════
+let modeExtraction = 'volume';
+
+function toggleModeExtraction(mode) {
+  modeExtraction = mode;
+  const volWrap = document.getElementById('ext-volume-wrap');
+  const plaWrap = document.getElementById('ext-planches-wrap');
+  const btnVol  = document.getElementById('btn-ext-vol');
+  const btnPla  = document.getElementById('btn-ext-pla');
+  if (!volWrap) return;
+  if (mode === 'planches') { document.getElementById('ext-volume').value = ''; }
+  volWrap.style.display = mode === 'volume'   ? '' : 'none';
+  plaWrap.style.display = mode === 'planches' ? '' : 'none';
+  if (btnVol) btnVol.className = 'btn btn-sm ' + (mode === 'volume'   ? 'btn-primary' : 'btn-outline');
+  if (btnPla) btnPla.className = 'btn btn-sm ' + (mode === 'planches' ? 'btn-primary' : 'btn-outline');
+  if (mode === 'planches') majVolumeDepuisPlanches();
+}
+
+function majVolumeDepuisPlanches() {
+  if (modeExtraction !== 'planches') return;
+  const essence = document.getElementById('ext-essence').value;
+  const nbP     = parseInt(document.getElementById('ext-nbplanches').value);
+  const infoEl  = document.getElementById('ext-planches-vol');
+  if (!infoEl) return;
+  if (!essence || !nbP || nbP <= 0) { infoEl.textContent = ''; return; }
+
+  const lotsE = lots.filter(l => l.essence === essence && l.nbPlanches > 0);
+  if (lotsE.length === 0) {
+    infoEl.textContent = '⚠ Aucun lot de cette essence — saisissez le volume manuellement.';
+    infoEl.style.color = 'var(--rouge)';
+    return;
+  }
+  const totalVol = lotsE.reduce((s,l) => s + l.volUtile, 0);
+  const totalPla = lotsE.reduce((s,l) => s + l.nbPlanches, 0);
+  const ratio    = totalVol / totalPla;
+  const vol      = nbP * ratio;
+  document.getElementById('ext-volume').value = vol.toFixed(4);
+  infoEl.style.color = 'var(--signal)';
+  infoEl.textContent = `≈ ${vol.toFixed(3)} m³  ·  ratio moyen : ${ratio.toFixed(4)} m³/planche  (sur ${lotsE.length} lot${lotsE.length>1?'s':''})`;
+}
+
+// ═══════════ AJOUTER GRUME À UN LOT ═══════════
+let addGrumeIdx = null;
+
+function ouvrirAjoutGrume(idx) {
+  addGrumeIdx = idx;
+  const lot = lots[idx];
+  document.getElementById('add-grume-lot-name').textContent =
+    `Lot "${lot.nom}" — ${lot.essence} · ${lot.nbGrumes} grume${lot.nbGrumes>1?'s':''} actuellement`;
+  document.getElementById('ag-longueur').value = '';
+  document.getElementById('ag-diametre').value = '';
+  document.getElementById('ag-preview').textContent = '';
+  document.getElementById('ag-info').textContent =
+    `Paramètres du lot conservés : épaisseur ${lot.epaisseur} mm · delta ${lot.delta}%`;
+  document.getElementById('modal-add-grume').classList.add('open');
+}
+
+function fermerAjoutGrume() {
+  document.getElementById('modal-add-grume').classList.remove('open');
+  addGrumeIdx = null;
+}
+
+function previewAjoutGrume() {
+  if (addGrumeIdx === null) return;
+  const l  = parseFloat(document.getElementById('ag-longueur').value);
+  const d  = parseFloat(document.getElementById('ag-diametre').value);
+  const el = document.getElementById('ag-preview');
+  if (!l || !d || l <= 0 || d <= 0) { el.textContent = ''; return; }
+  const lot = lots[addGrumeIdx];
+  const vb  = Math.PI * Math.pow(d/200, 2) * l;
+  const vu  = vb * (1 - lot.delta / 100);
+  el.textContent = `Vol. grume : ${vb.toFixed(3)} m³ brut · ${vu.toFixed(3)} m³ utiles`;
+}
+
+function confirmerAjoutGrume() {
+  const l = parseFloat(document.getElementById('ag-longueur').value);
+  const d = parseFloat(document.getElementById('ag-diametre').value);
+  if (!l || !d || l <= 0 || d <= 0) { alert('⚠️ Longueur et diamètre sont obligatoires.'); return; }
+  if (addGrumeIdx === null) return;
+
+  const lot = lots[addGrumeIdx];
+  const ts  = 3; // trait de scie par défaut
+  const vb  = Math.PI * Math.pow(d/200, 2) * l;
+  const vu  = vb * (1 - lot.delta / 100);
+  const nbP = Math.floor(d / (lot.epaisseur/10 + ts/10));
+  const lin = nbP * l;
+
+  if (!lot.grumes) lot.grumes = [];
+  lot.grumes.push({ longueur: l, diametre: d });
+  lot.nbGrumes   += 1;
+  lot.volBrut    += vb;
+  lot.volUtile   += vu;
+  lot.volDechets  = lot.volBrut - lot.volUtile;
+  lot.nbPlanches += nbP;
+  lot.lineaire   += lin;
+
+  sauver();
+  fermerAjoutGrume();
+  afficherHistorique();
+  alert(`✅ Grume ajoutée au lot "${lot.nom}"\n+${vu.toFixed(3)} m³ utiles · +${nbP} planche${nbP>1?'s':''}`);
+}
+
 verifierAcces();
 </script>
+
+<!-- ─── MODAL AJOUTER GRUME ─── -->
+<div class="extract-modal-bg" id="modal-add-grume">
+  <div class="extract-modal">
+    <button class="modal-close" onclick="fermerAjoutGrume()">✕</button>
+    <h2>Ajouter une grume</h2>
+    <p class="modal-sub" id="add-grume-lot-name">—</p>
+    <div class="form-grid three">
+      <div class="field">
+        <label>Longueur (m) *</label>
+        <input type="number" id="ag-longueur" min="0.1" max="30" step="0.01" placeholder="Ex : 4.20" oninput="previewAjoutGrume()">
+      </div>
+      <div class="field">
+        <label>Ø petit bout (cm) *</label>
+        <input type="number" id="ag-diametre" min="5" max="200" step="1" placeholder="Ex : 28" oninput="previewAjoutGrume()">
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <span id="ag-preview" style="font-size:0.78rem;color:var(--signal);padding-top:10px;display:block;font-weight:500"></span>
+      </div>
+    </div>
+    <div id="ag-info" class="info-box" style="margin-top:14px;margin-bottom:0"></div>
+    <div class="flex-end" style="margin-top:20px">
+      <button class="btn btn-outline" onclick="fermerAjoutGrume()">Annuler</button>
+      <button class="btn btn-primary" onclick="confirmerAjoutGrume()">＋ Ajouter la grume</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
