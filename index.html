@@ -1314,6 +1314,19 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
     <div id="extraction-list"></div>
   </div>
 
+
+  <!-- ═══ ONGLET 4 : HISTORIQUE ═══ -->
+  <div class="panel" id="panel-historique">
+    <div class="flex-between" style="margin-bottom:20px">
+      <div>
+        <div class="stock-title">Historique des lots</div>
+        <div class="stock-subtitle">Tous les lots enregistrés par votre commune</div>
+      </div>
+      <button class="btn btn-outline" onclick="exporterCSV()">⬇ Exporter CSV</button>
+    </div>
+    <div id="historique-container"></div>
+  </div>
+
   <!-- ═══ ONGLET 5 : TERRITOIRE ═══ -->
   <div class="panel" id="panel-territoire">
     <div class="flex-between" style="margin-bottom:20px">
@@ -1444,7 +1457,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <h2>Mentions légales &amp; Conditions d'utilisation</h2>
       <div class="date">Version 1.0 — 2026</div>
       <h3>1. Éditeur</h3>
-      <p><strong>Tronc Commun</strong><br>La Montagne — 44620 · <a href="/cdn-cgi/l/email-protection#34575b5a405557401a40465b5a57575b5959415a745359555d581a575b59"><span class="__cf_email__" data-cfemail="593a36372d383a2d772d2b36373a3a3634342c37193e34383035773a3634">[email&#160;protected]</span></a> · SIRET 985 323 146 00011<br>Responsable de publication : Tronc Commun</p>
+      <p><strong>Tronc Commun</strong><br>La Montagne — 44620 · contact&#160;[at]&#160;tronccommun.fr · SIRET 985 323 146 00011<br>Responsable de publication : Tronc Commun</p>
       <h3>2. Hébergement</h3>
       <p><strong>GitHub Pages</strong> — GitHub, Inc., San Francisco, CA, États-Unis.</p>
       <p><strong>Supabase</strong> — Supabase Inc. Données stockées dans l'Union européenne (région eu-west).</p>
@@ -1461,7 +1474,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <h3>8. Propriété intellectuelle</h3>
       <p>L'application DURAMEN, son interface, ses graphismes et son code source sont la propriété exclusive de l'éditeur. Toute reproduction sans autorisation est interdite.</p>
       <h3>9. Contact</h3>
-      <p><a href="/cdn-cgi/l/email-protection#5e3d31302a3f3d2a702a2c31303d3d3133332b301e39333f3732703d3133"><span class="__cf_email__" data-cfemail="563539382237352278222439383535393b3b233816313b373f3a7835393b">[email&#160;protected]</span></a></p>
+      <p>contact&#160;[at]&#160;tronccommun.fr</p>
       <div style="margin-top:28px">
         <button class="btn btn-outline" onclick="fermerMentions()">← Retour</button>
       </div>
@@ -1474,7 +1487,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
   <a href="#" onclick="afficherMentions();return false;" style="color:var(--lin);text-decoration:none;letter-spacing:0.08em">Mentions légales &amp; CGU</a>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ═══════════ DONNÉES ═══════════
 let grumes = [];
 let lots        = JSON.parse(localStorage.getItem('duramen_lots')        || localStorage.getItem('grumes_lots') || '[]');
@@ -1900,6 +1913,7 @@ function supprimerExtraction(idx) {
 // ═══════════ HISTORIQUE ═══════════
 function afficherHistorique() {
   const container = document.getElementById('historique-container');
+  if (!container) return;
   if (lots.length === 0) {
     container.innerHTML = `<div class="empty-state"><div class="icon">📂</div><p>Aucun lot enregistré pour l'instant.<br>Créez votre premier lot dans l'onglet "Nouveau lot".</p></div>`;
     return;
