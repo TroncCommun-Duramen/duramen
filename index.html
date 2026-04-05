@@ -1328,7 +1328,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
   <!-- ═══ ONGLET 4 : HISTORIQUE ═══ -->
   <div class="panel" id="panel-historique">
     <div class="flex-between" style="margin-bottom:20px">
-      <div><div class="stock-title">Historique des lots</div><div class="stock-subtitle">Tous les lots enregistres par votre commune</div></div>
+      <div><div class="stock-title">Historique des lots</div><div class="stock-subtitle">Tous les lots de votre commune</div></div>
       <button class="btn btn-outline" onclick="exporterCSV()">&#11015; Exporter CSV</button>
     </div>
     <div id="historique-container"></div>
@@ -2258,6 +2258,7 @@ function ouvrirApp() {
   hr.appendChild(btnD);
   chargerCommune();
   chargerDonnees();
+  demarrerRafraichissement();
 }
 
 // ─── Mentions legales ────────────────────────────────────────────────────
@@ -2289,6 +2290,24 @@ function switchTab(panel, btn) {
   if (panel === 'extraction') afficherExtractions();
   if (panel === 'historique') afficherHistorique();
   if (panel === 'territoire') afficherTerritoire();
+}
+
+
+// ─── Rafraîchissement automatique toutes les 2 minutes ───────────────────
+var refreshTimer = null;
+
+function demarrerRafraichissement() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(function() {
+    if (communeConnectee) {
+      chargerDonnees();
+      // Rafraîchir aussi les onglets actifs
+      var panelStock = document.getElementById('panel-stock');
+      var panelExt   = document.getElementById('panel-extraction');
+      if (panelStock && panelStock.classList.contains('active')) afficherStock();
+      if (panelExt  && panelExt.classList.contains('active'))   afficherExtractions();
+    }
+  }, 120000); // 120 000 ms = 2 minutes
 }
 
 verifierAcces();
