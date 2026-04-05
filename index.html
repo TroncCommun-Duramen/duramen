@@ -777,7 +777,7 @@ tr:hover td { background: var(--craie); }
   border-radius: 0;
   font-size: 1rem; font-family: var(--font-display);
   font-weight: 700; letter-spacing: 0.08em;
-  text-transform: none; text-align: center;
+  text-transform: uppercase; text-align: center;
   color: var(--encre); background: transparent;
   outline: none; margin-bottom: 20px;
   transition: border-color 0.2s;
@@ -1023,7 +1023,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <span class="tab-icon">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
       </span>
-      Stockage par essence
+      Stock par essence
     </button>
     <button class="tab" onclick="switchTab('extraction',this)">
       <span class="tab-icon">
@@ -1131,10 +1131,8 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
           </div>
           <div class="field">
             <label>Commune</label>
-            <input type="text" id="commune" placeholder="Ex : Saint-Hilaire-de-Chaléons" autocomplete="off">
-            <span id="commune-hint" style="font-size:0.62rem;color:var(--cendre);display:none">
-              <a href="#" onclick="reinitialiserCommune();return false;" style="color:var(--signal)">Modifier la commune</a>
-            </span>
+            <input type="text" id="commune" placeholder="Ex : votre commune" autocomplete="off">
+            <span id="commune-hint" style="font-size:0.62rem;color:var(--cendre);display:none"><a href="#" onclick="reinitialiserCommune();return false;" style="color:var(--signal)">Modifier la commune</a></span>
           </div>
           <div class="field">
             <label>Cause d'abattage *</label>
@@ -1293,7 +1291,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
   <div class="panel" id="panel-stock">
     <div class="stock-header">
       <div>
-        <div class="stock-title">Stockage par essence</div>
+        <div class="stock-title">Stock par essence</div>
         <div class="stock-subtitle">Volumes disponibles après déduction des extractions</div>
       </div>
       <button class="btn btn-outline" onclick="exporterStockCSV()">⬇ Exporter le stock CSV</button>
@@ -1314,15 +1312,11 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
     <div id="extraction-list"></div>
   </div>
 
-
   <!-- ═══ ONGLET 4 : HISTORIQUE ═══ -->
   <div class="panel" id="panel-historique">
     <div class="flex-between" style="margin-bottom:20px">
-      <div>
-        <div class="stock-title">Historique des lots</div>
-        <div class="stock-subtitle">Tous les lots enregistrés par votre commune</div>
-      </div>
-      <button class="btn btn-outline" onclick="exporterCSV()">⬇ Exporter CSV</button>
+      <div><div class="stock-title">Historique des lots</div><div class="stock-subtitle">Tous les lots enregistres par votre commune</div></div>
+      <button class="btn btn-outline" onclick="exporterCSV()">&#11015; Exporter CSV</button>
     </div>
     <div id="historique-container"></div>
   </div>
@@ -1354,21 +1348,9 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
         <label>Essence concernée *</label>
         <select id="ext-essence"><option value="">— Choisir —</option></select>
       </div>
-      <div class="field" style="grid-column:1/-1">
-        <label>Mode de saisie</label>
-        <div style="display:flex;gap:8px;margin-top:6px">
-          <button type="button" id="btn-ext-vol" class="btn btn-primary btn-sm" onclick="toggleModeExtraction('volume')">📐 En m³ utiles</button>
-          <button type="button" id="btn-ext-pla" class="btn btn-outline btn-sm" onclick="toggleModeExtraction('planches')">🪵 En nombre de planches</button>
-        </div>
-      </div>
-      <div class="field" id="ext-volume-wrap">
+      <div class="field">
         <label>Volume extrait (m³ utiles) *</label>
         <input type="number" id="ext-volume" min="0.001" step="0.001" placeholder="Ex : 0.850">
-      </div>
-      <div class="field" id="ext-planches-wrap" style="display:none">
-        <label>Nombre de planches *</label>
-        <input type="number" id="ext-nbplanches" min="1" step="1" placeholder="Ex : 12" oninput="majVolumeDepuisPlanches()">
-        <span id="ext-planches-vol" style="font-size:0.72rem;color:var(--signal);margin-top:4px;display:block"></span>
       </div>
       <div class="field">
         <label>Usage / Destination fonctionnelle *</label>
@@ -1442,7 +1424,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       placeholder="ex : DURAMEN-01"
       autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
       onkeydown="if(event.key==='Enter') tentativeConnexion()">
-    <button class="login-btn" onclick="tentativeConnexion()">Accéder →</button>
+    <button class="login-btn" id="btn-login" onclick="tentativeConnexion()">Accéder →</button>
     <div class="login-error" id="login-erreur"></div>
     <div class="login-footer-links">
       <a href="#" onclick="afficherMentions();return false;">Mentions légales &amp; Conditions d'utilisation</a>
@@ -1457,7 +1439,7 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <h2>Mentions légales &amp; Conditions d'utilisation</h2>
       <div class="date">Version 1.0 — 2026</div>
       <h3>1. Éditeur</h3>
-      <p><strong>Tronc Commun</strong><br>La Montagne — 44620 · contact&#160;[at]&#160;tronccommun.fr · SIRET 985 323 146 00011<br>Responsable de publication : Tronc Commun</p>
+      <p><strong>Tronc Commun</strong><br>La Montagne — 44620 · <a href="mailto:contact.tronccommun@gmail.com">contact.tronccommun@gmail.com</a> · SIRET 985 323 146 00011<br>Responsable de publication : Tronc Commun</p>
       <h3>2. Hébergement</h3>
       <p><strong>GitHub Pages</strong> — GitHub, Inc., San Francisco, CA, États-Unis.</p>
       <p><strong>Supabase</strong> — Supabase Inc. Données stockées dans l'Union européenne (région eu-west).</p>
@@ -1468,13 +1450,13 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <h3>5. Partage des données entre communes</h3>
       <p>Chaque commune <strong>choisit librement</strong> de rendre visibles ses lots aux autres communes partenaires, lot par lot, via un bouton de partage. Les données non partagées restent strictement privées et accessibles uniquement aux agents de la commune concernée. Aucune donnée n'est partagée par défaut.</p>
       <h3>6. Accès et contrôle</h3>
-      <p>L'accès est conditionné à un code d'accès communal attribué par l'éditeur. Ce code est partageable uniquement avec les agents habilités de la même commune (par défaut 3 codes d'accès sont fournis par commune — sur demande, des codes supplémentaires peuvent être débloqués). L'éditeur se réserve le droit de désactiver tout code sans préavis en cas d'usage non conforme.</p>
+      <p>L'accès est conditionné à un code d'accès communal attribué par l'éditeur. Ce code est partageable uniquement avec les agents habilités de la même commune (maximum 3 agents par code). L'éditeur se réserve le droit de désactiver tout code sans préavis en cas d'usage non conforme.</p>
       <h3>7. Responsabilité</h3>
       <p>La responsabilité de l'éditeur ne peut être engagée en cas d'interruption de service (GitHub, Supabase), de perte de données consécutive à une défaillance technique, d'usage non conforme, ou de dommages indirects.</p>
       <h3>8. Propriété intellectuelle</h3>
       <p>L'application DURAMEN, son interface, ses graphismes et son code source sont la propriété exclusive de l'éditeur. Toute reproduction sans autorisation est interdite.</p>
       <h3>9. Contact</h3>
-      <p>contact&#160;[at]&#160;tronccommun.fr</p>
+      <p><a href="mailto:contact.tronccommun@gmail.com">contact.tronccommun@gmail.com</a></p>
       <div style="margin-top:28px">
         <button class="btn btn-outline" onclick="fermerMentions()">← Retour</button>
       </div>
@@ -1484,748 +1466,811 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
 
 <footer>
   <span>DURAMEN</span> · Tronc Commun · Outil expérimental de recensement du bois d'œuvre ·
-  <a href="#" onclick="afficherMentions();return false;" style="color:var(--lin);text-decoration:none;letter-spacing:0.08em">Mentions légales &amp; CGU</a>
+  <a href="#" onclick="afficherMentions();return false;" style="color:var(--lin);text-decoration:none;letter-spacing:0.08em">Mentions légales</a>
 </footer>
 
 <script>
-// ═══════════ DONNÉES ═══════════
-let grumes = [];
-let lots        = JSON.parse(localStorage.getItem('duramen_lots')        || localStorage.getItem('grumes_lots') || '[]');
-let extractions = JSON.parse(localStorage.getItem('duramen_extractions') || '[]');
-
-if (localStorage.getItem('grumes_lots') && !localStorage.getItem('duramen_lots')) {
-  localStorage.setItem('duramen_lots', JSON.stringify(lots));
-}
-
-const ESSENCES_INFO = {
-  'Aulne':              { delta: 20, usage: 'Ébénisterie, tournage',                          color: 'ec-aulne' },
-  'Châtaignier':        { delta: 18, usage: 'Piquets, charpente, lambris, ext.',              color: 'ec-chataignier' },
-  'Chêne':              { delta: 20, usage: 'Mobilier, parquet, charpente, tonnellerie',      color: 'ec-chene' },
-  'Cyprès':             { delta: 17, usage: 'Menuiserie extérieure, bardage, mobilier',       color: 'ec-cypres' },
-  'Douglas':            { delta: 16, usage: 'Charpente, bardage, terrasse',                   color: 'ec-douglas' },
-  'Épicéa':             { delta: 17, usage: 'Charpente légère, coffrage',                     color: 'ec-epicea' },
-  'Frêne':              { delta: 20, usage: "Manches d'outils, parquet, sports",              color: 'ec-frene' },
-  'Hêtre':              { delta: 22, usage: 'Ameublement, jouets, parquet',                   color: 'ec-hetre' },
-  'Mélèze':             { delta: 16, usage: 'Bardage, terrasse, ext. résistant',              color: 'ec-meleze' },
-  'Merisier':           { delta: 25, usage: 'Ébénisterie fine, veneer',                       color: 'ec-merisier' },
-  'Noyer':              { delta: 25, usage: 'Ébénisterie, mobilier haut de gamme',            color: 'ec-noyer' },
-  'Peuplier':           { delta: 22, usage: "Caisserie, contreplaqué, allumettes",            color: 'ec-peuplier' },
-  'Pin maritime':       { delta: 18, usage: 'Charpente, emballage, caisserie',                color: 'ec-pin-m' },
-  'Pin sylvestre':      { delta: 18, usage: 'Charpente, menuiserie intérieure',               color: 'ec-pin-s' },
-  'Platane':            { delta: 20, usage: 'Ébénisterie, parquet, lambris',                  color: 'ec-platane' },
-  'Robinier (Acacia)':  { delta: 15, usage: 'Poteaux, terrasse, ext. très résistant',        color: 'ec-robinier' },
-  'Séquoia':            { delta: 15, usage: 'Bardage, mobilier de jardin',                    color: 'ec-sequoia' },
-  'Tilleul':            { delta: 22, usage: 'Sculpture, lutherie, jouets',                    color: 'ec-tilleul' },
-  'Autre':              { delta: 20, usage: 'Usage à définir selon les caractéristiques',     color: 'ec-autre' },
+// ═══════════ SUPABASE ═══════════
+const SUPABASE_URL = 'https://zeadibimbdztpmsesaiw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplYWRpYmltYmR6dHBtc2VzYWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4OTI2MTcsImV4cCI6MjA5MDQ2ODYxN30.xEHLNTROTu9QJ7c_vV3S54P76EXfpnx2VbhxznbQmmU';
+const sbH = {
+  'Content-Type':  'application/json',
+  'apikey':        SUPABASE_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_KEY,
+  'Prefer':        'return=representation'
 };
 
-function sauver() {
-  localStorage.setItem('duramen_lots',        JSON.stringify(lots));
-  localStorage.setItem('duramen_extractions', JSON.stringify(extractions));
-  mettreAJourHeaderStats();
+async function sbSelect(table, filter) {
+  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + (filter || ''), { headers: sbH });
+  if (!res.ok) throw new Error('Lecture ' + table + ': ' + res.status);
+  return res.json();
+}
+async function sbInsert(table, data) {
+  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
+    method: 'POST', headers: sbH, body: JSON.stringify(data)
+  });
+  if (!res.ok) { var e = await res.text(); throw new Error('Insertion ' + table + ': ' + res.status + ' ' + e); }
+  return res.json();
+}
+async function sbDelete(table, id) {
+  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+    method: 'DELETE', headers: sbH
+  });
+  if (!res.ok) throw new Error('Suppression ' + table + ': ' + res.status);
 }
 
-// ═══════════ NAVIGATION ═══════════
+// ═══════════ DONNEES ═══════════
+var grumes = [], lots = [], extractions = [];
+
+var ESSENCES_INFO = {
+  'Aulne':             { delta: 20, usage: 'Ebenisterie, tournage',               color: 'ec-aulne' },
+  'Chataignier':       { delta: 18, usage: 'Piquets, charpente, lambris',         color: 'ec-chataignier' },
+  'Chene':             { delta: 20, usage: 'Mobilier, parquet, charpente',        color: 'ec-chene' },
+  'Cypres':            { delta: 17, usage: 'Menuiserie ext., bardage',            color: 'ec-cypres' },
+  'Douglas':           { delta: 16, usage: 'Charpente, bardage, terrasse',        color: 'ec-douglas' },
+  'Epicea':            { delta: 17, usage: 'Charpente legere, coffrage',          color: 'ec-epicea' },
+  'Frene':             { delta: 20, usage: 'Manches outils, parquet',             color: 'ec-frene' },
+  'Hetre':             { delta: 22, usage: 'Ameublement, jouets, parquet',        color: 'ec-hetre' },
+  'Meleze':            { delta: 16, usage: 'Bardage, terrasse, ext. resistant',   color: 'ec-meleze' },
+  'Merisier':          { delta: 25, usage: 'Ebenisterie fine, veneer',            color: 'ec-merisier' },
+  'Noyer':             { delta: 25, usage: 'Ebenisterie, mobilier luxe',          color: 'ec-noyer' },
+  'Peuplier':          { delta: 22, usage: 'Caisserie, contrepl.',                color: 'ec-peuplier' },
+  'Pin maritime':      { delta: 18, usage: 'Charpente, emballage',                color: 'ec-pin-m' },
+  'Pin sylvestre':     { delta: 18, usage: 'Charpente, menuiserie int.',          color: 'ec-pin-s' },
+  'Platane':           { delta: 20, usage: 'Ebenisterie, parquet, lambris',       color: 'ec-platane' },
+  'Robinier (Acacia)': { delta: 15, usage: 'Poteaux, terrasse, ext.',             color: 'ec-robinier' },
+  'Sequoia':           { delta: 15, usage: 'Bardage, mobilier jardin',            color: 'ec-sequoia' },
+  'Tilleul':           { delta: 22, usage: 'Sculpture, lutherie, jouets',         color: 'ec-tilleul' },
+  'Autre':             { delta: 20, usage: 'Usage a definir',                     color: 'ec-autre' }
+};
+
+// ─── UI helpers ───────────────────────────────────────────────────────────
+function showLoading(on) {
+  var el = document.getElementById('loading-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading-overlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(26,24,20,0.6);z-index:2000;display:flex;align-items:center;justify-content:center';
+    el.innerHTML = '<div style="background:#F2EDE4;border-radius:8px;padding:24px 40px;font-size:0.85rem;color:#1A1814;letter-spacing:0.05em">Chargement...</div>';
+    document.body.appendChild(el);
+  }
+  el.style.display = on ? 'flex' : 'none';
+}
+
+function showError(msg) {
+  var el = document.getElementById('toast-err');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast-err';
+    el.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#c0392b;color:#fff;padding:10px 22px;border-radius:4px;font-size:0.78rem;z-index:3000;max-width:90vw;text-align:center';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(function () { el.style.display = 'none'; }, 6000);
+}
+
+// ─── Chargement Supabase ──────────────────────────────────────────────────
+async function chargerDonnees() {
+  if (!communeConnectee) return;
+  var code = encodeURIComponent(communeConnectee.code);
+  showLoading(true);
+  try {
+    var rawLots = await sbSelect('lots', 'commune_code=eq.' + code + '&order=created_at.desc');
+    var rawExt  = await sbSelect('extractions', 'commune_code=eq.' + code + '&order=created_at.desc');
+    lots = rawLots.map(function (l) {
+      return Object.assign({}, l, {
+        volBrut:    l.vol_brut    || 0,
+        volUtile:   l.vol_utile   || 0,
+        volDechets: l.vol_dechets || 0,
+        nbGrumes:   l.nb_grumes   || 0,
+        nbPlanches: l.nb_planches || 0,
+        grumes:     l.grumes      || [],
+        usages:     l.usages      || []
+      });
+    });
+    extractions = rawExt;
+    mettreAJourHeaderStats();
+    afficherHistorique();
+  } catch (err) {
+    showError('Erreur chargement : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+function sauver() { mettreAJourHeaderStats(); }
+
+// ─── Commune persistante ──────────────────────────────────────────────────
+function appliquerCommuneLocked() {
+  var inp  = document.getElementById('commune');
+  var hint = document.getElementById('commune-hint');
+  if (!inp) return;
+  inp.readOnly = true;
+  inp.style.color = '#7A7469';
+  inp.style.cursor = 'default';
+  inp.style.borderBottomColor = '#C9BAA3';
+  if (hint) hint.style.display = '';
+}
+function chargerCommune() {
+  var saved = localStorage.getItem('duramen_commune');
+  var inp   = document.getElementById('commune');
+  if (saved && inp) { inp.value = saved; appliquerCommuneLocked(); }
+}
+function reinitialiserCommune() {
+  if (!confirm('Modifier la commune enregistree ?')) return;
+  localStorage.removeItem('duramen_commune');
+  var inp  = document.getElementById('commune');
+  var hint = document.getElementById('commune-hint');
+  inp.value = ''; inp.readOnly = false;
+  inp.style.color = inp.style.cursor = inp.style.borderBottomColor = '';
+  if (hint) hint.style.display = 'none';
+  inp.focus();
+}
+
+// ─── Navigation ──────────────────────────────────────────────────────────
 function setStep(n) {
-  [1,2,3].forEach(i => {
-    const el = document.getElementById('step'+i);
-    el.classList.remove('active','done');
+  [1, 2, 3].forEach(function (i) {
+    var el = document.getElementById('step' + i);
+    el.classList.remove('active', 'done');
     if (i < n)  el.classList.add('done');
     if (i === n) el.classList.add('active');
   });
 }
-
 function goToEtape1() {
-  document.getElementById('etape1').style.display='';
-  document.getElementById('etape2').style.display='none';
-  document.getElementById('etape3').style.display='none';
+  document.getElementById('etape1').style.display = '';
+  document.getElementById('etape2').style.display = 'none';
+  document.getElementById('etape3').style.display = 'none';
   setStep(1);
 }
 function goToEtape2() {
-  const nom = document.getElementById('lot-nom').value.trim();
-  const ess = document.getElementById('essence').value;
-  const com = document.getElementById('commune').value.trim();
-  const cau = document.getElementById('cause').value;
-  const pro = document.getElementById('provenance').value;
-  const ann = document.getElementById('annee').value;
-  const usa = document.getElementById('usage').value;
-
+  var nom = document.getElementById('lot-nom').value.trim();
+  var ess = document.getElementById('essence').value;
+  var com = document.getElementById('commune').value.trim();
+  var cau = document.getElementById('cause').value;
+  var pro = document.getElementById('provenance').value;
+  var ann = document.getElementById('annee').value;
+  var usa = document.getElementById('usage').value;
   if (!nom) {
     document.getElementById('lot-nom-required').style.display = '';
     document.getElementById('lot-nom').focus();
     return;
   }
   document.getElementById('lot-nom-required').style.display = 'none';
-
-  if (!ess||!cau||!pro||!ann||!usa) {
-    alert('⚠️ Merci de renseigner tous les champs obligatoires.'); return;
+  if (!ess || !cau || !pro || !ann || !usa) {
+    alert('Merci de renseigner tous les champs obligatoires.');
+    return;
   }
-
-  // Mémoriser et verrouiller la commune si saisie
   if (com && !localStorage.getItem('duramen_commune')) {
     localStorage.setItem('duramen_commune', com);
     appliquerCommuneLocked();
   }
-
-  document.getElementById('etape1').style.display='none';
-  document.getElementById('etape2').style.display='';
-  document.getElementById('etape3').style.display='none';
+  document.getElementById('etape1').style.display = 'none';
+  document.getElementById('etape2').style.display = '';
+  document.getElementById('etape3').style.display = 'none';
   setStep(2);
 }
 function goToEtape3() {
-  if (grumes.length === 0) { alert('⚠️ Veuillez saisir au moins une grume.'); return; }
-  const info = ESSENCES_INFO[document.getElementById('essence').value] || { delta: 20, usage: '' };
-  document.getElementById('epaisseur').value = document.getElementById('epaisseur').value || '27';
-  document.getElementById('delta').value     = document.getElementById('delta').value     || info.delta;
-  document.getElementById('info-essence-debit').textContent =
-    `Essence : ${document.getElementById('essence').value} — Delta conseillé : ${info.delta}% — Usage typique : ${info.usage}`;
-  document.getElementById('etape1').style.display='none';
-  document.getElementById('etape2').style.display='none';
-  document.getElementById('etape3').style.display='';
+  if (grumes.length === 0) { alert('Veuillez saisir au moins une grume.'); return; }
+  document.getElementById('etape2').style.display = 'none';
+  document.getElementById('etape3').style.display = '';
   setStep(3);
+  var ess  = document.getElementById('essence').value;
+  var info = ESSENCES_INFO[ess];
+  document.getElementById('info-essence-debit').textContent = info
+    ? ess + ' — Delta recommande : ' + info.delta + '%'
+    : '';
   calculerDebit();
 }
 
-// ═══════════ GRUMES ═══════════
+// ─── Grumes ──────────────────────────────────────────────────────────────
 function ajouterGrume() {
-  const l = parseFloat(document.getElementById('g-longueur').value);
-  const d = parseFloat(document.getElementById('g-diametre').value);
-  if (!l || !d || l <= 0 || d <= 0) { alert('⚠️ Longueur et diamètre sont obligatoires.'); return; }
+  var l = parseFloat(document.getElementById('g-longueur').value);
+  var d = parseFloat(document.getElementById('g-diametre').value);
+  if (!l || !d || l <= 0 || d <= 0) { alert('Longueur et diametre sont obligatoires.'); return; }
   grumes.push({ longueur: l, diametre: d });
   document.getElementById('g-longueur').value = '';
   document.getElementById('g-diametre').value = '';
   document.getElementById('g-longueur').focus();
   afficherGrumes();
 }
-
-function supprimerGrume(i) {
-  grumes.splice(i, 1);
-  afficherGrumes();
-}
-
+function supprimerGrume(i) { grumes.splice(i, 1); afficherGrumes(); }
 function afficherGrumes() {
-  const c = document.getElementById('grumes-container');
-  document.getElementById('nb-grumes-badge').textContent = grumes.length + ' grume' + (grumes.length>1?'s':'');
+  var c = document.getElementById('grumes-container');
+  document.getElementById('nb-grumes-badge').textContent =
+    grumes.length + ' grume' + (grumes.length > 1 ? 's' : '');
   if (grumes.length === 0) {
-    c.innerHTML = `<div class="empty-state"><div class="icon">🪵</div><p>Aucune grume saisie.<br>Ajoutez votre première grume ci-dessus.</p></div>`;
+    c.innerHTML = '<div class="empty-state"><div class="icon">&#x1FAB5;</div><p>Aucune grume saisie.<br>Ajoutez votre premiere grume ci-dessus.</p></div>';
     return;
   }
-  c.innerHTML = grumes.map((g, i) => `
-    <div class="grume-item">
-      <div class="grume-num">${i+1}</div>
-      <div class="grume-info">
-        <div class="grume-field"><span>Longueur</span><span>${g.longueur} m</span></div>
-        <div class="grume-field"><span>Ø petit bout</span><span>${g.diametre} cm</span></div>
-        <div class="grume-field"><span>Vol. grume</span><span>${(Math.PI * Math.pow(g.diametre/200,2) * g.longueur).toFixed(3)} m³</span></div>
-      </div>
-      <button class="btn btn-danger btn-sm" onclick="supprimerGrume(${i})">✕</button>
-    </div>`).join('');
+  c.innerHTML = grumes.map(function (g, i) {
+    var vol = (Math.PI * Math.pow(g.diametre / 200, 2) * g.longueur).toFixed(3);
+    return '<div class="grume-item">'
+      + '<div class="grume-num">' + (i + 1) + '</div>'
+      + '<div class="grume-info">'
+      + '<div class="grume-field"><span>Longueur</span><span>' + g.longueur + ' m</span></div>'
+      + '<div class="grume-field"><span>Diam.</span><span>' + g.diametre + ' cm</span></div>'
+      + '<div class="grume-field"><span>Vol.</span><span>' + vol + ' m3</span></div>'
+      + '</div>'
+      + '<button class="btn btn-danger btn-sm" onclick="supprimerGrume(' + i + ')">x</button>'
+      + '</div>';
+  }).join('');
 }
 
-// ═══════════ CALCUL ═══════════
+// ─── Calcul debit ────────────────────────────────────────────────────────
 function calculerDebit() {
-  const epaisseur  = parseFloat(document.getElementById('epaisseur').value);
-  const delta      = parseFloat(document.getElementById('delta').value);
-  const traitScie  = parseFloat(document.getElementById('trait-scie').value) || 3;
-  const container  = document.getElementById('resultats-container');
-  if (!epaisseur || isNaN(delta) || grumes.length === 0) { container.style.display='none'; return; }
-
-  let totalVolBrut=0, totalVolUtile=0, totalPlanches=0, totalLineaire=0;
-  const rows = grumes.map((g,i) => {
-    const r = g.diametre / 200;
-    const volBrut = Math.PI * r * r * g.longueur;
-    const volUtile = volBrut * (1 - delta/100);
-    const nbPlanches = Math.floor(g.diametre / (epaisseur/10 + traitScie/10));
-    const lineaire = nbPlanches * g.longueur;
-    const largMoy = nbPlanches > 0 ? (g.diametre / nbPlanches).toFixed(1) : '—';
-    totalVolBrut    += volBrut;
-    totalVolUtile   += volUtile;
-    totalPlanches   += nbPlanches;
-    totalLineaire   += lineaire;
-    return `<tr>
-      <td>${i+1}</td>
-      <td>${g.longueur} m</td>
-      <td>${g.diametre} cm</td>
-      <td>${volBrut.toFixed(3)} m³</td>
-      <td>${nbPlanches}</td>
-      <td>${lineaire.toFixed(1)} m</td>
-      <td>${largMoy} cm</td>
-    </tr>`;
+  var epaisseur = parseFloat(document.getElementById('epaisseur').value);
+  var delta     = parseFloat(document.getElementById('delta').value);
+  var traitScie = parseFloat(document.getElementById('trait-scie').value) || 3;
+  var container = document.getElementById('resultats-container');
+  if (!epaisseur || isNaN(delta) || grumes.length === 0) {
+    container.style.display = 'none'; return;
+  }
+  var tVB = 0, tVU = 0, tP = 0, tL = 0;
+  var rows = grumes.map(function (g, i) {
+    var r  = g.diametre / 200;
+    var vb = Math.PI * r * r * g.longueur;
+    var vu = vb * (1 - delta / 100);
+    var nb = Math.floor(g.diametre / (epaisseur / 10 + traitScie / 10));
+    var li = nb * g.longueur;
+    var lm = nb > 0 ? (g.diametre / nb).toFixed(1) : '0';
+    tVB += vb; tVU += vu; tP += nb; tL += li;
+    return '<tr><td>' + (i + 1) + '</td><td>' + g.longueur + ' m</td><td>' + g.diametre
+      + ' cm</td><td>' + vb.toFixed(3) + ' m3</td><td>' + nb + '</td><td>'
+      + li.toFixed(1) + ' m</td><td>' + lm + ' cm</td></tr>';
   });
-
-  const totalDechets = totalVolBrut - totalVolUtile;
-  document.getElementById('result-grid').innerHTML = `
-    <div class="result-stat"><div class="val">${totalVolUtile.toFixed(3)}</div><div class="unit">m³</div><div class="lbl">Volume utile</div></div>
-    <div class="result-stat"><div class="val">${grumes.length}</div><div class="unit">grume${grumes.length>1?'s':''}</div><div class="lbl">Billes saisies</div></div>
-    <div class="result-stat"><div class="val">${totalPlanches}</div><div class="unit">planches</div><div class="lbl">Débit théorique</div></div>
-    <div class="result-stat"><div class="val">${totalLineaire.toFixed(1)}</div><div class="unit">m lin.</div><div class="lbl">Linéaire total</div></div>
-    <div class="result-stat"><div class="val">${delta}</div><div class="unit">%</div><div class="lbl">Delta perte</div></div>`;
-  document.getElementById('dechets-block').innerHTML = `
-    <span>♻️</span>
-    <span class="txt">Volume brut : <strong>${totalVolBrut.toFixed(3)} m³</strong> · Déchets estimés : <strong>${totalDechets.toFixed(3)} m³</strong> (sciure, dosses, délignures)</span>`;
+  document.getElementById('result-grid').innerHTML =
+    '<div class="result-stat"><div class="val">' + tVU.toFixed(3) + '</div><div class="unit">m3</div><div class="lbl">Volume utile</div></div>'
+    + '<div class="result-stat"><div class="val">' + grumes.length + '</div><div class="unit">grumes</div><div class="lbl">Billes</div></div>'
+    + '<div class="result-stat"><div class="val">' + tP + '</div><div class="unit">planches</div><div class="lbl">Debit</div></div>'
+    + '<div class="result-stat"><div class="val">' + tL.toFixed(1) + '</div><div class="unit">m lin.</div><div class="lbl">Lineaire</div></div>'
+    + '<div class="result-stat"><div class="val">' + delta + '</div><div class="unit">%</div><div class="lbl">Delta</div></div>';
+  document.getElementById('dechets-block').innerHTML =
+    '<span>Dechets</span><span>Vol. brut : <strong>' + tVB.toFixed(3)
+    + ' m3</strong> &mdash; Dechets : <strong>' + (tVB - tVU).toFixed(3) + ' m3</strong></span>';
   document.getElementById('result-tbody').innerHTML = rows.join('');
   container.style.display = '';
 }
 
-// ═══════════ SAUVEGARDE LOT ═══════════
-function sauvegarderLot() {
-  const epaisseur = parseFloat(document.getElementById('epaisseur').value);
-  const delta     = parseFloat(document.getElementById('delta').value);
-  const traitScie = parseFloat(document.getElementById('trait-scie').value) || 3;
-  if (!epaisseur || isNaN(delta)) { alert('⚠️ Veuillez renseigner les paramètres de sciage.'); return; }
-
-  let totalVolBrut=0, totalVolUtile=0, totalPlanches=0, totalLineaire=0;
-  grumes.forEach(g => {
-    const r = g.diametre / 200;
-    const vb = Math.PI * r * r * g.longueur;
-    const vu = vb * (1 - delta/100);
-    const nb = Math.floor(g.diametre / (epaisseur/10 + traitScie/10));
-    totalVolBrut  += vb;
-    totalVolUtile += vu;
-    totalPlanches += nb;
-    totalLineaire += nb * g.longueur;
+// ─── Sauvegarde lot ───────────────────────────────────────────────────────
+async function sauvegarderLot() {
+  var epaisseur = parseFloat(document.getElementById('epaisseur').value);
+  var delta     = parseFloat(document.getElementById('delta').value);
+  var traitScie = parseFloat(document.getElementById('trait-scie').value) || 3;
+  if (!epaisseur || isNaN(delta)) {
+    alert('Veuillez renseigner les parametres de sciage.'); return;
+  }
+  var tVB = 0, tVU = 0, tP = 0, tL = 0;
+  grumes.forEach(function (g) {
+    var r  = g.diametre / 200;
+    var vb = Math.PI * r * r * g.longueur;
+    var vu = vb * (1 - delta / 100);
+    var nb = Math.floor(g.diametre / (epaisseur / 10 + traitScie / 10));
+    tVB += vb; tVU += vu; tP += nb; tL += nb * g.longueur;
   });
-
-  const essence    = document.getElementById('essence').value;
-  const info       = ESSENCES_INFO[essence] || { delta: 20, usage: '', color: 'ec-autre' };
-  const usages     = [];
-  lots.filter(l => l.essence === essence).forEach(l => { if (l.usage && !usages.includes(l.usage)) usages.push(l.usage); });
-
-  const lot = {
-    id:          Date.now(),
-    nom:         document.getElementById('lot-nom').value.trim() || `${essence} — ${document.getElementById('commune').value.trim()}`,
-    essence,
-    commune:     document.getElementById('commune').value.trim(),
-    cause:       document.getElementById('cause').value,
-    provenance:  document.getElementById('provenance').value,
-    annee:       document.getElementById('annee').value,
-    usage:       document.getElementById('usage').value,
-    partage:     document.getElementById('lot-partage').checked,
-    epaisseur,   delta,
-    nbGrumes:    grumes.length,
-    volBrut:     totalVolBrut,
-    volUtile:    totalVolUtile,
-    volDechets:  totalVolBrut - totalVolUtile,
-    nbPlanches:  totalPlanches,
-    lineaire:    totalLineaire,
-    date:        new Date().toLocaleDateString('fr-FR'),
-    dateIso:     new Date().toISOString(),
-    grumes:      [...grumes],
-    usages,
+  var essence = document.getElementById('essence').value;
+  var usages  = [];
+  lots.forEach(function (l) {
+    if (l.essence === essence && l.usage && usages.indexOf(l.usage) === -1) usages.push(l.usage);
+  });
+  var now = new Date();
+  var lot = {
+    id:           now.getTime(),
+    commune_code: communeConnectee.code,
+    nom:          document.getElementById('lot-nom').value.trim()
+                    || (essence + ' - ' + document.getElementById('commune').value.trim()),
+    essence:      essence,
+    commune:      document.getElementById('commune').value.trim(),
+    cause:        document.getElementById('cause').value,
+    provenance:   document.getElementById('provenance').value,
+    annee:        document.getElementById('annee').value,
+    usage:        document.getElementById('usage').value,
+    partage:      document.getElementById('lot-partage').checked,
+    epaisseur:    epaisseur,
+    delta:        delta,
+    nb_grumes:    grumes.length,
+    vol_brut:     tVB,
+    vol_utile:    tVU,
+    vol_dechets:  tVB - tVU,
+    nb_planches:  tP,
+    lineaire:     tL,
+    date:         now.toLocaleDateString('fr-FR'),
+    date_iso:     now.toISOString(),
+    grumes:       grumes.slice(),
+    usages:       usages
   };
-
-  lots.unshift(lot);
-  sauver();
-
-  grumes = [];
-  afficherGrumes();
-  document.getElementById('essence').value    = '';
-  // commune conservée intentionnellement
-  document.getElementById('cause').value      = '';
-  document.getElementById('provenance').value = '';
-  document.getElementById('annee').value      = '';
-  document.getElementById('usage').value      = '';
-  document.getElementById('epaisseur').value  = '';
-  document.getElementById('delta').value      = '';
-  document.getElementById('lot-nom').value    = '';
-  document.getElementById('lot-partage').checked = false;
-  document.getElementById('resultats-container').style.display = 'none';
-  goToEtape1();
-
-  alert(`✅ Lot sauvegardé !\n${lot.nom}\n${lot.volUtile.toFixed(3)} m³ utiles — ${lot.nbPlanches} planches${lot.partage ? '\n🌐 Visible dans la vue Territoire' : ''}`);
+  try {
+    showLoading(true);
+    await sbInsert('lots', lot);
+    await chargerDonnees();
+    grumes = [];
+    afficherGrumes();
+    ['essence', 'cause', 'provenance', 'annee', 'usage', 'epaisseur', 'delta', 'lot-nom']
+      .forEach(function (id) { document.getElementById(id).value = ''; });
+    document.getElementById('lot-partage').checked = false;
+    document.getElementById('resultats-container').style.display = 'none';
+    goToEtape1();
+    alert('Lot sauvegarde !\n' + lot.nom + '\n' + tVU.toFixed(3) + ' m3 utiles - ' + tP + ' planches');
+  } catch (err) {
+    showError('Erreur sauvegarde : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
 }
 
-// ═══════════ STOCK ═══════════
+// ─── Stock ────────────────────────────────────────────────────────────────
 function getStockParEssence() {
-  const stock = {};
-  lots.forEach(l => {
-    if (!stock[l.essence]) stock[l.essence] = { entree:0, sorti:0, dispo:0, nbLots:0, nbGrumes:0, color: (ESSENCES_INFO[l.essence]||{color:'ec-autre'}).color, usages:[] };
-    stock[l.essence].entree   += l.volUtile;
+  var stock = {};
+  lots.forEach(function (l) {
+    if (!stock[l.essence]) stock[l.essence] = {
+      entree: 0, sorti: 0, dispo: 0, nbLots: 0, nbGrumes: 0,
+      color: (ESSENCES_INFO[l.essence] || { color: 'ec-autre' }).color,
+      usages: []
+    };
+    stock[l.essence].entree   += l.vol_utile || 0;
     stock[l.essence].nbLots   += 1;
-    stock[l.essence].nbGrumes += l.nbGrumes;
-    if (l.usage && !stock[l.essence].usages.includes(l.usage)) stock[l.essence].usages.push(l.usage);
+    stock[l.essence].nbGrumes += l.nb_grumes || 0;
+    if (l.usage && stock[l.essence].usages.indexOf(l.usage) === -1)
+      stock[l.essence].usages.push(l.usage);
   });
-  extractions.forEach(e => {
+  extractions.forEach(function (e) {
     if (stock[e.essence]) stock[e.essence].sorti += e.volume;
   });
-  Object.keys(stock).forEach(k => { stock[k].dispo = Math.max(0, stock[k].entree - stock[k].sorti); });
+  Object.keys(stock).forEach(function (k) {
+    stock[k].dispo = Math.max(0, stock[k].entree - stock[k].sorti);
+  });
   return stock;
 }
 
 function afficherStock() {
-  const stock  = getStockParEssence();
-  const keys   = Object.keys(stock);
-  const totalE = keys.reduce((s,k)=>s+stock[k].entree,0);
-  const totalS = keys.reduce((s,k)=>s+stock[k].sorti,0);
-  const totalD = keys.reduce((s,k)=>s+stock[k].dispo,0);
+  var stock = getStockParEssence();
+  var keys  = Object.keys(stock);
+  var tE = keys.reduce(function (s, k) { return s + stock[k].entree; }, 0);
+  var tS = keys.reduce(function (s, k) { return s + stock[k].sorti;  }, 0);
+  var tD = keys.reduce(function (s, k) { return s + stock[k].dispo;  }, 0);
 
-  document.getElementById('stock-totals').innerHTML = keys.length === 0 ? '' : `
-    <div class="stock-total-card">
-      <div class="stock-total-item"><div class="tv">${totalD.toFixed(2)}</div><div class="tu">m³</div><div class="tl">Disponible</div></div>
-      <div class="stock-divider"></div>
-      <div class="stock-total-item"><div class="tv">${totalE.toFixed(2)}</div><div class="tu">m³</div><div class="tl">Entrés</div></div>
-      <div class="stock-divider"></div>
-      <div class="stock-total-item"><div class="tv">${totalS.toFixed(2)}</div><div class="tu">m³</div><div class="tl">Sortis</div></div>
-      <div class="stock-divider"></div>
-      <div class="stock-total-item"><div class="tv">${keys.length}</div><div class="tu">essences</div><div class="tl">En stock</div></div>
-    </div>`;
+  document.getElementById('stock-totals').innerHTML = keys.length === 0 ? '' :
+    '<div class="stock-total-card">'
+    + '<div class="stock-total-item"><div class="tv">' + tD.toFixed(2) + '</div><div class="tu">m3</div><div class="tl">Disponible</div></div>'
+    + '<div class="stock-divider"></div>'
+    + '<div class="stock-total-item"><div class="tv">' + tE.toFixed(2) + '</div><div class="tu">m3</div><div class="tl">Entres</div></div>'
+    + '<div class="stock-divider"></div>'
+    + '<div class="stock-total-item"><div class="tv">' + tS.toFixed(2) + '</div><div class="tu">m3</div><div class="tl">Sortis</div></div>'
+    + '<div class="stock-divider"></div>'
+    + '<div class="stock-total-item"><div class="tv">' + keys.length + '</div><div class="tu">essences</div><div class="tl">En stock</div></div>'
+    + '</div>';
 
+  var se = document.getElementById('stock-essences');
   if (keys.length === 0) {
-    document.getElementById('stock-essences').innerHTML = `<div class="empty-state"><div class="icon">📦</div><p>Aucun stock disponible.<br>Créez votre premier lot dans l'onglet "Nouveau lot".</p></div>`;
+    se.innerHTML = '<div class="empty-state"><div class="icon">&#x1F4E6;</div><p>Aucun stock. Creez votre premier lot.</p></div>';
     return;
   }
-
-  document.getElementById('stock-essences').innerHTML = keys.sort((a,b)=>stock[b].dispo-stock[a].dispo).map(essence => {
-    const s    = stock[essence];
-    const pct  = totalD > 0 ? (s.dispo / totalD * 100) : 0;
-    const info = ESSENCES_INFO[essence] || { delta: 20, usage: 'Usage à définir' };
-    return `
-      <div class="essence-row">
-        <div class="essence-row-top">
-          <div class="essence-name">
-            <div class="essence-dot ${s.color}"></div>
-            ${essence}
-          </div>
-          <div class="essence-stats">
-            <div class="essence-stat"><div class="es-val">${s.dispo.toFixed(3)}</div><div class="es-lbl">m³ dispo.</div></div>
-            <div class="essence-stat"><div class="es-val">${s.entree.toFixed(3)}</div><div class="es-lbl">m³ entrés</div></div>
-            <div class="essence-stat"><div class="es-val">${s.sorti.toFixed(3)}</div><div class="es-lbl">m³ sortis</div></div>
-            <div class="essence-stat"><div class="es-val">${s.nbLots}</div><div class="es-lbl">lot${s.nbLots>1?'s':''}</div></div>
-            <div class="essence-stat"><div class="es-val">${s.nbGrumes}</div><div class="es-lbl">grume${s.nbGrumes>1?'s':''}</div></div>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="ouvrirModalExtractionEssence('${essence}')">↗ Extraire</button>
-        </div>
-        <div class="essence-bar-wrap"><div class="essence-bar" style="width:${pct.toFixed(1)}%"></div></div>
-        <div style="margin-top:7px;font-size:0.72rem;color:var(--cendre);font-family:var(--font-serif);font-style:italic">
-          ${info.usage}${s.usages.length ? ' · Usages enregistrés : ' + s.usages.join(', ') : ''}
-        </div>
-      </div>`;
-  }).join('');
+  se.innerHTML = keys.sort(function (a, b) { return stock[b].dispo - stock[a].dispo; })
+    .map(function (ess) {
+      var s    = stock[ess];
+      var pct  = tD > 0 ? (s.dispo / tD * 100) : 0;
+      var info = ESSENCES_INFO[ess] || { usage: 'Usage a definir' };
+      return '<div class="essence-row">'
+        + '<div class="essence-row-top">'
+        + '<div class="essence-name"><div class="essence-dot ' + s.color + '"></div>' + ess + '</div>'
+        + '<div class="essence-stats">'
+        + '<div class="essence-stat"><div class="es-val">' + s.dispo.toFixed(3) + '</div><div class="es-lbl">m3 dispo.</div></div>'
+        + '<div class="essence-stat"><div class="es-val">' + s.entree.toFixed(3) + '</div><div class="es-lbl">m3 entres</div></div>'
+        + '<div class="essence-stat"><div class="es-val">' + s.sorti.toFixed(3) + '</div><div class="es-lbl">m3 sortis</div></div>'
+        + '<div class="essence-stat"><div class="es-val">' + s.nbLots + '</div><div class="es-lbl">lots</div></div>'
+        + '<div class="essence-stat"><div class="es-val">' + s.nbGrumes + '</div><div class="es-lbl">grumes</div></div>'
+        + '</div>'
+        + '<button class="btn btn-primary btn-sm" data-ess="' + ess + '" onclick="ouvrirModalExtractionEssence(this.dataset.ess)">Extraire</button>'
+        + '</div>'
+        + '<div class="essence-bar-wrap"><div class="essence-bar" style="width:' + pct.toFixed(1) + '%"></div></div>'
+        + '<div style="margin-top:7px;font-size:0.72rem;color:#7A7469;font-style:italic">'
+        + info.usage + (s.usages.length ? ' &mdash; Usages : ' + s.usages.join(', ') : '')
+        + '</div></div>';
+    }).join('');
 }
 
-// ═══════════ EXTRACTIONS ═══════════
+// ─── Extractions ──────────────────────────────────────────────────────────
 function ouvrirModalExtraction() {
-  toggleModeExtraction('volume');
-  const stock = getStockParEssence();
-  const sel   = document.getElementById('ext-essence');
-  sel.innerHTML = '<option value="">— Choisir —</option>' +
-    Object.keys(stock).filter(e => stock[e].dispo > 0).map(e =>
-      `<option value="${e}">${e} (${stock[e].dispo.toFixed(3)} m³ dispo.)</option>`
-    ).join('');
-  ['ext-essence','ext-volume','ext-usage','ext-destination','ext-commune','ext-contact','ext-notes'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el.tagName === 'SELECT') el.value = '';
-    else el.value = '';
-  });
+  var stock = getStockParEssence();
+  var sel   = document.getElementById('ext-essence');
+  sel.innerHTML = '<option value="">-- Choisir --</option>'
+    + Object.keys(stock).filter(function (e) { return stock[e].dispo > 0; })
+      .map(function (e) {
+        return '<option value="' + e + '">' + e + ' (' + stock[e].dispo.toFixed(3) + ' m3)</option>';
+      }).join('');
+  ['ext-essence', 'ext-volume', 'ext-usage', 'ext-destination', 'ext-commune', 'ext-contact', 'ext-notes']
+    .forEach(function (id) { document.getElementById(id).value = ''; });
   document.getElementById('ext-disponible').style.display = 'none';
   document.getElementById('modal-extraction').classList.add('open');
 }
-
 function ouvrirModalExtractionEssence(essence) {
   ouvrirModalExtraction();
-  setTimeout(() => { document.getElementById('ext-essence').value = essence; majDisponible(); }, 50);
+  setTimeout(function () {
+    document.getElementById('ext-essence').value = essence;
+    majDisponible();
+  }, 50);
 }
-
 function fermerModalExtraction() {
   document.getElementById('modal-extraction').classList.remove('open');
 }
-
 function majDisponible() {
-  const essence = document.getElementById('ext-essence').value;
-  const box = document.getElementById('ext-disponible');
+  var essence = document.getElementById('ext-essence').value;
+  var box     = document.getElementById('ext-disponible');
   if (!essence) { box.style.display = 'none'; return; }
-  const stock = getStockParEssence();
+  var stock = getStockParEssence();
   if (stock[essence]) {
-    box.innerHTML = `Stock disponible pour <strong>${essence}</strong> : <strong>${stock[essence].dispo.toFixed(3)} m³ utiles</strong> (${stock[essence].entree.toFixed(3)} entrés — ${stock[essence].sorti.toFixed(3)} sortis)`;
+    box.innerHTML = 'Disponible <strong>' + essence + '</strong> : <strong>'
+      + stock[essence].dispo.toFixed(3) + ' m3 utiles</strong>';
     box.style.display = '';
   }
 }
-document.getElementById('ext-essence').addEventListener('change', () => { majDisponible(); if (modeExtraction === 'planches') majVolumeDepuisPlanches(); });
+document.getElementById('ext-essence').addEventListener('change', majDisponible);
 
-function enregistrerExtraction() {
-  const essence     = document.getElementById('ext-essence').value;
-  const volume      = parseFloat(document.getElementById('ext-volume').value);
-  const usage       = document.getElementById('ext-usage').value;
-  const destination = document.getElementById('ext-destination').value.trim();
-  const commune     = document.getElementById('ext-commune').value.trim();
-  const contact     = document.getElementById('ext-contact').value.trim();
-  const notes       = document.getElementById('ext-notes').value.trim();
-  if (!essence||!volume||!usage||!destination) { alert('⚠️ Merci de renseigner tous les champs obligatoires.'); return; }
-  const stock = getStockParEssence();
-  if (volume > stock[essence].dispo) { alert(`⚠️ Volume demandé (${volume} m³) supérieur au stock disponible (${stock[essence].dispo.toFixed(3)} m³).`); return; }
-  const nbPla = modeExtraction === 'planches' ? (parseInt(document.getElementById('ext-nbplanches').value)||null) : null;
-  const ext = { id: Date.now(), essence, volume, usage, destination, commune, contact, notes, nbPlanches: nbPla, date: new Date().toLocaleDateString('fr-FR'), dateIso: new Date().toISOString() };
-  extractions.unshift(ext);
-  sauver();
-  fermerModalExtraction();
-  alert(`✅ Extraction enregistrée !\n${volume} m³ de ${essence} → ${destination}`);
-  afficherExtractions();
-  if (document.getElementById('panel-stock').classList.contains('active')) afficherStock();
+async function enregistrerExtraction() {
+  var essence     = document.getElementById('ext-essence').value;
+  var volume      = parseFloat(document.getElementById('ext-volume').value);
+  var usage       = document.getElementById('ext-usage').value;
+  var destination = document.getElementById('ext-destination').value.trim();
+  var commune     = document.getElementById('ext-commune').value.trim();
+  var contact     = document.getElementById('ext-contact').value.trim();
+  var notes       = document.getElementById('ext-notes').value.trim();
+  if (!essence || !volume || !usage || !destination) {
+    alert('Renseigner tous les champs obligatoires.'); return;
+  }
+  var stock = getStockParEssence();
+  if (volume > stock[essence].dispo) {
+    alert('Volume superieur au stock disponible (' + stock[essence].dispo.toFixed(3) + ' m3).'); return;
+  }
+  var now = new Date();
+  var ext = {
+    id:           now.getTime(),
+    commune_code: communeConnectee.code,
+    essence:      essence,
+    volume:       volume,
+    usage:        usage,
+    destination:  destination,
+    commune:      commune,
+    contact:      contact,
+    notes:        notes,
+    date:         now.toLocaleDateString('fr-FR'),
+    date_iso:     now.toISOString()
+  };
+  try {
+    showLoading(true);
+    await sbInsert('extractions', ext);
+    await chargerDonnees();
+    fermerModalExtraction();
+    alert('Extraction enregistree !\n' + volume + ' m3 de ' + essence + ' vers ' + destination);
+    afficherExtractions();
+    if (document.getElementById('panel-stock').classList.contains('active')) afficherStock();
+  } catch (err) {
+    showError('Erreur extraction : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
 }
 
 function afficherExtractions() {
-  const container = document.getElementById('extraction-list');
+  var container = document.getElementById('extraction-list');
   if (extractions.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="icon">↗</div><p>Aucune extraction enregistrée.<br>Cliquez sur "Nouvelle extraction" pour enregistrer une sortie de bois.</p></div>`;
+    container.innerHTML = '<div class="empty-state"><div class="icon">&#x2197;</div><p>Aucune extraction enregistree.</p></div>';
     return;
   }
-  const totalSorti = extractions.reduce((s,e)=>s+e.volume,0);
-  const nbExt = extractions.length;
-  container.innerHTML = `
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
-      <div class="card" style="flex:1;min-width:140px;padding:14px 18px;text-align:center;margin-bottom:0">
-        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-0.03em;color:var(--encre)">${totalSorti.toFixed(2)}</div>
-        <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">m³ extraits au total</div>
-      </div>
-      <div class="card" style="flex:1;min-width:140px;padding:14px 18px;text-align:center;margin-bottom:0">
-        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-0.03em;color:var(--encre)">${nbExt}</div>
-        <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">extraction${nbExt>1?'s':''} enregistrée${nbExt>1?'s':''}</div>
-      </div>
-    </div>
-    <div class="extraction-list">
-      ${extractions.map((ext, idx) => `
-        <div class="extraction-item">
-          <div class="ei-header">
-            <div>
-              <div class="ei-title">${ext.destination}${ext.commune?' — '+ext.commune:''}</div>
-              <div class="ei-meta">📅 ${ext.date}${ext.contact?' · 👤 '+ext.contact:''}</div>
-            </div>
-            <button class="btn btn-danger btn-sm" onclick="supprimerExtraction(${idx})">✕</button>
-          </div>
-          <div class="ei-stats">
-            <div class="ei-stat">Essence : <strong>${ext.essence}</strong></div>
-            <div class="ei-stat">Volume : <strong>${ext.volume} m³</strong></div>
-            ${ext.nbPlanches?`<div class="ei-stat">Planches : <strong>${ext.nbPlanches}</strong></div>`:''}
-            <div class="ei-stat">Usage : <strong>${ext.usage}</strong></div>
-            ${ext.notes?`<div class="ei-stat" style="width:100%;font-style:italic">📝 ${ext.notes}</div>`:''}
-          </div>
-        </div>`).join('')}
-    </div>`;
+  var tS  = extractions.reduce(function (s, e) { return s + e.volume; }, 0);
+  var nbE = extractions.length;
+  container.innerHTML =
+    '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">'
+    + '<div class="card" style="flex:1;min-width:140px;padding:14px;text-align:center;margin-bottom:0">'
+    + '<div style="font-size:1.6rem;font-weight:700">' + tS.toFixed(2) + '</div>'
+    + '<div style="font-size:0.62rem;color:#7A7469;text-transform:uppercase;margin-top:4px">m3 extraits</div></div>'
+    + '<div class="card" style="flex:1;min-width:140px;padding:14px;text-align:center;margin-bottom:0">'
+    + '<div style="font-size:1.6rem;font-weight:700">' + nbE + '</div>'
+    + '<div style="font-size:0.62rem;color:#7A7469;text-transform:uppercase;margin-top:4px">extraction' + (nbE > 1 ? 's' : '') + '</div></div>'
+    + '</div>'
+    + '<div class="extraction-list">'
+    + extractions.map(function (ext, idx) {
+        return '<div class="extraction-item">'
+          + '<div class="ei-header"><div>'
+          + '<div class="ei-title">' + ext.destination + (ext.commune ? ' &mdash; ' + ext.commune : '') + '</div>'
+          + '<div class="ei-meta">' + ext.date + (ext.contact ? ' &mdash; ' + ext.contact : '') + '</div>'
+          + '</div>'
+          + '<button class="btn btn-danger btn-sm" onclick="supprimerExtraction(' + idx + ')">x</button>'
+          + '</div>'
+          + '<div class="ei-stats">'
+          + '<div class="ei-stat">Essence : <strong>' + ext.essence + '</strong></div>'
+          + '<div class="ei-stat">Volume : <strong>' + ext.volume + ' m3</strong></div>'
+          + '<div class="ei-stat">Usage : <strong>' + ext.usage + '</strong></div>'
+          + (ext.notes ? '<div class="ei-stat">' + ext.notes + '</div>' : '')
+          + '</div></div>';
+      }).join('')
+    + '</div>';
 }
 
-function supprimerExtraction(idx) {
-  if (!confirm('Supprimer cette extraction ? Cette action est irréversible.')) return;
-  extractions.splice(idx,1);
-  sauver();
-  afficherExtractions();
+async function supprimerExtraction(idx) {
+  if (!confirm('Supprimer cette extraction ?')) return;
+  try {
+    showLoading(true);
+    await sbDelete('extractions', extractions[idx].id);
+    await chargerDonnees();
+    afficherExtractions();
+  } catch (err) {
+    showError('Erreur : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
 }
 
-// ═══════════ HISTORIQUE ═══════════
+// ─── Historique ───────────────────────────────────────────────────────────
 function afficherHistorique() {
-  const container = document.getElementById('historique-container');
+  var container = document.getElementById('historique-container');
   if (!container) return;
   if (lots.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="icon">📂</div><p>Aucun lot enregistré pour l'instant.<br>Créez votre premier lot dans l'onglet "Nouveau lot".</p></div>`;
+    container.innerHTML = '<div class="empty-state"><div class="icon">&#x1F4C2;</div><p>Aucun lot enregistre.</p></div>';
     return;
   }
-  container.innerHTML = lots.map((lot, idx) => `
-    <div class="lot-card">
-      <div class="lot-card-header">
-        <div>
-          <div class="lot-card-title">${lot.nom}</div>
-          <div class="lot-card-meta">📍 ${lot.commune} · 📅 ${lot.annee} · ${lot.date}
-            &nbsp;·&nbsp; ${lot.cause} · ${lot.provenance}
-            &nbsp;·&nbsp; <span class="badge ${badgeClass(lot.usage)}">${lot.usage}</span>
-          </div>
-        </div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="btn btn-sm btn-outline" onclick="ouvrirAjoutGrume(${idx});event.stopPropagation()" style="font-size:0.6rem;padding:3px 9px;letter-spacing:0.07em">＋ Grume</button>
-          <button class="btn btn-danger btn-sm" onclick="supprimerLot(${idx});event.stopPropagation()">✕</button>
-        </div>
-      </div>
-      <div class="lot-card-stats">
-        <div class="lot-stat">Essence : <strong>${lot.essence}</strong></div>
-        <div class="lot-stat">${lot.nbGrumes} grume${lot.nbGrumes>1?'s':''}</div>
-        <div class="lot-stat">Planches : <strong>${lot.nbPlanches}</strong></div>
-        <div class="lot-stat">Linéaire : <strong>${lot.lineaire.toFixed(1)} m</strong></div>
-        <div class="lot-stat">Volume utile : <strong>${lot.volUtile.toFixed(3)} m³</strong></div>
-        <div class="lot-stat" style="color:var(--cendre)">Déchets : ${lot.volDechets.toFixed(3)} m³</div>
-        <div class="lot-stat" style="color:var(--cendre)">Ep. ${lot.epaisseur}mm · Δ ${lot.delta}%</div>
-      </div>
-    </div>`).join('');
+  container.innerHTML = lots.map(function (lot, idx) {
+    var vU  = lot.vol_utile   || 0;
+    var vD  = lot.vol_dechets || 0;
+    var nbG = lot.nb_grumes   || 0;
+    var nbP = lot.nb_planches || 0;
+    var lin = lot.lineaire    || 0;
+    return '<div class="lot-card">'
+      + '<div class="lot-card-header"><div>'
+      + '<div class="lot-card-title">' + lot.nom + '</div>'
+      + '<div class="lot-card-meta">'
+      + lot.commune + ' &mdash; ' + lot.annee + ' &mdash; ' + lot.date
+      + ' &mdash; ' + lot.cause + ' &mdash; ' + lot.provenance
+      + ' &mdash; <span class="badge ' + badgeClass(lot.usage) + '">' + lot.usage + '</span>'
+      + '</div></div>'
+      + '<button class="btn btn-danger btn-sm" onclick="supprimerLot(' + idx + ');event.stopPropagation()">x</button>'
+      + '</div>'
+      + '<div class="lot-card-stats">'
+      + '<div class="lot-stat">Essence : <strong>' + lot.essence + '</strong></div>'
+      + '<div class="lot-stat">' + nbG + ' grume' + (nbG > 1 ? 's' : '') + '</div>'
+      + '<div class="lot-stat">Planches : <strong>' + nbP + '</strong></div>'
+      + '<div class="lot-stat">Lineaire : <strong>' + lin.toFixed(1) + ' m</strong></div>'
+      + '<div class="lot-stat">Vol. utile : <strong>' + vU.toFixed(3) + ' m3</strong></div>'
+      + '<div class="lot-stat" style="color:#7A7469">Dechets : ' + vD.toFixed(3)
+      + ' m3 &mdash; Ep.' + lot.epaisseur + 'mm &mdash; Delta ' + lot.delta + '%</div>'
+      + '</div></div>';
+  }).join('');
 }
 
 function badgeClass(usage) {
   if (!usage) return 'badge-autre';
-  const u = usage.toLowerCase();
-  if (u.includes('intérieur')) return 'badge-int';
-  if (u.includes('extérieur')) return 'badge-ext';
-  if (u.includes('mob')) return 'badge-mob';
-  if (u.includes('struct')||u.includes('charp')) return 'badge-struct';
+  var u = usage.toLowerCase();
+  if (u.indexOf('int') !== -1) return 'badge-int';
+  if (u.indexOf('ext') !== -1) return 'badge-ext';
+  if (u.indexOf('mob') !== -1) return 'badge-mob';
   return 'badge-autre';
 }
 
-function supprimerLot(idx) {
-  if (!confirm('Supprimer ce lot ? Cette action est irréversible.')) return;
-  lots.splice(idx,1);
-  sauver();
-  afficherHistorique();
+async function supprimerLot(idx) {
+  if (!confirm('Supprimer ce lot ? Action irreversible.')) return;
+  try {
+    showLoading(true);
+    await sbDelete('lots', lots[idx].id);
+    await chargerDonnees();
+  } catch (err) {
+    showError('Erreur : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
 }
 
-// ═══════════ EXPORTS ═══════════
+// ─── Exports ──────────────────────────────────────────────────────────────
 function exporterCSV() {
-  if (lots.length === 0) { alert('Aucun lot à exporter.'); return; }
-  const headers = ['Nom','Essence','Commune','Cause','Provenance','Année','Usage','Nb grumes','Vol. brut (m³)','Vol. utile (m³)','Vol. déchets (m³)','Nb planches','Linéaire (m)','Épaisseur (mm)','Delta (%)','Date'];
-  const rows = lots.map(l => [l.nom,l.essence,l.commune,l.cause,l.provenance,l.annee,l.usage,l.nbGrumes,l.volBrut.toFixed(3),l.volUtile.toFixed(3),l.volDechets.toFixed(3),l.nbPlanches,l.lineaire.toFixed(2),l.epaisseur,l.delta,l.date]);
-  const csv = [headers,...rows].map(r=>r.map(v=>`"${v}"`).join(';')).join('\n');
-  telechargerCSV('\ufeff'+csv, `duramen_lots_${new Date().toISOString().slice(0,10)}.csv`);
-}
-
-function exporterStockCSV() {
-  const stock = getStockParEssence();
-  if (Object.keys(stock).length === 0) { alert('Aucun stock à exporter.'); return; }
-  const headers = ['Essence','m³ entrés','m³ sortis','m³ disponibles','Nb lots','Nb grumes'];
-  const rows = Object.keys(stock).map(e=>[e,stock[e].entree.toFixed(3),stock[e].sorti.toFixed(3),stock[e].dispo.toFixed(3),stock[e].nbLots,stock[e].nbGrumes]);
-  const csv = [headers,...rows].map(r=>r.map(v=>`"${v}"`).join(';')).join('\n');
-  telechargerCSV('\ufeff'+csv, `duramen_stock_${new Date().toISOString().slice(0,10)}.csv`);
-}
-
-function telechargerCSV(content, filename) {
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
+  if (lots.length === 0) { alert('Aucun lot.'); return; }
+  var h = ['Nom','Essence','Commune','Cause','Provenance','Annee','Usage',
+            'Nb grumes','Vol. brut','Vol. utile','Vol. dechets','Nb planches','Lineaire','Epaisseur','Delta','Date'];
+  var r = lots.map(function (l) {
+    return [l.nom, l.essence, l.commune, l.cause, l.provenance, l.annee, l.usage,
+            l.nb_grumes || 0, (l.vol_brut || 0).toFixed(3), (l.vol_utile || 0).toFixed(3),
+            (l.vol_dechets || 0).toFixed(3), l.nb_planches || 0, (l.lineaire || 0).toFixed(2),
+            l.epaisseur, l.delta, l.date];
+  });
+  var csv = [h].concat(r).map(function (row) {
+    return row.map(function (v) { return '"' + v + '"'; }).join(';');
+  }).join('\n');
+  var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = filename;
+  a.download = 'duramen_lots_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+}
+function exporterStockCSV() {
+  var stock = getStockParEssence();
+  if (!Object.keys(stock).length) { alert('Aucun stock.'); return; }
+  var h = ['Essence','m3 entres','m3 sortis','m3 disponibles','Nb lots','Nb grumes'];
+  var r = Object.keys(stock).map(function (e) {
+    return [e, stock[e].entree.toFixed(3), stock[e].sorti.toFixed(3),
+            stock[e].dispo.toFixed(3), stock[e].nbLots, stock[e].nbGrumes];
+  });
+  var csv = [h].concat(r).map(function (row) {
+    return row.map(function (v) { return '"' + v + '"'; }).join(';');
+  }).join('\n');
+  var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'duramen_stock_' + new Date().toISOString().slice(0, 10) + '.csv';
   a.click();
 }
 
-// ═══════════ HEADER STATS ═══════════
+// ─── Header stats ─────────────────────────────────────────────────────────
 function mettreAJourHeaderStats() {
-  const stock = getStockParEssence();
-  const totalDispo = Object.values(stock).reduce((s,e)=>s+e.dispo,0);
-  const nbEssences = Object.keys(stock).length;
-  const vol  = document.getElementById('hs-vol');
-  const lts  = document.getElementById('hs-lots');
-  const ess  = document.getElementById('hs-essences');
-  if (vol)  vol.textContent  = totalDispo.toFixed(2);
-  if (lts)  lts.textContent  = lots.length;
-  if (ess)  ess.textContent  = nbEssences;
-  // Mobile stats
-  const vm = document.getElementById('hs-vol-m');
-  const lm = document.getElementById('hs-lots-m');
-  const em = document.getElementById('hs-essences-m');
-  if (vm) vm.textContent = totalDispo.toFixed(2);
-  if (lm) lm.textContent = lots.length;
-  if (em) em.textContent = nbEssences;
+  var stock = getStockParEssence();
+  var tD  = Object.values(stock).reduce(function (s, e) { return s + e.dispo; }, 0);
+  var nbE = Object.keys(stock).length;
+  ['hs-vol',  'hs-vol-m' ].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = tD.toFixed(2); });
+  ['hs-lots', 'hs-lots-m'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = lots.length; });
+  ['hs-essences', 'hs-essences-m'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = nbE; });
 }
 
-// ═══════════ TERRITOIRE ═══════════
-function afficherTerritoire() {
-  const container = document.getElementById('territoire-container');
-  const lotsPartages = lots.filter(l => l.partage);
-
-  if (lotsPartages.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="icon">🌐</div>
-      <p>Aucun lot partagé pour l'instant.<br>
-      Activez le partage lors de la création d'un lot pour le rendre visible ici.<br>
-      Les autres communes feront de même pour enrichir la vue territoire.</p></div>`;
+// ─── Territoire ───────────────────────────────────────────────────────────
+async function afficherTerritoire() {
+  var container = document.getElementById('territoire-container');
+  container.innerHTML = '<div class="empty-state"><div class="icon">&#x23F3;</div><p>Chargement...</p></div>';
+  var lP = [];
+  try {
+    lP = await sbSelect('lots', 'partage=eq.true&order=created_at.desc');
+  } catch (err) {
+    container.innerHTML = '<div class="empty-state"><p>Erreur : ' + err.message + '</p></div>';
     return;
   }
-
-  // Grouper par commune (normalisation casse)
-  const parCommune = {};
-  const communeAff = {};
-  lotsPartages.forEach(l => {
-    const key = l.commune.trim().toLowerCase();
-    if (!parCommune[key]) { parCommune[key] = []; communeAff[key] = l.commune.trim(); }
-    // Préférer version avec majuscule initiale
-    const t = l.commune.trim();
-    if (t.charAt(0) === t.charAt(0).toUpperCase() && t.charAt(0) !== t.charAt(0).toLowerCase()) communeAff[key] = t;
-    parCommune[key].push(l);
-  });
-
-  const totalVolTerritoire = lotsPartages.reduce((s,l) => s + l.volUtile, 0);
-  const nbCommunes = Object.keys(parCommune).length;
-
-  container.innerHTML = `
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
-      <div class="card" style="flex:1;min-width:130px;padding:14px 18px;text-align:center;margin-bottom:0">
-        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-0.03em">${totalVolTerritoire.toFixed(2)}</div>
-        <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">m³ partagés</div>
-      </div>
-      <div class="card" style="flex:1;min-width:130px;padding:14px 18px;text-align:center;margin-bottom:0">
-        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-0.03em">${nbCommunes}</div>
-        <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">commune${nbCommunes>1?'s':''}</div>
-      </div>
-      <div class="card" style="flex:1;min-width:130px;padding:14px 18px;text-align:center;margin-bottom:0">
-        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-0.03em">${lotsPartages.length}</div>
-        <div style="font-size:0.62rem;color:var(--cendre);text-transform:uppercase;letter-spacing:0.13em;margin-top:4px">lot${lotsPartages.length>1?'s':''}</div>
-      </div>
-    </div>
-    ${Object.keys(parCommune).sort().map(key => {
-      const lotsC = parCommune[key];
-      const commune = communeAff[key];
-      const volC = lotsC.reduce((s,l) => s + l.volUtile, 0);
-      const totalGrumes = lotsC.reduce((s,l) => s + (l.nbGrumes||0), 0);
-      const essences = [...new Set(lotsC.map(l => l.essence))].join(', ');
-      return `<div class="territoire-card">
-        <div class="territoire-commune-name">
-          📍 ${commune}
-          <span class="chip-partage">Partage activé</span>
-        </div>
-        <div class="territoire-stats">
-          <div class="territoire-stat">Volume : <strong>${volC.toFixed(3)} m³</strong></div>
-          <div class="territoire-stat">Lots : <strong>${lotsC.length}</strong></div>
-          <div class="territoire-stat">Grumes : <strong>${totalGrumes}</strong></div>
-          <div class="territoire-stat">Essences : <strong>${essences}</strong></div>
-        </div>
-        <div style="margin-top:10px">
-          ${lotsC.map(l => `
-            <div style="font-size:0.75rem;padding:7px 0;border-bottom:var(--border-light);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-              <div style="display:flex;align-items:baseline;gap:8px">
-                <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:700">${l.nom}</span>
-                <span style="color:var(--lin);font-size:0.62rem">${l.nbGrumes} grume${l.nbGrumes>1?'s':''}</span>
-              </div>
-              <span style="color:var(--cendre)">${l.essence} · ${l.volUtile.toFixed(3)} m³ · ${l.annee}</span>
-            </div>`).join('')}
-        </div>
-      </div>`;
-    }).join('')}`;
-}
-
-// ═══════════ AUTHENTIFICATION ═══════════
-const SUPABASE_URL = 'https://zeadibimbdztpmsesaiw.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplYWRpYmltYmR6dHBtc2VzYWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4OTI2MTcsImV4cCI6MjA5MDQ2ODYxN30.xEHLNTROTu9QJ7c_vV3S54P76EXfpnx2VbhxznbQmmU';
-
-let communeConnectee = null;
-
-// ─── COMMUNE PERSISTANTE ───
-function appliquerCommuneLocked() {
-  const input = document.getElementById('commune');
-  const hint  = document.getElementById('commune-hint');
-  if (!input) return;
-  input.readOnly = true;
-  input.style.color = 'var(--cendre)';
-  input.style.cursor = 'default';
-  input.style.borderBottomColor = 'var(--lin)';
-  if (hint) hint.style.display = '';
-}
-
-function chargerCommune() {
-  const commune = localStorage.getItem('duramen_commune');
-  const input   = document.getElementById('commune');
-  if (commune && input) {
-    input.value = commune;
-    appliquerCommuneLocked();
+  if (lP.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">&#x1F310;</div><p>Aucun lot partage pour l instant.</p></div>';
+    return;
   }
+  var pC = {};
+  lP.forEach(function (l) {
+    if (!pC[l.commune]) pC[l.commune] = [];
+    pC[l.commune].push(l);
+  });
+  var tV = lP.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
+  var nC = Object.keys(pC).length;
+  container.innerHTML =
+    '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">'
+    + '<div class="card" style="flex:1;min-width:130px;padding:14px;text-align:center;margin-bottom:0">'
+    + '<div style="font-size:1.6rem;font-weight:700">' + tV.toFixed(2) + '</div>'
+    + '<div style="font-size:0.62rem;color:#7A7469;text-transform:uppercase;margin-top:4px">m3 partages</div></div>'
+    + '<div class="card" style="flex:1;min-width:130px;padding:14px;text-align:center;margin-bottom:0">'
+    + '<div style="font-size:1.6rem;font-weight:700">' + nC + '</div>'
+    + '<div style="font-size:0.62rem;color:#7A7469;text-transform:uppercase;margin-top:4px">commune' + (nC > 1 ? 's' : '') + '</div></div>'
+    + '<div class="card" style="flex:1;min-width:130px;padding:14px;text-align:center;margin-bottom:0">'
+    + '<div style="font-size:1.6rem;font-weight:700">' + lP.length + '</div>'
+    + '<div style="font-size:0.62rem;color:#7A7469;text-transform:uppercase;margin-top:4px">lots</div></div>'
+    + '</div>'
+    + Object.keys(pC).sort().map(function (commune) {
+        var lC  = pC[commune];
+        var vC  = lC.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
+        var ess = lC.map(function (l) { return l.essence; })
+                    .filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ');
+        return '<div class="territoire-card">'
+          + '<div class="territoire-commune-name">' + commune
+          + '<span class="chip-partage">Partage actif</span></div>'
+          + '<div class="territoire-stats">'
+          + '<div class="territoire-stat">Volume : <strong>' + vC.toFixed(3) + ' m3</strong></div>'
+          + '<div class="territoire-stat">Lots : <strong>' + lC.length + '</strong></div>'
+          + '<div class="territoire-stat">Essences : <strong>' + ess + '</strong></div>'
+          + '</div>'
+          + '<div style="margin-top:10px">'
+          + lC.map(function (l) {
+              return '<div style="font-size:0.75rem;padding:7px 0;border-bottom:1px solid #C9BAA3;display:flex;justify-content:space-between;flex-wrap:wrap">'
+                + '<span style="font-weight:700">' + l.nom + '</span>'
+                + '<span style="color:#7A7469">' + l.essence + ' &mdash; ' + (l.vol_utile || 0).toFixed(3) + ' m3 &mdash; ' + l.annee + '</span>'
+                + '</div>';
+            }).join('')
+          + '</div></div>';
+      }).join('');
 }
 
-function reinitialiserCommune() {
-  if (!confirm('Modifier la commune enregistrée ?')) return;
-  localStorage.removeItem('duramen_commune');
-  const input = document.getElementById('commune');
-  const hint  = document.getElementById('commune-hint');
-  input.value = '';
-  input.readOnly = false;
-  input.style.color = '';
-  input.style.cursor = '';
-  input.style.borderBottomColor = '';
-  if (hint) hint.style.display = 'none';
-  input.focus();
-}
+// ─── Authentification via Supabase ────────────────────────────────────────
+var communeConnectee = null;
 
 function verifierAcces() {
-  // localStorage = persistant (ne redemande plus le code), sessionStorage = fallback
-  const session = localStorage.getItem('duramen_session') || sessionStorage.getItem('duramen_session');
+  var session = localStorage.getItem('duramen_session') || sessionStorage.getItem('duramen_session');
   if (session) {
     try {
       communeConnectee = JSON.parse(session);
-      // Migrer sessionStorage → localStorage si besoin
       localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
       ouvrirApp();
       return;
-    } catch(e) {}
+    } catch (e) {}
   }
   document.getElementById('ecran-connexion').classList.add('visible');
 }
 
 async function tentativeConnexion() {
-  const code = document.getElementById('login-code').value.trim().toUpperCase();
-  const erreur = document.getElementById('login-erreur');
+  var code   = document.getElementById('login-code').value.trim();
+  var erreur = document.getElementById('login-erreur');
+  var btn    = document.getElementById('btn-login');
   erreur.textContent = '';
-  if (!code) { erreur.textContent = "Veuillez saisir votre code d'accès."; return; }
-  erreur.textContent = '⏳ Vérification…';
+  if (!code) { erreur.textContent = 'Veuillez saisir votre code.'; return; }
+  btn.disabled = true;
+  btn.textContent = 'Verification...';
   try {
-    const res = await fetch(
-      SUPABASE_URL + '/rest/v1/codes_acces?code=eq.' + encodeURIComponent(code) + '&actif=eq.true&select=code,commune&limit=1',
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/codes_acces?code=eq.' + encodeURIComponent(code) + '&actif=eq.true&select=code,commune',
+      { headers: sbH }
     );
-    const data = await res.json();
+    if (!res.ok) throw new Error('Erreur reseau ' + res.status);
+    var data = await res.json();
     if (data && data.length > 0) {
       communeConnectee = { code: data[0].code, nom: data[0].commune };
       localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
-      if (!localStorage.getItem('duramen_commune')) {
+      if (!localStorage.getItem('duramen_commune'))
         localStorage.setItem('duramen_commune', communeConnectee.nom);
-      }
       ouvrirApp();
     } else {
-      erreur.textContent = '⚠ Code invalide. Contactez votre référent DURAMEN.';
+      erreur.textContent = 'Code invalide ou inactif. Contactez votre referent DURAMEN.';
       document.getElementById('login-code').value = '';
       document.getElementById('login-code').focus();
     }
-  } catch(e) {
-    erreur.textContent = '⚠ Erreur réseau. Vérifiez votre connexion.';
+  } catch (err) {
+    erreur.textContent = 'Erreur de connexion : ' + err.message;
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Acceder';
   }
 }
 
 function ouvrirApp() {
   document.getElementById('ecran-connexion').classList.remove('visible');
-
-  // Afficher commune dans header
-  const chip = document.createElement('div');
-  chip.className = 'commune-chip';
-  chip.style.cssText = 'margin-bottom:5px';
-  chip.textContent = '📍 ' + communeConnectee.nom;
-
-  const btnDeco = document.createElement('button');
-  btnDeco.className = 'btn btn-sm';
-  btnDeco.style.cssText = 'color:var(--cendre);border-color:rgba(201,186,163,0.3);font-size:0.6rem;margin-top:2px;padding:3px 10px';
-  btnDeco.textContent = 'Déconnexion';
-  btnDeco.onclick = () => {
-    if (confirm('Se déconnecter ?')) {
+  var chip = document.createElement('div');
+  chip.className    = 'commune-chip';
+  chip.style.marginBottom = '5px';
+  chip.textContent  = '&#x1F4CD; ' + communeConnectee.nom;
+  var btnD = document.createElement('button');
+  btnD.className    = 'btn btn-sm';
+  btnD.style.cssText = 'color:#7A7469;border-color:rgba(201,186,163,0.3);font-size:0.6rem;margin-top:2px;padding:3px 10px';
+  btnD.textContent  = 'Deconnexion';
+  btnD.onclick = function () {
+    if (confirm('Se deconnecter ?')) {
       localStorage.removeItem('duramen_session');
+      localStorage.removeItem('duramen_commune');
       sessionStorage.clear();
       location.reload();
     }
   };
-
-  const hr = document.getElementById('header-stats');
+  var hr = document.getElementById('header-stats');
   hr.innerHTML = '';
   hr.appendChild(chip);
   hr.appendChild(document.createElement('br'));
   hr.appendChild(document.createTextNode('Stock : '));
-  const sv = document.createElement('strong'); sv.id='hs-vol'; sv.textContent='—';
-  hr.appendChild(sv);
-  hr.appendChild(document.createTextNode(' m³ · '));
-  const sl = document.createElement('strong'); sl.id='hs-lots'; sl.textContent='—';
-  hr.appendChild(sl);
-  hr.appendChild(document.createTextNode(' lots · '));
-  const se = document.createElement('strong'); se.id='hs-essences'; se.textContent='—';
-  hr.appendChild(se);
-  hr.appendChild(document.createTextNode(' essences'));
+  var sv = document.createElement('strong'); sv.id = 'hs-vol'; sv.textContent = '--'; hr.appendChild(sv);
+  hr.appendChild(document.createTextNode(' m3 - '));
+  var sl = document.createElement('strong'); sl.id = 'hs-lots'; sl.textContent = '--'; hr.appendChild(sl);
+  hr.appendChild(document.createTextNode(' lots'));
   hr.appendChild(document.createElement('br'));
-  hr.appendChild(btnDeco);
-
-  mettreAJourHeaderStats();
-  afficherHistorique();
-  chargerCommune(); // pré-remplir la commune mémorisée
+  hr.appendChild(btnD);
+  chargerCommune();
+  chargerDonnees();
 }
 
-// ═══════════ MENTIONS LÉGALES ═══════════
+// ─── Mentions legales ────────────────────────────────────────────────────
 function afficherMentions() {
-  const pm = document.getElementById('panel-mentions');
-  pm.style.cssText = 'display:block;position:fixed;inset:0;z-index:2000;overflow-y:auto;background:var(--craie);padding:32px 20px 80px';
+  document.getElementById('ecran-connexion').classList.remove('visible');
+  ['header', 'main', 'footer'].forEach(function (t) { document.querySelector(t).style.display = 'none'; });
+  document.querySelector('.tabs-wrap').style.display  = 'none';
+  document.querySelector('.bottom-nav').style.display = 'none';
+  document.getElementById('panel-mentions').style.cssText = 'display:block;padding:32px 20px;max-width:760px;margin:0 auto';
 }
 function fermerMentions() {
-  document.getElementById('panel-mentions').style.cssText = 'display:none';
+  document.getElementById('panel-mentions').style.display = 'none';
+  ['header', 'main', 'footer'].forEach(function (t) { document.querySelector(t).style.display = ''; });
+  document.querySelector('.tabs-wrap').style.display  = '';
+  document.querySelector('.bottom-nav').style.display = '';
+  if (!localStorage.getItem('duramen_session'))
+    document.getElementById('ecran-connexion').classList.add('visible');
 }
 
-// ═══════════ INIT ═══════════
+// ─── Init ─────────────────────────────────────────────────────────────────
 function switchTab(panel, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.bnav-btn').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+  document.querySelectorAll('.bnav-btn').forEach(function (t) { t.classList.remove('active'); });
   document.getElementById('panel-' + panel).classList.add('active');
-  document.querySelectorAll('[data-panel="' + panel + '"]').forEach(el => el.classList.add('active'));
+  document.querySelectorAll('[data-panel="' + panel + '"]').forEach(function (el) { el.classList.add('active'); });
   btn.classList.add('active');
   if (panel === 'stock')      afficherStock();
   if (panel === 'extraction') afficherExtractions();
@@ -2233,138 +2278,8 @@ function switchTab(panel, btn) {
   if (panel === 'territoire') afficherTerritoire();
 }
 
-
-// ═══════════ MODE EXTRACTION ═══════════
-let modeExtraction = 'volume';
-
-function toggleModeExtraction(mode) {
-  modeExtraction = mode;
-  const volWrap = document.getElementById('ext-volume-wrap');
-  const plaWrap = document.getElementById('ext-planches-wrap');
-  const btnVol  = document.getElementById('btn-ext-vol');
-  const btnPla  = document.getElementById('btn-ext-pla');
-  if (!volWrap) return;
-  if (mode === 'planches') { document.getElementById('ext-volume').value = ''; }
-  volWrap.style.display = mode === 'volume'   ? '' : 'none';
-  plaWrap.style.display = mode === 'planches' ? '' : 'none';
-  if (btnVol) btnVol.className = 'btn btn-sm ' + (mode === 'volume'   ? 'btn-primary' : 'btn-outline');
-  if (btnPla) btnPla.className = 'btn btn-sm ' + (mode === 'planches' ? 'btn-primary' : 'btn-outline');
-  if (mode === 'planches') majVolumeDepuisPlanches();
-}
-
-function majVolumeDepuisPlanches() {
-  if (modeExtraction !== 'planches') return;
-  const essence = document.getElementById('ext-essence').value;
-  const nbP     = parseInt(document.getElementById('ext-nbplanches').value);
-  const infoEl  = document.getElementById('ext-planches-vol');
-  if (!infoEl) return;
-  if (!essence || !nbP || nbP <= 0) { infoEl.textContent = ''; return; }
-
-  const lotsE = lots.filter(l => l.essence === essence && l.nbPlanches > 0);
-  if (lotsE.length === 0) {
-    infoEl.textContent = '⚠ Aucun lot de cette essence — saisissez le volume manuellement.';
-    infoEl.style.color = 'var(--rouge)';
-    return;
-  }
-  const totalVol = lotsE.reduce((s,l) => s + l.volUtile, 0);
-  const totalPla = lotsE.reduce((s,l) => s + l.nbPlanches, 0);
-  const ratio    = totalVol / totalPla;
-  const vol      = nbP * ratio;
-  document.getElementById('ext-volume').value = vol.toFixed(4);
-  infoEl.style.color = 'var(--signal)';
-  infoEl.textContent = `≈ ${vol.toFixed(3)} m³  ·  ratio moyen : ${ratio.toFixed(4)} m³/planche  (sur ${lotsE.length} lot${lotsE.length>1?'s':''})`;
-}
-
-// ═══════════ AJOUTER GRUME À UN LOT ═══════════
-let addGrumeIdx = null;
-
-function ouvrirAjoutGrume(idx) {
-  addGrumeIdx = idx;
-  const lot = lots[idx];
-  document.getElementById('add-grume-lot-name').textContent =
-    `Lot "${lot.nom}" — ${lot.essence} · ${lot.nbGrumes} grume${lot.nbGrumes>1?'s':''} actuellement`;
-  document.getElementById('ag-longueur').value = '';
-  document.getElementById('ag-diametre').value = '';
-  document.getElementById('ag-preview').textContent = '';
-  document.getElementById('ag-info').textContent =
-    `Paramètres du lot conservés : épaisseur ${lot.epaisseur} mm · delta ${lot.delta}%`;
-  document.getElementById('modal-add-grume').classList.add('open');
-}
-
-function fermerAjoutGrume() {
-  document.getElementById('modal-add-grume').classList.remove('open');
-  addGrumeIdx = null;
-}
-
-function previewAjoutGrume() {
-  if (addGrumeIdx === null) return;
-  const l  = parseFloat(document.getElementById('ag-longueur').value);
-  const d  = parseFloat(document.getElementById('ag-diametre').value);
-  const el = document.getElementById('ag-preview');
-  if (!l || !d || l <= 0 || d <= 0) { el.textContent = ''; return; }
-  const lot = lots[addGrumeIdx];
-  const vb  = Math.PI * Math.pow(d/200, 2) * l;
-  const vu  = vb * (1 - lot.delta / 100);
-  el.textContent = `Vol. grume : ${vb.toFixed(3)} m³ brut · ${vu.toFixed(3)} m³ utiles`;
-}
-
-function confirmerAjoutGrume() {
-  const l = parseFloat(document.getElementById('ag-longueur').value);
-  const d = parseFloat(document.getElementById('ag-diametre').value);
-  if (!l || !d || l <= 0 || d <= 0) { alert('⚠️ Longueur et diamètre sont obligatoires.'); return; }
-  if (addGrumeIdx === null) return;
-
-  const lot = lots[addGrumeIdx];
-  const ts  = 3; // trait de scie par défaut
-  const vb  = Math.PI * Math.pow(d/200, 2) * l;
-  const vu  = vb * (1 - lot.delta / 100);
-  const nbP = Math.floor(d / (lot.epaisseur/10 + ts/10));
-  const lin = nbP * l;
-
-  if (!lot.grumes) lot.grumes = [];
-  lot.grumes.push({ longueur: l, diametre: d });
-  lot.nbGrumes   += 1;
-  lot.volBrut    += vb;
-  lot.volUtile   += vu;
-  lot.volDechets  = lot.volBrut - lot.volUtile;
-  lot.nbPlanches += nbP;
-  lot.lineaire   += lin;
-
-  sauver();
-  fermerAjoutGrume();
-  afficherHistorique();
-  alert(`✅ Grume ajoutée au lot "${lot.nom}"\n+${vu.toFixed(3)} m³ utiles · +${nbP} planche${nbP>1?'s':''}`);
-}
-
 verifierAcces();
-</script>
 
-<!-- ─── MODAL AJOUTER GRUME ─── -->
-<div class="extract-modal-bg" id="modal-add-grume">
-  <div class="extract-modal">
-    <button class="modal-close" onclick="fermerAjoutGrume()">✕</button>
-    <h2>Ajouter une grume</h2>
-    <p class="modal-sub" id="add-grume-lot-name">—</p>
-    <div class="form-grid three">
-      <div class="field">
-        <label>Longueur (m) *</label>
-        <input type="number" id="ag-longueur" min="0.1" max="30" step="0.01" placeholder="Ex : 4.20" oninput="previewAjoutGrume()">
-      </div>
-      <div class="field">
-        <label>Ø petit bout (cm) *</label>
-        <input type="number" id="ag-diametre" min="5" max="200" step="1" placeholder="Ex : 28" oninput="previewAjoutGrume()">
-      </div>
-      <div class="field">
-        <label>&nbsp;</label>
-        <span id="ag-preview" style="font-size:0.78rem;color:var(--signal);padding-top:10px;display:block;font-weight:500"></span>
-      </div>
-    </div>
-    <div id="ag-info" class="info-box" style="margin-top:14px;margin-bottom:0"></div>
-    <div class="flex-end" style="margin-top:20px">
-      <button class="btn btn-outline" onclick="fermerAjoutGrume()">Annuler</button>
-      <button class="btn btn-primary" onclick="confirmerAjoutGrume()">＋ Ajouter la grume</button>
-    </div>
-  </div>
-</div>
+</script>
 </body>
 </html>
