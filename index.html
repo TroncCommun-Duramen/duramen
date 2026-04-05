@@ -1245,26 +1245,20 @@ footer span { color: var(--lin); font-family: var(--font-display); font-weight: 
       <div class="card">
         <div class="card-title">⚙ Paramètres de sciage</div>
         <div id="info-essence-debit" class="info-box"></div>
-        <div class="form-grid four">
+        <div class="form-grid">
           <div class="field">
-            <label>Épaisseur planches (mm) *</label>
+            <label>Épaisseur des planches (mm) *</label>
             <input type="number" id="epaisseur" min="5" max="200" step="1" placeholder="Ex : 27" oninput="calculerDebit()">
           </div>
           <div class="field">
-            <label>Delta perte sciage (%) *</label>
-            <input type="number" id="delta" min="0" max="60" step="1" placeholder="Ex : 18" oninput="calculerDebit()">
+            <label>&nbsp;</label>
+            <span class="formule-badge" style="align-self:flex-end" data-tip="Formule DURAMEN :&#10;V_débits = V_grume × 0.55 × (e / (e + 3))&#10;&#10;• V_grume = π × (D/2)² × L&#10;• 0.55 = rendement matière (pertes géométriques, défauts, écorce)&#10;• e = épaisseur nominale en mm&#10;• 3 mm = trait de scie fixe&#10;&#10;Nb planches = D / (e + 3)">📐 Formule utilisée</span>
           </div>
-          <div class="field">
-            <label>Trait de scie (mm)</label>
-            <input type="number" id="trait-scie" min="1" max="10" step="0.5" value="3" oninput="calculerDebit()">
-          </div>
+        </div>
+        <div class="form-grid full" style="margin-top:12px">
           <div class="field">
             <label>Nom du lot (optionnel)</label>
             <input type="text" id="lot-nom" placeholder="Ex : Chênes bord de chemin">
-          </div>
-          <div class="field">
-            <label>&nbsp;</label>
-            <span class="formule-badge" style="align-self:flex-end" data-tip="Méthode du cylindre inscrit :&#10;1. Volume grume = π × (D/2)² × L&#10;2. Volume utile = Volume × (1 - delta/100)&#10;3. Nb planches = D / (e + trait de scie)&#10;Le trait de scie est de 3mm par défaut.">📐 Formule utilisée</span>
           </div>
         </div>
       </div>
@@ -1713,34 +1707,34 @@ function afficherGrumes() {
 // ─── Calcul debit ────────────────────────────────────────────────────────
 function calculerDebit() {
   var epaisseur = parseFloat(document.getElementById('epaisseur').value);
-  var delta     = parseFloat(document.getElementById('delta').value);
-  var traitScie = parseFloat(document.getElementById('trait-scie').value) || 3;
   var container = document.getElementById('resultats-container');
-  if (!epaisseur || isNaN(delta) || grumes.length === 0) {
-    container.style.display = 'none'; return;
-  }
-  var tVB = 0, tVU = 0, tP = 0, tL = 0;
+  var K = 3; // trait de scie fixe en mm
+  if (!epaisseur || grumes.length === 0) { container.style.display = 'none'; return; }
+  var tVB = 0, tVD = 0, tP = 0, tL = 0;
   var rows = grumes.map(function (g, i) {
     var r  = g.diametre / 200;
     var vb = Math.PI * r * r * g.longueur;
-    var vu = vb * (1 - delta / 100);
-    var nb = Math.floor(g.diametre / (epaisseur / 10 + traitScie / 10));
+    // V_débits = V_grume × 0.55 × (e / (e + k))
+    var vd = vb * 0.55 * (epaisseur / (epaisseur + K));
+    var nb = Math.floor(g.diametre / ((epaisseur + K) / 10));
     var li = nb * g.longueur;
     var lm = nb > 0 ? (g.diametre / nb).toFixed(1) : '0';
-    tVB += vb; tVU += vu; tP += nb; tL += li;
+    tVB += vb; tVD += vd; tP += nb; tL += li;
     return '<tr><td>' + (i + 1) + '</td><td>' + g.longueur + ' m</td><td>' + g.diametre
       + ' cm</td><td>' + vb.toFixed(3) + ' m3</td><td>' + nb + '</td><td>'
       + li.toFixed(1) + ' m</td><td>' + lm + ' cm</td></tr>';
   });
+  var rendement = tVB > 0 ? (tVD / tVB * 100).toFixed(1) : '0';
   document.getElementById('result-grid').innerHTML =
-    '<div class="result-stat"><div class="val">' + tVU.toFixed(3) + '</div><div class="unit">m3</div><div class="lbl">Volume utile</div></div>'
+    '<div class="result-stat"><div class="val">' + tVD.toFixed(3) + '</div><div class="unit">m3</div><div class="lbl">Volume debite</div></div>'
     + '<div class="result-stat"><div class="val">' + grumes.length + '</div><div class="unit">grumes</div><div class="lbl">Billes</div></div>'
-    + '<div class="result-stat"><div class="val">' + tP + '</div><div class="unit">planches</div><div class="lbl">Debit</div></div>'
+    + '<div class="result-stat"><div class="val">' + tP + '</div><div class="unit">planches</div><div class="lbl">Debit theorique</div></div>'
     + '<div class="result-stat"><div class="val">' + tL.toFixed(1) + '</div><div class="unit">m lin.</div><div class="lbl">Lineaire</div></div>'
-    + '<div class="result-stat"><div class="val">' + delta + '</div><div class="unit">%</div><div class="lbl">Delta</div></div>';
+    + '<div class="result-stat"><div class="val">' + rendement + '</div><div class="unit">%</div><div class="lbl">Rendement</div></div>';
   document.getElementById('dechets-block').innerHTML =
-    '<span>Dechets</span><span>Vol. brut : <strong>' + tVB.toFixed(3)
-    + ' m3</strong> &mdash; Dechets : <strong>' + (tVB - tVU).toFixed(3) + ' m3</strong></span>';
+    '<span>&#x267B;&#xFE0F;</span><span>Vol. brut : <strong>' + tVB.toFixed(3)
+    + ' m3</strong> &mdash; Pertes estimees : <strong>' + (tVB - tVD).toFixed(3) + ' m3</strong>'
+    + ' (rendement 55% x ' + (epaisseur/(epaisseur+K)*100).toFixed(1) + '%)</span>';
   document.getElementById('result-tbody').innerHTML = rows.join('');
   container.style.display = '';
 }
@@ -1748,18 +1742,17 @@ function calculerDebit() {
 // ─── Sauvegarde lot ───────────────────────────────────────────────────────
 async function sauvegarderLot() {
   var epaisseur = parseFloat(document.getElementById('epaisseur').value);
-  var delta     = parseFloat(document.getElementById('delta').value);
-  var traitScie = parseFloat(document.getElementById('trait-scie').value) || 3;
-  if (!epaisseur || isNaN(delta)) {
-    alert('Veuillez renseigner les parametres de sciage.'); return;
+  var K = 3; // trait de scie fixe en mm
+  if (!epaisseur) {
+    alert('Veuillez renseigner l epaisseur des planches.'); return;
   }
-  var tVB = 0, tVU = 0, tP = 0, tL = 0;
+  var tVB = 0, tVD = 0, tP = 0, tL = 0;
   grumes.forEach(function (g) {
     var r  = g.diametre / 200;
     var vb = Math.PI * r * r * g.longueur;
-    var vu = vb * (1 - delta / 100);
-    var nb = Math.floor(g.diametre / (epaisseur / 10 + traitScie / 10));
-    tVB += vb; tVU += vu; tP += nb; tL += nb * g.longueur;
+    var vd = vb * 0.55 * (epaisseur / (epaisseur + K));
+    var nb = Math.floor(g.diametre / ((epaisseur + K) / 10));
+    tVB += vb; tVD += vd; tP += nb; tL += nb * g.longueur;
   });
   var essence = document.getElementById('essence').value;
   var usages  = [];
@@ -1780,11 +1773,11 @@ async function sauvegarderLot() {
     usage:        document.getElementById('usage').value,
     partage:      document.getElementById('lot-partage').checked,
     epaisseur:    epaisseur,
-    delta:        delta,
+    delta:        45, // fixe : rendement 55% = perte 45%
     nb_grumes:    grumes.length,
     vol_brut:     tVB,
-    vol_utile:    tVU,
-    vol_dechets:  tVB - tVU,
+    vol_utile:    tVD,
+    vol_dechets:  tVB - tVD,
     nb_planches:  tP,
     lineaire:     tL,
     date:         now.toLocaleDateString('fr-FR'),
@@ -1798,12 +1791,12 @@ async function sauvegarderLot() {
     await chargerDonnees();
     grumes = [];
     afficherGrumes();
-    ['essence', 'cause', 'provenance', 'annee', 'usage', 'epaisseur', 'delta', 'lot-nom']
+    ['essence', 'cause', 'provenance', 'annee', 'usage', 'epaisseur', 'lot-nom']
       .forEach(function (id) { document.getElementById(id).value = ''; });
     document.getElementById('lot-partage').checked = false;
     document.getElementById('resultats-container').style.display = 'none';
     goToEtape1();
-    alert('Lot sauvegarde !\n' + lot.nom + '\n' + tVU.toFixed(3) + ' m3 utiles - ' + tP + ' planches');
+    alert('Lot sauvegarde !\n' + lot.nom + '\n' + tVD.toFixed(3) + ' m3 debites - ' + tP + ' planches');
   } catch (err) {
     showError('Erreur sauvegarde : ' + err.message);
   } finally {
