@@ -1,0 +1,44 @@
+/* ═══════════════════════════════════════
+   DESIGN SYSTEM — Duramen / theme.css
+   Tokens de design : couleurs, typographie, espacement
+   Ce fichier est la seule source de vérité pour la palette et les polices.
+═══════════════════════════════════════ */
+:root {
+  /* ─── Fonds ─── */
+  --washi:        #FAFAF9;   /* fond principal */
+  --neige:        #F2F2EE;   /* fond secondaire, stats */
+  --brume:        #EEEEE9;   /* séparateurs, fond cards légères */
+
+  /* ─── Textes ─── */
+  --sumi:         #0F0F0E;   /* texte principal, header, CTA */
+  --cendre:       #B0B0AA;   /* labels, secondaire, placeholders */
+  --pierre:       #CECEC8;   /* éléments inactifs, nav off, bordures légères */
+
+  /* ─── Accent unique ─── */
+  --indigo:       #2B3F8C;   /* onglet actif, champ focus, valeur calculée, badge commune, barre stock */
+  --indigo-clair: #EEF0FA;   /* fond badge indigo */
+
+  /* ─── Statuts — inchangés ─── */
+  --rouge:        #c0392b;
+  --orange:       #d35400;
+
+  /* ─── Typographie ─── */
+  --font-display:         'Outfit', sans-serif;
+  --font-body:            'Outfit', sans-serif;
+  --font-weight-thin:     200;
+  --font-weight-light:    300;
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+
+  /* ─── Bordures ─── */
+  --border-thin:    1px solid var(--brume);
+  --border-field:   1px solid var(--pierre);
+  --border-active:  1px solid var(--indigo);
+  --border-filled:  1px solid var(--sumi);
+
+  /* ─── Rayons ─── */
+  --border-radius-sm: 2px;
+  --border-radius-md: 4px;
+  --border-radius-lg: 18px;   /* cadre téléphone uniquement */
+}

@@ -1,0 +1,42 @@
+{
+  "name": "DURAMEN — Tronc Commun",
+  "short_name": "DURAMEN",
+  "description": "Gestion du stock de bois d'œuvre issu des arbres du territoire",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FAFAF9",
+  "theme_color": "#0F0F0E",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Nouveau lot",
+      "short_name": "Nouveau lot",
+      "description": "Enregistrer un nouveau lot de bois",
+      "url": "./#saisie",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Stock",
+      "short_name": "Stock",
+      "description": "Consulter le stock par essence",
+      "url": "./#stock",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
