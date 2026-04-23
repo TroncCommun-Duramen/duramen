@@ -141,3 +141,82 @@ DuramenCore.validerSortie(ext)    // Retourne {ok, erreur}
 ## Sécurité — Points d'attention avant mise en production
 
 - Les clés de connexion Supabase (`SUPABASE_URL` et `SUPABASE_ANON_KEY`) sont actuellement en dur dans `duramen.html`. La clé anon est publique par conception mais avant mise en production, vérifier que les règles RLS (Row Level Security) de Supabase sont bien activées sur toutes les tables pour limiter l'accès aux seules communes authentifiées.
+
+---
+
+
+---
+
+## Session Avril 2026 — Dossier financeur
+
+### Documents produits
+
+| Fichier | Description | Statut |
+|---|---|---|
+| `DURAMEN_presentation_v3.docx` | Note de présentation ADEME — version finale retravaillée | ✅ |
+| `DURAMEN_presentation_financeurs_v2.docx` | Version intermédiaire avec section financement | archivée |
+| `budget_duramen.xlsx` | Budget prévisionnel modulable (jours + taux) | ✅ à compléter |
+| `DURAMEN_budget.md` | Version lisible du budget pour Obsidian | ✅ |
+| `DURAMEN_taches.md` | Suivi global du projet avec cases à cocher | ✅ |
+| `DURAMEN_postes.md` | Détail des tâches par poste de réalisation | ✅ |
+| `DURAMEN_postes_financement.md` | Grandes lignes des postes pour le dossier financeur | ✅ |
+| `REDACTION.md` | Règles rédactionnelles avec exemples | ✅ → `Docs/` |
+
+---
+
+### Structure du document de présentation v3
+
+1. Un maillon manquant dans la filière
+2. La philosophie Tronc Commun : catalyseur, pas éditeur
+3. Une application qui se construit avec ceux qui l'utilisent
+4. DURAMEN : un outil au service du stock
+5. Propriété, gouvernance et diffusion
+6. Feuille de route sur 2 ans
+
+---
+
+### Décisions rédactionnelles
+
+- **Posture TC** : catalyseur de filière, pas éditeur de logiciel
+- **Ton** : proposition, jamais contrat ni directive
+- **Reprise de mission** : assumée et transparente, sans jugement sur l'ancien partenaire
+- **Périmètre** : outil fiable et appropriable en 2 ans — pas exhaustif
+- **Propriété** : TC éditeur + propriétaire du code / communes propriétaires de leurs données
+- **Diffusion** : TC peut déployer ailleurs / communes sans droit de redistribution
+- **Déploiement ADEME** : gratuit pour les communes Métropole Nantaise, usage conservé après le projet
+- **Questions juridiques futures** (stockage mutualisé) : nommées mais non chiffrées
+
+---
+
+### Budget — état au 22 avril 2026
+
+| | Jours | Montant |
+|---|---|---|
+| Travail TC (500 €/j) | 47 j | 23 500 € |
+| Illustrateur (400 €/j) | 10 j | 4 000 € |
+| Frais annexes (2 ans) | — | 3 600 € |
+| **Total** | | **31 100 €** |
+
+Taux illustrateur et nombre de jours à confirmer selon devis.
+
+---
+
+### Postes budget (grandes lignes pour financeur)
+
+1. Conception et développement de l'application
+2. Animation et co-construction avec les usagers
+3. Déploiement et suivi
+4. Recherche et documentation technique
+5. Frais de fonctionnement
+
+---
+
+### Règles rédactionnelles — section 14 de CLAUDE.md
+
+1. Phrases courtes, sans surcharge
+2. Ton simple et agréable
+3. Construire par le positif — négatif après le positif si nécessaire
+4. Pas de jugement direct
+
+**Rappel** : tout changement dans `CLAUDE.md` section 14 doit être répercuté dans `Docs/REDACTION.md`, et inversement.
+

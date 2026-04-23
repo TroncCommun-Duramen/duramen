@@ -143,6 +143,13 @@ Famille unique : `Outfit` (Google Fonts)
 - **TOUJOURS** sauvegarder localement après chaque écriture Supabase réussie. → Clés localStorage : `duramen_lots_cache`, `duramen_extractions_cache`.
 - **TOUJOURS** sauvegarder le brouillon du formulaire en cours de saisie. → Clé localStorage : `duramen_draft`.
 
+Règle de vérification avant commit
+
+- **TOUJOURS** effectuer une vérification du code avant tout `git push`.
+- Vérifier : navigation entre écrans, affichage des données, indicateurs dynamiques, absence d'erreurs console.
+- La vérification est en lecture seule — aucune modification sans rapport préalable.
+- Si un bug est détecté, le signaler et attendre validation avant correction.
+
 ---
 
 ## 7. Architecture du noyau `core.js`
@@ -265,6 +272,10 @@ L'app est mise à jour en ligne automatiquement 1 à 2 minutes après le `git pu
 - En cas de bug, on peut revenir à n'importe quelle version précédente
 - Le dépôt GitHub est la seule sauvegarde externalisée du code
 
+Avant le git push, lancer une vérification complète (navigation, 
+affichage, console) sans modifier aucun fichier. Rapporter les 
+résultats avant de clore la session.
+
 ---
 
 ## 13. Tâches design en attente
@@ -279,3 +290,60 @@ L'app est mise à jour en ligne automatiquement 1 à 2 minutes après le `git pu
       fond --indigo (#2B3F8C) et icône blanche pour meilleur contraste
       sur le splash screen PWA au lancement. Coordonner avec le graphiste
       avant de modifier `manifest.json`.
+
+
+## 14. Règles rédactionnelles — TOUJOURS APPLIQUER
+
+Ces règles s'appliquent à tous les documents, notes et reformulations produits dans le cadre du projet.
+
+### Règle 1 — Phrases courtes
+Formuler des phrases courtes. Ne pas ajouter d'informations qui alourdissent le propos. Chaque phrase dit une chose, une seule. Éviter les constructions longues typiques de la rédaction IA.
+
+### Règle 2 — Ton simple et agréable
+Écrire clairement, sans jargon, sans formules creuses. Le document doit être agréable à lire pour un agent de terrain comme pour un financeur.
+
+### Règle 3 — Construire par le positif
+Toujours formuler ce qu'on fait, ce qu'on veut, ce qu'on propose. Si la formulation négative est nécessaire à la compréhension, elle vient APRÈS le positif — jamais avant.
+
+### Règle 4 — Pas de jugement direct
+Ne pas qualifier négativement une situation, une personne ou une tentative passée. Nommer les faits, pas les responsabilités.
+
+**Rappel** : tout changement dans cette section doit être répercuté dans `Docs/REDACTION.md`, et inversement.
+
+**Référence complète avec exemples** : `Docs/REDACTION.md`
+
+---
+
+## 15. Protocole de débogage — TOUJOURS SUIVRE
+
+Avant de toucher au code, Claude doit suivre ces 4 étapes dans l'ordre :
+
+1. **Nommer le bug** — décrire en une phrase ce qui se passe vs ce qui devrait se passer
+2. **Isoler la zone** — identifier le fichier concerné (`core.js`, `app.js`, `ui.css`…) sans en ouvrir d'autres
+3. **Poser une hypothèse** — énoncer la cause probable avant de chercher
+4. **Vérifier avant de corriger** — confirmer l'hypothèse par lecture du code, pas par modification
+
+Répondre avec :
+> "Bug identifié : [description]. Zone : [fichier]. Hypothèse : [cause probable]. Je lis [section] avant de proposer une correction."
+
+---
+
+## 16. Bilan de fin de session — TOUJOURS APPLIQUER
+
+Avant le message de clôture (§12), Claude doit produire ce bilan :
+
+> "**Bilan de session.**
+> Ce qui a changé : [liste courte].
+> Ce qui reste ouvert : [tâches non terminées].
+> Mise à jour MEMORY.md : [oui / non — et pourquoi si non]."
+
+---
+
+## 17. Règle — Chercher avant de construire
+
+Avant d'écrire une nouvelle fonction dans `core.js` ou `app.js` :
+
+1. Lire les fonctions existantes dans `core.js`
+2. Vérifier si une adaptation suffit — sans modifier les signatures figées (§7)
+3. Seulement si rien n'existe : proposer une nouvelle fonction, avec son nom et sa signature, **avant de l'écrire**
+
