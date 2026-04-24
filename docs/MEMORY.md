@@ -14,6 +14,46 @@
 - Phase 0b ✅ : core.js (DuramenCore), app.js créés — duramen.html = HTML pur 546 lignes
 - Phase 0c ✅ : accents ESSENCES_INFO, UUIDs, brouillon auto-sauvegardé, cache offline
 
+---
+
+## Session 24 avril 2026 — Interfaces mobiles
+
+### Fichier principal
+- Renommé `duramen.html` → `index.html` (obligatoire pour PWA + GitHub Pages)
+
+### Écran connexion (index.html + ui.css) ✅
+- Logo `icon-512.png` centré, classe `.login-logo-img`
+- Titre DURAMEN — Outfit 200, letterspacing 0.2em, uppercase
+- Sous-titre "Gestion du bois d'œuvre"
+- Champ CODE : fond `var(--indigo)`, texte blanc, `autocapitalize="characters"`
+- Bouton ACCÉDER : 56px minimum, fond `var(--sumi)`, texte blanc
+
+### Écran accueil mobile (index.html + ui.css) ✅
+- Panel `#panel-accueil`, affiché sur mobile uniquement (`@media (min-width: 601px) { display: none !important }`)
+- Badge commune : classe `.home-commune-badge`, fond indigo, texte blanc
+- Indicateur réseau : `#accueil-online-dot` — classes `.online` / `.offline` gérées par `app.js`
+- Stock total : `#accueil-stock-val` en gros chiffre + `.home-stock-unit` "m³ disponibles"
+- 3 boutons `.btn-home` : inset `width: calc(100% - 32px)`, `border-radius: 12px`, hauteur min 56px
+  - `.btn-home-primary` (Ajouter au stock) : fond `var(--sumi)`
+  - `.btn-home-secondary` (Voir le stock / Extraire du stock) : fond blanc, bordure
+
+### Navigation mobile (app.js) ✅
+- Après connexion : routing automatique vers `#panel-accueil` si `window.innerWidth <= 600`
+- Les 3 boutons appellent `switchTab()` — met à jour la bottom nav simultanément
+- `mettreAJourAccueil()` : remplit commune, stock total, statut réseau
+- `mettreAJourStatutReseau()` : écoute `online` / `offline`
+
+### Mobile — masquage (ui.css, max-width: 600px) ✅
+- `header { display: none }` — header desktop masqué
+- `footer { display: none }` — footer masqué
+- `.header-stats-mobile { display: none !important }` — supprimé du HTML également
+- `.tabs-wrap { display: none }` — onglets desktop masqués
+- `.bottom-nav { display: block }` — navigation bas activée
+
+### Service Worker
+- Cache actuel : **duramen-v6**
+- Dernier commit : `f52ab7c` — "style(mobile): masquer footer, supprimer stats mobile obsolètes"
+
 **Migration Supabase — 19 avril 2026 :**
 Colonnes `id` des tables `lots` et `extractions` migrées de `bigint` → `uuid`.
 `app.js` utilise `crypto.randomUUID()` — les types sont désormais cohérents.
