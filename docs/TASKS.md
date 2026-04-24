@@ -18,6 +18,8 @@
 | Données live accueil (commune, stock, réseau) ✅ | Feature | 24 avril 2026 |
 | Header et footer masqués sur mobile ✅ | Design | 24 avril 2026 |
 | Suppression div .header-stats-mobile du HTML ✅ | Design | 24 avril 2026 |
+| Styles inline groupes A+B+C supprimés — `.toast-erreur`, `.btn-deconnexion`, `.commune-locked`, `#header-stats .commune-chip` ✅ | app.js + ui.css | 24 avril 2026 |
+| Boutons accueil — icône SVG + sous-titre + flèche ›, suppression indicateur réseau ✅ | Design | 24 avril 2026 |
 
 ---
 
@@ -31,7 +33,7 @@ _(aucune)_
 
 | # | Tâche | Session | Priorité |
 |---|-------|---------|----------|
-| 1 | Nettoyer les `style` inline dans `ouvrirApp()` — déplacer vers classes CSS | app.js + ui.css | Haute |
+| 1 | Groupe D : remplacer 20 occurrences `style.display` par `classList` + `.hidden` | app.js + ui.css | Haute |
 | 2 | Responsive desktop : layout bureau distinct du layout mobile | Design | Moyenne |
 | 3 | Icône PWA : fond `--indigo` + icône blanche (coordonner avec graphiste) | Design | Basse |
 

@@ -22,13 +22,13 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 
 ## 2. Stack technique
 
-|Composant|Choix|
-|---|---|
-|Frontend|HTML5 + CSS3 + JavaScript vanilla (ES6+, pas de framework)|
-|Backend/BDD|Supabase (PostgreSQL + API REST)|
-|PWA|manifest.json + Service Worker (`/sw.js`)|
-|Fonts|Google Fonts : Outfit (poids 200/300/400/500/600 uniquement)|
-|Build|Aucun — fichiers statiques séparés|
+| Composant    | Choix                                              |
+| ------------ | -------------------------------------------------- |
+| Frontend     | HTML5 + CSS3 + JavaScript vanilla (ES6+, pas de framework) |
+| Backend/BDD  | Supabase (PostgreSQL + API REST)                   |
+| PWA          | manifest.json + Service Worker (`/sw.js`)          |
+| Fonts        | Google Fonts : Outfit (poids 200/300/400/500/600 uniquement) |
+| Build        | Aucun — fichiers statiques séparés                 |
 
 **Tables Supabase existantes :**
 
@@ -65,6 +65,8 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 - Développeur features → `core.js` et `app.js`
 - Claude Code → jamais les deux zones en même temps dans la même session
 
+**Les 5 fichiers forment un ensemble indissociable.** Ne jamais modifier ou restaurer l'un sans vérifier que les autres sont de la même version.
+
 ---
 
 ## 4. Profil utilisateur cible
@@ -95,10 +97,10 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 --sumi:         #0F0F0E   /* texte principal, header, CTA */
 --cendre:       #B0B0AA   /* labels, textes secondaires */
 --pierre:       #CECEC8   /* éléments inactifs, nav off */
---indigo:       #2B3F8C   /* accent unique — remplace --signal */
---indigo-clair: #EEF0FA   /* fond badge indigo — remplace --signal-clair */
---rouge:        #c0392b   /* erreur, danger — inchangé */
---orange:       #d35400   /* alerte — inchangé */
+--indigo:       #2B3F8C   /* accent unique */
+--indigo-clair: #EEF0FA   /* fond badge indigo */
+--rouge:        #c0392b   /* erreur, danger */
+--orange:       #d35400   /* alerte */
 ```
 
 **Règle d'utilisation de l'indigo :** uniquement pour — onglet actif, champ en cours de saisie, valeur calculée par l'app, badge commune, barre de stock, chip essence disponible. Nulle part ailleurs.
@@ -107,48 +109,70 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 
 Famille unique : `Outfit` (Google Fonts)
 
-- Logo / nom app       : Outfit 200, letterspacing 0.2em, uppercase
-- Titres d'écran       : Outfit 300, letterspacing 0.04em
-- Corps / valeurs      : Outfit 300–400
-- Labels UI            : Outfit 500, 7–8px, uppercase, letterspacing 0.12em
-- Boutons              : Outfit 500, uppercase, letterspacing 0.14em
-- Chiffres stats       : Outfit 300, 16px
+- Logo / nom app    : Outfit 200, letterspacing 0.2em, uppercase
+- Titres d'écran    : Outfit 300, letterspacing 0.04em
+- Corps / valeurs   : Outfit 300–400
+- Labels UI         : Outfit 500, 7–8px, uppercase, letterspacing 0.12em
+- Boutons           : Outfit 500, uppercase, letterspacing 0.14em
+- Chiffres stats    : Outfit 300, 16px
+
+**Règles mobile :**
+- Police minimum 16px partout
+- Poids minimum 400 sur mobile (jamais 200 ou 300 en corps de texte)
+- Boutons minimum 56px de hauteur
 
 ---
 
 ## 6. Règles absolues — NE JAMAIS VIOLER
 
-### Règle fondamentale du noyau
+### Noyau métier
 
-- **JAMAIS** modifier les fonctions existantes de `core.js` pour faire plaisir à une feature UI. Si une feature a besoin de quelque chose de nouveau, on _ajoute_ une fonction — on ne modifie pas les fonctions déjà validées.
+- **JAMAIS** modifier les fonctions existantes de `core.js` pour une feature UI. On _ajoute_ — on ne modifie pas les fonctions déjà validées.
 
-### Règles design / CSS
+### Fichiers et nommage
 
-- **JAMAIS** écrire `style="..."` inline dans le HTML ou dans le JS. → Tout style passe par une classe CSS définie dans `ui.css`. → Raison : le graphiste doit pouvoir tout retravailler sans toucher au JS.
-- **JAMAIS** mettre des valeurs de couleur ou de taille en dur dans le JS. → Utiliser les variables CSS (`var(--signal)`) ou des classes.
-- **TOUJOURS** ajouter les nouveaux composants visuels dans `ui.css`, pas dans `duramen.html`.
+- **Le fichier principal s'appelle `index.html`** — pas `duramen.html`. Toujours vérifier le nom exact avant toute modification.
+- **Les 5 fichiers forment un ensemble** : index.html + app.js + core.js + theme.css + ui.css. Ne jamais restaurer l'un sans les autres.
+- **TOUJOURS** vérifier la taille des fichiers après restauration : index.html < 35 Ko, app.js > 800 lignes. Si anormal : stopper et signaler.
 
-### Règles données & identifiants
+### Authentification
 
-- **JAMAIS** utiliser `Date.getTime()` comme identifiant unique. → Utiliser `crypto.randomUUID()`. → Raison : risque de collision, problèmes de synchronisation Supabase.
-- **TOUJOURS** utiliser les noms d'essences avec accents dans `ESSENCES_INFO`. → Clés correctes : `'Châtaignier'`, `'Chêne'`, `'Cyprès'`, `'Épicéa'`, `'Frêne'`, `'Séquoia'`, `'Robinier (Acacia)'` → Raison : bug existant — sans accents, le delta de débit n'est jamais affiché.
+- **JAMAIS** mettre les codes d'accès dans le HTML. Ils sont dans Supabase, table `codes_acces`, colonne `actif`. Toute modification de l'authentification passe par Supabase uniquement.
 
-### Règles DOM & rendu
+### Design / CSS
 
-- **JAMAIS** construire du HTML par concaténation de chaînes de caractères dans le JS. → Utiliser `document.createElement` + `textContent`. → Raison : risque de sécurité et code impossible à maintenir.
+- **JAMAIS** écrire `style="..."` inline dans le HTML ou dans le JS. Tout style passe par une classe CSS dans `ui.css`.
+- **JAMAIS** mettre des valeurs de couleur ou de taille en dur dans le JS. Utiliser les variables CSS (`var(--indigo)`) ou des classes.
+- **TOUJOURS** ajouter les nouveaux composants visuels dans `ui.css`.
 
-### Règles offline & sauvegarde
+### Données & identifiants
 
-- **TOUJOURS** maintenir un Service Worker actif (`/sw.js`).
-- **TOUJOURS** sauvegarder localement après chaque écriture Supabase réussie. → Clés localStorage : `duramen_lots_cache`, `duramen_extractions_cache`.
-- **TOUJOURS** sauvegarder le brouillon du formulaire en cours de saisie. → Clé localStorage : `duramen_draft`.
+- **JAMAIS** utiliser `Date.getTime()` comme identifiant unique. Utiliser `crypto.randomUUID()`.
+- **TOUJOURS** utiliser les noms d'essences avec accents dans `ESSENCES_INFO`. Clés correctes : `'Châtaignier'`, `'Chêne'`, `'Cyprès'`, `'Épicéa'`, `'Frêne'`, `'Séquoia'`, `'Robinier (Acacia)'`.
 
-Règle de vérification avant commit
+### DOM & rendu
 
-- **TOUJOURS** effectuer une vérification du code avant tout `git push`.
-- Vérifier : navigation entre écrans, affichage des données, indicateurs dynamiques, absence d'erreurs console.
-- La vérification est en lecture seule — aucune modification sans rapport préalable.
-- Si un bug est détecté, le signaler et attendre validation avant correction.
+- **JAMAIS** construire du HTML par concaténation de chaînes dans le JS. Utiliser `document.createElement` + `textContent`.
+
+### Service Worker & cache
+
+- **TOUJOURS** maintenir le Service Worker actif (`/sw.js`).
+- **TOUJOURS** vérifier que l'enregistrement du SW est présent dans index.html juste avant `</script>` :
+  ```javascript
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+  }
+  ```
+- **TOUJOURS** incrémenter le numéro de cache dans `sw.js` après toute modification (duramen-v3 → duramen-v4…). Sans ça, les appareils ne chargent pas la nouvelle version.
+
+### Offline & sauvegarde
+
+- **TOUJOURS** sauvegarder localement après chaque écriture Supabase réussie. Clés localStorage : `duramen_lots_cache`, `duramen_extractions_cache`.
+- **TOUJOURS** sauvegarder le brouillon du formulaire en cours. Clé localStorage : `duramen_draft`.
+
+### Débogage
+
+- **JAMAIS** empiler les corrections en cascade. Un bug = une session dédiée. Si une correction introduit un nouveau problème : stopper et faire le point.
 
 ---
 
@@ -157,16 +181,11 @@ Règle de vérification avant commit
 Ces signatures sont **figées**. On peut ajouter des fonctions, jamais modifier celles-ci.
 
 ```javascript
-// Les deux opérations fondamentales
 DuramenCore.entree(lot)           // Ajouter du stock
 DuramenCore.sortie(extraction)    // Retirer du stock
-
-// Lecture de l'état
 DuramenCore.getStock()            // Stock disponible par essence
 DuramenCore.getHistorique()       // Log immuable de toutes les opérations
-
-// Validation (retourne {ok: bool, erreur: string})
-DuramenCore.validerEntree(lot)
+DuramenCore.validerEntree(lot)    // Retourne {ok: bool, erreur: string}
 DuramenCore.validerSortie(extraction)
 ```
 
@@ -176,17 +195,17 @@ DuramenCore.validerSortie(extraction)
 
 **Une session = une zone de travail. Jamais les deux en même temps.**
 
-|Session "Design"|Fichiers autorisés|Fichiers interdits|
-|---|---|---|
-||`theme.css`, `ui.css`|`core.js`, `app.js`|
+| Session "Design" | Fichiers autorisés    | Fichiers interdits  |
+| ---------------- | --------------------- | ------------------- |
+|                  | `theme.css`, `ui.css` | `core.js`, `app.js` |
 
-|Session "Feature"|Fichiers autorisés|Fichiers interdits|
-|---|---|---|
-||`core.js`, `app.js`|`theme.css`, `ui.css`|
+| Session "Feature"   | Fichiers autorisés       | Fichiers interdits     |
+| ------------------- | ------------------------ | ---------------------- |
+|                     | `core.js`, `app.js`      | `theme.css`, `ui.css`  |
 
-|Session "Structure"|Fichiers autorisés|Fichiers interdits|
-|---|---|---|
-||`duramen.html`|tous les autres|
+| Session "Structure" | Fichiers autorisés       | Fichiers interdits     |
+| ------------------- | ------------------------ | ---------------------- |
+|                     | `index.html`             | tous les autres        |
 
 **Prompt de démarrage à copier-coller à chaque session :**
 
@@ -223,11 +242,10 @@ Types :
   test     → ajout ou modification de tests
 
 Exemples :
-  refactor(design): extraire theme.css et ui.css depuis duramen.html
-  refactor(core): isoler DuramenCore dans core.js
-  fix(essences): corriger les accents dans ESSENCES_INFO
-  feat(etats): ajouter les états brut/débité au stock
-  style(carte): retravailler les composants lot-card
+  feat(mobile): écran accueil 3 boutons
+  fix(auth): corriger la connexion Supabase
+  style(connexion): refonte écran login
+  docs(claude): mise à jour règles session
 ```
 
 ---
@@ -244,13 +262,41 @@ Exemples :
 
 ---
 
-## 12. Clôture de session Claude Code
+## 12. Protocole de débogage — TOUJOURS SUIVRE
 
-À la fin de chaque session, Claude Code doit rappeler à l'utilisateur de synchroniser ses fichiers avec GitHub.
+Avant de toucher au code, suivre ces 4 étapes dans l'ordre :
 
-**Message de clôture à afficher systématiquement :**
+1. **Nommer le bug** — décrire en une phrase ce qui se passe vs ce qui devrait se passer
+2. **Isoler la zone** — identifier le fichier concerné sans en ouvrir d'autres
+3. **Poser une hypothèse** — énoncer la cause probable avant de chercher
+4. **Vérifier avant de corriger** — confirmer par lecture du code, pas par modification
 
-> "Session terminée. Avant de fermer, synchronise avec GitHub en ouvrant un terminal dans le dossier 'Appli Duramen' et en tapant les 3 commandes suivantes :"
+Répondre avec :
+> "Bug identifié : [description]. Zone : [fichier]. Hypothèse : [cause probable]. Je lis [section] avant de proposer une correction."
+
+---
+
+## 13. Clôture de session Claude Code
+
+**Bilan obligatoire avant clôture :**
+
+> "**Bilan de session.**
+> Ce qui a changé : [liste courte].
+> Ce qui reste ouvert : [tâches non terminées].
+> Mise à jour MEMORY.md : [oui / non — et pourquoi si non]."
+
+**Vérifications avant git push :**
+
+- Navigation entre écrans fonctionnelle
+- Affichage des données correct
+- Absence d'erreurs console
+- app.js et core.js de la même version que index.html
+- Taille de index.html cohérente (< 35 Ko)
+- Numéro de cache sw.js incrémenté
+
+**Message de clôture :**
+
+> "Session terminée. Synchronise avec GitHub en ouvrant un terminal dans le dossier 'Appli Duramen' et en tapant :"
 
 ```bash
 git add .
@@ -258,92 +304,31 @@ git commit -m "type(périmètre): description en français"
 git push
 ```
 
-**Rappel des types de commits** (voir section 10) :
-- `feat` → nouvelle fonctionnalité
-- `fix` → correction de bug
-- `refactor` → réorganisation sans changement de comportement
-- `style` → modification visuelle uniquement
-- `docs` → mise à jour documentation
-
 L'app est mise à jour en ligne automatiquement 1 à 2 minutes après le `git push`.
 
-**Pourquoi c'est important :**
-- Chaque session laisse une trace horodatée dans l'historique GitHub
-- En cas de bug, on peut revenir à n'importe quelle version précédente
-- Le dépôt GitHub est la seule sauvegarde externalisée du code
+---
 
-Avant le git push, lancer une vérification complète (navigation, 
-affichage, console) sans modifier aucun fichier. Rapporter les 
-résultats avant de clore la session.
+## 14. Tâches design en attente
+
+- [ ] **Écran connexion mobile** (mockup validé) : logo + DURAMEN Outfit 200 + "Gestion du bois d'œuvre" + champ Code en indigo + bouton Accéder noir + © Tronc Commun. Saisie automatiquement en majuscules.
+- [ ] **Écran accueil mobile** (mockup validé) : badge commune + stock total + indicateur online/offline + 3 boutons larges (Ajouter au stock / Voir le stock / Extraire du stock). Chaque bouton navigue vers son écran dédié.
+- [ ] **Responsive** : deux layouts distincts — mobile (terrain) et desktop (bureau). Session Design dédiée.
+- [ ] **Icône PWA** : envisager fond --indigo (#2B3F8C) + icône blanche. Coordonner avec le graphiste avant de modifier `manifest.json`.
 
 ---
 
-## 13. Tâches design en attente
-
-- [ ] **Responsive** : définir deux layouts distincts — mobile (terrain)
-      et desktop (bureau). Sur mobile : poids minimum 400, taille de texte
-      augmentée, boutons plus hauts. À traiter dans une session Design
-      dédiée avant toute session CSS.
-
-- [ ] **Icône PWA** : les fichiers `icon-192.png` et `icon-512.png` sont
-      noirs sur blanc (#0F0F0E sur #FAFAF9). Envisager une version avec
-      fond --indigo (#2B3F8C) et icône blanche pour meilleur contraste
-      sur le splash screen PWA au lancement. Coordonner avec le graphiste
-      avant de modifier `manifest.json`.
-
-
-## 14. Règles rédactionnelles — TOUJOURS APPLIQUER
-
-Ces règles s'appliquent à tous les documents, notes et reformulations produits dans le cadre du projet.
+## 15. Règles rédactionnelles — TOUJOURS APPLIQUER
 
 ### Règle 1 — Phrases courtes
-Formuler des phrases courtes. Ne pas ajouter d'informations qui alourdissent le propos. Chaque phrase dit une chose, une seule. Éviter les constructions longues typiques de la rédaction IA.
+Une phrase = une idée. Pas de constructions longues.
 
-### Règle 2 — Ton simple et agréable
-Écrire clairement, sans jargon, sans formules creuses. Le document doit être agréable à lire pour un agent de terrain comme pour un financeur.
+### Règle 2 — Ton simple
+Sans jargon, sans formules creuses. Lisible par un agent de terrain comme par un financeur.
 
 ### Règle 3 — Construire par le positif
-Toujours formuler ce qu'on fait, ce qu'on veut, ce qu'on propose. Si la formulation négative est nécessaire à la compréhension, elle vient APRÈS le positif — jamais avant.
+Formuler ce qu'on fait, ce qu'on veut, ce qu'on propose. Le négatif vient après le positif si nécessaire.
 
 ### Règle 4 — Pas de jugement direct
-Ne pas qualifier négativement une situation, une personne ou une tentative passée. Nommer les faits, pas les responsabilités.
-
-**Rappel** : tout changement dans cette section doit être répercuté dans `Docs/REDACTION.md`, et inversement.
+Nommer les faits, pas les responsabilités.
 
 **Référence complète avec exemples** : `Docs/REDACTION.md`
-
----
-
-## 15. Protocole de débogage — TOUJOURS SUIVRE
-
-Avant de toucher au code, Claude doit suivre ces 4 étapes dans l'ordre :
-
-1. **Nommer le bug** — décrire en une phrase ce qui se passe vs ce qui devrait se passer
-2. **Isoler la zone** — identifier le fichier concerné (`core.js`, `app.js`, `ui.css`…) sans en ouvrir d'autres
-3. **Poser une hypothèse** — énoncer la cause probable avant de chercher
-4. **Vérifier avant de corriger** — confirmer l'hypothèse par lecture du code, pas par modification
-
-Répondre avec :
-> "Bug identifié : [description]. Zone : [fichier]. Hypothèse : [cause probable]. Je lis [section] avant de proposer une correction."
-
----
-
-## 16. Bilan de fin de session — TOUJOURS APPLIQUER
-
-Avant le message de clôture (§12), Claude doit produire ce bilan :
-
-> "**Bilan de session.**
-> Ce qui a changé : [liste courte].
-> Ce qui reste ouvert : [tâches non terminées].
-> Mise à jour MEMORY.md : [oui / non — et pourquoi si non]."
-
----
-
-## 17. Règle — Chercher avant de construire
-
-Avant d'écrire une nouvelle fonction dans `core.js` ou `app.js` :
-
-1. Lire les fonctions existantes dans `core.js`
-2. Vérifier si une adaptation suffit — sans modifier les signatures figées (§7)
-3. Seulement si rien n'existe : proposer une nouvelle fonction, avec son nom et sa signature, **avant de l'écrire**
-

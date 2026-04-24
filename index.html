@@ -139,19 +139,42 @@
   <div class="panel" id="panel-accueil">
     <div class="accueil-commune-row">
       <span class="commune-chip home-commune-badge" id="accueil-commune">—</span>
-      <span class="accueil-network" id="accueil-online-dot">
-        <span class="accueil-network-dot"></span>
-        <span class="accueil-network-label">—</span>
-      </span>
     </div>
     <div class="accueil-stock">
       <div class="accueil-stock-val" id="accueil-stock-val">—</div>
       <div class="home-stock-unit">m³ disponibles</div>
     </div>
     <div class="accueil-actions">
-      <button class="btn-home btn-home-primary" onclick="switchTab('saisie',this)" data-panel="saisie">Ajouter au stock</button>
-      <button class="btn-home btn-home-secondary" onclick="switchTab('stock',this)" data-panel="stock">Voir le stock</button>
-      <button class="btn-home btn-home-secondary" onclick="switchTab('extraction',this)" data-panel="extraction">Extraire du stock</button>
+      <button class="btn-home btn-home-primary" onclick="switchTab('saisie',this)" data-panel="saisie">
+        <span class="btn-home-icon-box">
+          <svg class="btn-home-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <span class="btn-home-text">
+          <span class="btn-home-label">Ajouter au stock</span>
+          <span class="btn-home-sub">Saisir un nouveau lot</span>
+        </span>
+        <span class="btn-home-arrow">›</span>
+      </button>
+      <button class="btn-home btn-home-secondary" onclick="switchTab('stock',this)" data-panel="stock">
+        <span class="btn-home-icon-box">
+          <svg class="btn-home-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </span>
+        <span class="btn-home-text">
+          <span class="btn-home-label">Voir le stock</span>
+          <span class="btn-home-sub">Par essence, en temps réel</span>
+        </span>
+        <span class="btn-home-arrow">›</span>
+      </button>
+      <button class="btn-home btn-home-secondary" onclick="switchTab('extraction',this)" data-panel="extraction">
+        <span class="btn-home-icon-box">
+          <svg class="btn-home-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17,11 12,6 7,11"/><line x1="12" y1="6" x2="12" y2="18"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </span>
+        <span class="btn-home-text">
+          <span class="btn-home-label">Extraire du stock</span>
+          <span class="btn-home-sub">Sortie, usage, destination</span>
+        </span>
+        <span class="btn-home-arrow">›</span>
+      </button>
     </div>
   </div>
 

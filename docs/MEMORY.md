@@ -50,9 +50,25 @@
 - `.tabs-wrap { display: none }` — onglets desktop masqués
 - `.bottom-nav { display: block }` — navigation bas activée
 
+### Refactor styles inline — app.js + ui.css ✅
+- Groupes A+B+C traités : suppression de tous les `style.cssText` et propriétés visuelles inline
+- 4 classes créées dans `ui.css` : `.toast-erreur`, `.btn-deconnexion`, `input.commune-locked`, `#header-stats .commune-chip`
+- `#panel-mentions` : padding corrigé à `32px 20px` (bottom nav masquée lors des mentions, 80px inutile)
+- Commit : `6f50dc3`
+- Reste ouvert : **Groupe D** — 20 occurrences `style.display` (show/hide pur) — session dédiée app.js + ui.css
+
+### Boutons accueil — refonte (index.html + ui.css) ✅
+- Indicateur réseau `#accueil-online-dot` / `.accueil-network` supprimé du HTML et du CSS
+- 3 boutons `.btn-home` restructurés : icône SVG carrée arrondie + bloc texte (label + sous-titre) + flèche `›`
+  - Bouton 1 (primary) : icône `+` / "Ajouter au stock" / "Saisir un nouveau lot"
+  - Bouton 2 (secondary) : icône barres / "Voir le stock" / "Par essence, en temps réel"
+  - Bouton 3 (secondary) : icône flèche-sortie / "Extraire du stock" / "Sortie, usage, destination"
+- Nouvelles classes CSS dans `ui.css` : `.btn-home-icon-box`, `.btn-home-icon-svg`, `.btn-home-text`, `.btn-home-label`, `.btn-home-sub`, `.btn-home-arrow`
+- Zéro style inline — tout dans `ui.css`
+
 ### Service Worker
-- Cache actuel : **duramen-v6**
-- Dernier commit : `f52ab7c` — "style(mobile): masquer footer, supprimer stats mobile obsolètes"
+- Cache actuel : **duramen-v7**
+- Dernier commit : à venir
 
 **Migration Supabase — 19 avril 2026 :**
 Colonnes `id` des tables `lots` et `extractions` migrées de `bigint` → `uuid`.
