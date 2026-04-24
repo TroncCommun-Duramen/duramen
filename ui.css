@@ -1118,3 +1118,384 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .btn-home-secondary:hover,
 .btn-home-secondary:active { background: var(--neige); }
 
+/* ═══════════════════════════════════════
+   SAISIE — Formulaire "Ajouter au stock"
+═══════════════════════════════════════ */
+
+/* ─── Chips méta (date + GPS) ─── */
+.saisie-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.saisie-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--indigo-clair);
+  color: var(--indigo);
+  border: 1px solid var(--indigo);
+  border-radius: var(--border-radius-sm);
+  padding: 4px 10px;
+  font-size: 0.62rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.06em;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ─── Année de coupe ─── */
+.saisie-annee-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: var(--neige);
+  border-radius: var(--border-radius-sm);
+  border: var(--border-thin);
+}
+.saisie-annee-lbl {
+  font-size: 0.62rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--cendre);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  flex: 1;
+}
+.saisie-annee-val {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sumi);
+}
+.saisie-annee-btn {
+  font-size: 0.62rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--indigo);
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  text-decoration: underline;
+  padding: 2px 4px;
+}
+.saisie-annee-input {
+  width: 72px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sumi);
+  border: none;
+  border-bottom: 2px solid var(--indigo);
+  background: transparent;
+  text-align: center;
+  outline: none;
+  font-family: var(--font-body);
+}
+
+/* ─── Grille des sélects ─── */
+.saisie-selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+@media (max-width: 600px) {
+  .saisie-selects { grid-template-columns: 1fr; }
+}
+
+/* ─── Section grumes ─── */
+.saisie-grumes-section { margin-bottom: 16px; }
+
+.saisie-grumes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: var(--border-thin);
+}
+.saisie-grumes-title {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--sumi);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.saisie-add-btn {
+  background: var(--sumi);
+  color: var(--washi);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.saisie-add-btn:hover { background: #000; }
+
+/* ─── Carte grume ─── */
+.saisie-grume-card {
+  background: var(--washi);
+  border: var(--border-thin);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.saisie-grume-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.saisie-grume-vol {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--indigo);
+  letter-spacing: -0.02em;
+}
+.saisie-grume-del {
+  background: none;
+  border: 1px solid var(--rouge);
+  border-radius: 6px;
+  color: var(--rouge);
+  font-size: 1rem;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+.saisie-grume-del:hover { background: var(--rouge); color: var(--washi); }
+
+.saisie-grume-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.saisie-grume-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.saisie-col-label {
+  font-size: 9px;
+  font-weight: var(--font-weight-medium);
+  color: var(--cendre);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ─── Drum picker (molette de défilement) ─── */
+.drum-wrap {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  border-radius: var(--border-radius-sm);
+  background: var(--neige);
+}
+/* Fondu haut */
+.drum-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 42px;
+  background: linear-gradient(to bottom, var(--neige) 25%, transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+/* Fondu bas */
+.drum-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 42px;
+  background: linear-gradient(to top, var(--neige) 25%, transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+/* Lignes de sélection centrale */
+.drum-center {
+  position: absolute;
+  top: 40px; left: 6px; right: 6px;
+  height: 40px;
+  border-top: 1px solid var(--brume);
+  border-bottom: 1px solid var(--brume);
+  pointer-events: none;
+  z-index: 1;
+}
+/* Piste défilante */
+.drum-track {
+  height: 120px;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.drum-track::-webkit-scrollbar { display: none; }
+/* Espacement haut/bas pour centrer le premier/dernier item */
+.drum-pad { height: 40px; flex-shrink: 0; }
+/* Item de la molette */
+.drum-item {
+  height: 40px;
+  scroll-snap-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sumi);
+  white-space: nowrap;
+  font-family: var(--font-display);
+}
+
+/* ─── Contrôle quantité ─── */
+.saisie-col-qty { justify-content: flex-start; padding-top: 0; }
+.qty-ctrl {
+  display: flex;
+  align-items: center;
+  border: var(--border-thin);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--washi);
+}
+.qty-btn {
+  background: var(--neige);
+  border: none;
+  width: 34px;
+  height: 40px;
+  font-size: 1.1rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--sumi);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+.qty-btn:active { background: var(--brume); }
+.qty-num {
+  min-width: 32px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sumi);
+  border-left: var(--border-thin);
+  border-right: var(--border-thin);
+  font-family: var(--font-display);
+}
+
+/* ─── Barre de synthèse ─── */
+.saisie-synthese {
+  display: flex;
+  background: var(--indigo-clair);
+  border: 1px solid var(--indigo);
+  border-radius: 12px;
+  padding: 14px 8px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+.saisie-synth-item {
+  flex: 1;
+  text-align: center;
+  border-right: 1px solid rgba(43,63,140,0.2);
+}
+.saisie-synth-item:last-child { border-right: none; }
+.saisie-synth-val {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--indigo);
+  line-height: 1;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.saisie-synth-lbl {
+  font-size: 9px;
+  font-weight: var(--font-weight-medium);
+  color: var(--indigo);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-top: 5px;
+  opacity: 0.7;
+}
+
+/* ─── Actions bas de page ─── */
+.saisie-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0 32px;
+}
+.saisie-btn {
+  padding: 16px;
+  min-height: 56px;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 0.69rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.saisie-btn-annuler {
+  flex: 1;
+  background: var(--washi);
+  color: var(--cendre);
+  border: var(--border-thin);
+}
+.saisie-btn-annuler:hover { background: var(--neige); color: var(--sumi); }
+.saisie-btn-nommer {
+  flex: 2;
+  background: var(--sumi);
+  color: var(--washi);
+  border: none;
+}
+.saisie-btn-nommer:hover { background: #000; }
+
+/* ─── Modal "Nommer le lot" ─── */
+.modal-nommer {
+  border-top: 2px solid var(--indigo);
+}
+
+/* ─── Toast succès ─── */
+.toast-succes {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--sumi);
+  color: var(--washi);
+  padding: 12px 24px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.82rem;
+  z-index: 3000;
+  max-width: 90vw;
+  text-align: center;
+  transition: opacity 0.3s;
+}
+.toast-succes.hidden { opacity: 0; }
+

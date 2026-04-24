@@ -771,8 +771,9 @@ function ouvrirApp() {
   hr.appendChild(document.createTextNode(' lots'));
   hr.appendChild(document.createElement('br'));
   hr.appendChild(btnD);
+  initialiserPanelSaisie();
+  captureGPS();
   chargerCommune();
-  restaurerBrouillon();
   chargerDonnees();
   demarrerRafraichissement();
   mettreAJourAccueil();
@@ -842,6 +843,599 @@ function restaurerBrouillon() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SAISIE "AJOUTER AU STOCK" — Formulaire unique mobile
+// ═══════════════════════════════════════════════════════════════════════════
+
+var nouvGrumes = [];
+var nouvGPS    = { lat: null, lon: null };
+var nouvDate   = new Date();
+var nouvAnnee  = String(new Date().getFullYear());
+
+// Hauteur d'un item de drum en px — doit correspondre à .drum-item dans ui.css
+var DRUM_H = 40;
+
+// ─── Valeurs des molettes ─────────────────────────────────────────────────
+function genLongueurs() {
+  var v = [];
+  for (var i = 0; i <= 106; i++) v.push(+(1.70 + i * 0.05).toFixed(2));
+  return v;
+}
+function genDiametres() {
+  var v = [];
+  for (var i = 20; i <= 70; i++) v.push(i);
+  return v;
+}
+var LON_VALS = genLongueurs(); // 1.70 → 7.00, pas 0.05 m
+var DIA_VALS = genDiametres(); // 20 → 70, pas 1 cm
+
+// ─── Volume d'une grume ── V = π × (d/200)² × L ──────────────────────────
+function calcVol(d, l) { return Math.PI * Math.pow(d / 200, 2) * l; }
+
+// ─── GPS silencieux ───────────────────────────────────────────────────────
+function captureGPS() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    nouvGPS.lat = +pos.coords.latitude.toFixed(6);
+    nouvGPS.lon = +pos.coords.longitude.toFixed(6);
+    var chip = document.getElementById('saisie-gps-chip');
+    if (chip) chip.textContent = '📍 ' + nouvGPS.lat + '° / ' + nouvGPS.lon + '°';
+  }, function () {
+    var chip = document.getElementById('saisie-gps-chip');
+    if (chip) chip.textContent = '📍 Non disponible';
+  }, { timeout: 15000, enableHighAccuracy: false });
+}
+
+// ─── Helper createElement ─────────────────────────────────────────────────
+function cel(tag, cls, txt) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (txt !== undefined) e.textContent = txt;
+  return e;
+}
+
+// ─── Drum picker (molette de défilement) ──────────────────────────────────
+function creerDrum(valeurs, defaut, afficher, onChange) {
+  var wrap   = cel('div', 'drum-wrap');
+  var center = cel('div', 'drum-center');
+  var track  = cel('div', 'drum-track');
+  var defIdx = 0;
+
+  track.appendChild(cel('div', 'drum-pad'));
+  valeurs.forEach(function (v, i) {
+    track.appendChild(cel('div', 'drum-item', afficher(v)));
+    if (Math.abs(v - defaut) < 0.001) defIdx = i;
+  });
+  track.appendChild(cel('div', 'drum-pad'));
+
+  wrap.appendChild(center);
+  wrap.appendChild(track);
+
+  var timer = null;
+  track.addEventListener('scroll', function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      var idx = Math.max(0, Math.min(Math.round(track.scrollTop / DRUM_H), valeurs.length - 1));
+      track.scrollTop = idx * DRUM_H;
+      onChange(valeurs[idx]);
+    }, 80);
+  });
+
+  // Appelé après insertion dans le DOM pour positionner la molette
+  wrap._init = function () { track.scrollTop = defIdx * DRUM_H; };
+  return wrap;
+}
+
+// ─── Carte d'une grume ────────────────────────────────────────────────────
+function creerCarteGrume(idx) {
+  var g    = nouvGrumes[idx];
+  var card = cel('div', 'saisie-grume-card');
+  card.dataset.grumeIdx = String(idx);
+
+  // Tête : volume total de la ligne + bouton supprimer
+  var top = cel('div', 'saisie-grume-top');
+  var vol = cel('div', 'saisie-grume-vol', '— m³');
+  vol.id  = 'saisie-vol-' + idx;
+  var del = cel('button', 'saisie-grume-del', '×');
+  del.type    = 'button';
+  del.title   = 'Supprimer cette ligne';
+  del.onclick = function () { nouvSupprimerLigne(idx); };
+  top.appendChild(vol);
+  top.appendChild(del);
+  card.appendChild(top);
+
+  // Corps : longueur | diamètre | quantité
+  var body = cel('div', 'saisie-grume-body');
+
+  // Colonne longueur
+  var colL = cel('div', 'saisie-grume-col');
+  colL.appendChild(cel('div', 'saisie-col-label', 'Longueur'));
+  var drumL = creerDrum(LON_VALS, g.longueur,
+    function (v) { return v.toFixed(2) + ' m'; },
+    function (v) { g.longueur = v; nouvMajVol(idx); nouvRendreSynthese(); nouvSauverBrouillon(); }
+  );
+  colL.appendChild(drumL);
+  body.appendChild(colL);
+
+  // Colonne diamètre médian
+  var colD = cel('div', 'saisie-grume-col');
+  colD.appendChild(cel('div', 'saisie-col-label', 'Diam. médian'));
+  var drumD = creerDrum(DIA_VALS, g.diametre,
+    function (v) { return v + ' cm'; },
+    function (v) { g.diametre = v; nouvMajVol(idx); nouvRendreSynthese(); nouvSauverBrouillon(); }
+  );
+  colD.appendChild(drumD);
+  body.appendChild(colD);
+
+  // Colonne quantité
+  var colQ = cel('div', 'saisie-grume-col saisie-col-qty');
+  colQ.appendChild(cel('div', 'saisie-col-label', 'Quantité'));
+  var qtyW  = cel('div', 'qty-ctrl');
+  var btnM  = cel('button', 'qty-btn', '−');
+  btnM.type = 'button';
+  var qNum  = cel('span', 'qty-num', String(g.quantite));
+  var btnP  = cel('button', 'qty-btn', '+');
+  btnP.type = 'button';
+  btnM.onclick = function () {
+    if (g.quantite <= 1) return;
+    g.quantite--;
+    qNum.textContent = String(g.quantite);
+    nouvMajVol(idx);
+    nouvRendreSynthese();
+    nouvSauverBrouillon();
+  };
+  btnP.onclick = function () {
+    g.quantite++;
+    qNum.textContent = String(g.quantite);
+    nouvMajVol(idx);
+    nouvRendreSynthese();
+    nouvSauverBrouillon();
+  };
+  qtyW.appendChild(btnM);
+  qtyW.appendChild(qNum);
+  qtyW.appendChild(btnP);
+  colQ.appendChild(qtyW);
+  body.appendChild(colQ);
+
+  card.appendChild(body);
+
+  // Initialise les molettes après insertion dans le DOM
+  setTimeout(function () {
+    if (drumL._init) drumL._init();
+    if (drumD._init) drumD._init();
+    nouvMajVol(idx);
+  }, 30);
+
+  return card;
+}
+
+// ─── Mise à jour du volume affiché (volume total de la ligne) ─────────────
+function nouvMajVol(idx) {
+  var g  = nouvGrumes[idx];
+  if (!g) return;
+  var v  = calcVol(g.diametre, g.longueur) * g.quantite;
+  var el = document.getElementById('saisie-vol-' + idx);
+  if (el) el.textContent = v.toFixed(3) + ' m³';
+}
+
+// ─── Rendu de toute la liste (utilisé après suppression) ──────────────────
+function nouvRendreGrumes() {
+  var liste = document.getElementById('saisie-grumes-liste');
+  if (!liste) return;
+  while (liste.firstChild) liste.removeChild(liste.firstChild);
+  nouvGrumes.forEach(function (g, idx) { liste.appendChild(creerCarteGrume(idx)); });
+  var syn = document.getElementById('saisie-synthese');
+  if (syn) syn.classList.toggle('hidden', nouvGrumes.length === 0);
+  nouvRendreSynthese();
+}
+
+// ─── Ajouter une ligne de grume ───────────────────────────────────────────
+function nouvAjouterLigne() {
+  nouvGrumes.push({ longueur: 3.00, diametre: 30, quantite: 1 });
+  var idx   = nouvGrumes.length - 1;
+  var liste = document.getElementById('saisie-grumes-liste');
+  if (!liste) return;
+  var card  = creerCarteGrume(idx);
+  liste.appendChild(card);
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  var syn = document.getElementById('saisie-synthese');
+  if (syn) syn.classList.remove('hidden');
+  nouvRendreSynthese();
+  nouvSauverBrouillon();
+}
+
+// ─── Supprimer une ligne de grume ─────────────────────────────────────────
+function nouvSupprimerLigne(idx) {
+  nouvGrumes.splice(idx, 1);
+  nouvRendreGrumes();
+  nouvSauverBrouillon();
+}
+
+// ─── Barre de synthèse ────────────────────────────────────────────────────
+function nouvRendreSynthese() {
+  var pieces = nouvGrumes.reduce(function (s, g) { return s + g.quantite; }, 0);
+  var volume = nouvGrumes.reduce(function (s, g) {
+    return s + calcVol(g.diametre, g.longueur) * g.quantite;
+  }, 0);
+  var elP = document.getElementById('synth-pieces');
+  var elV = document.getElementById('synth-vol');
+  var elL = document.getElementById('synth-lignes');
+  if (elP) elP.textContent = pieces;
+  if (elV) elV.textContent = volume.toFixed(3);
+  if (elL) elL.textContent = nouvGrumes.length;
+}
+
+// ─── Annuler avec confirmation ────────────────────────────────────────────
+function nouvAnnuler() {
+  var essEl = document.getElementById('saisie-essence');
+  if (nouvGrumes.length === 0 && (!essEl || !essEl.value)) return;
+  if (!confirm('Effacer toute la saisie en cours ?')) return;
+  effacerBrouillonSaisie();
+  nouvGrumes = [];
+  nouvDate   = new Date();
+  nouvGPS    = { lat: null, lon: null };
+  initialiserPanelSaisie();
+  captureGPS();
+}
+
+// ─── Modifier l'année de coupe ────────────────────────────────────────────
+function nouvModifierAnnee() {
+  var row = document.getElementById('saisie-annee-row');
+  if (!row) return;
+  row.querySelector('.saisie-annee-val').classList.add('hidden');
+  row.querySelector('.saisie-annee-btn').classList.add('hidden');
+  var inp = row.querySelector('.saisie-annee-input');
+  inp.value = nouvAnnee;
+  inp.classList.remove('hidden');
+  inp.focus();
+  inp.select();
+}
+function nouvValiderAnnee() {
+  var row = document.getElementById('saisie-annee-row');
+  if (!row) return;
+  var inp = row.querySelector('.saisie-annee-input');
+  var val = parseInt(inp.value, 10);
+  if (!isNaN(val) && val >= 2015 && val <= 2035) nouvAnnee = String(val);
+  row.querySelector('.saisie-annee-val').textContent = nouvAnnee;
+  row.querySelector('.saisie-annee-val').classList.remove('hidden');
+  row.querySelector('.saisie-annee-btn').classList.remove('hidden');
+  inp.classList.add('hidden');
+  nouvSauverBrouillon();
+}
+
+// ─── Modal "Nommer le lot" ────────────────────────────────────────────────
+function assureModalNommer() {
+  if (document.getElementById('modal-nommer-bg')) return;
+
+  var bg    = cel('div', 'extract-modal-bg');
+  bg.id     = 'modal-nommer-bg';
+  var modal = cel('div', 'extract-modal modal-nommer');
+
+  var closeBtn = cel('button', 'modal-close', '✕');
+  closeBtn.onclick = nouvFermerModal;
+  modal.appendChild(closeBtn);
+
+  modal.appendChild(cel('h2', '', 'Nommer le lot'));
+  modal.appendChild(cel('p', 'modal-sub', 'Donnez un nom pour retrouver ce lot facilement.'));
+
+  var fNom  = cel('div', 'field');
+  var lNom  = cel('label', '', 'Nom du lot');
+  lNom.htmlFor = 'modal-nom-input';
+  var iNom  = document.createElement('input');
+  iNom.type = 'text';
+  iNom.id   = 'modal-nom-input';
+  iNom.autocomplete = 'off';
+  iNom.placeholder  = 'Ex : Chênes bord du chemin de la Haie…';
+  iNom.addEventListener('keydown', function (e) { if (e.key === 'Enter') nouvConfirmer(); });
+  fNom.appendChild(lNom);
+  fNom.appendChild(iNom);
+  modal.appendChild(fNom);
+
+  var pWrap = cel('div', 'partage-toggle-wrap');
+  var pLbl  = cel('div', 'partage-toggle-label');
+  var pTxt  = cel('strong', '', 'Partager avec toutes les communes');
+  var pSub  = cel('small', '', 'Les autres communes pourront consulter ce lot.');
+  pLbl.appendChild(pTxt);
+  pLbl.appendChild(pSub);
+  var tSwitch = cel('label', 'toggle-switch');
+  var tInp    = document.createElement('input');
+  tInp.type   = 'checkbox';
+  tInp.id     = 'modal-partage';
+  tSwitch.appendChild(tInp);
+  tSwitch.appendChild(cel('span', 'toggle-slider'));
+  pWrap.appendChild(pLbl);
+  pWrap.appendChild(tSwitch);
+  modal.appendChild(pWrap);
+
+  var acts   = cel('div', 'flex-end');
+  var btnRet = cel('button', 'btn btn-outline', '← Retour');
+  btnRet.type    = 'button';
+  btnRet.onclick = nouvFermerModal;
+  var btnOk  = cel('button', 'btn btn-primary', 'Confirmer');
+  btnOk.type    = 'button';
+  btnOk.onclick = nouvConfirmer;
+  acts.appendChild(btnRet);
+  acts.appendChild(btnOk);
+  modal.appendChild(acts);
+
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+}
+
+function nouvOuvrirModal() {
+  var essEl = document.getElementById('saisie-essence');
+  if (!essEl || !essEl.value) { showError('Choisissez une essence avant de nommer le lot.'); return; }
+  if (nouvGrumes.length === 0) { showError('Ajoutez au moins une grume avant de nommer le lot.'); return; }
+  document.getElementById('modal-nommer-bg').classList.add('open');
+  var inp = document.getElementById('modal-nom-input');
+  if (inp) { inp.value = ''; inp.focus(); }
+}
+function nouvFermerModal() {
+  var bg = document.getElementById('modal-nommer-bg');
+  if (bg) bg.classList.remove('open');
+}
+
+// ─── Confirmer et sauvegarder le lot ─────────────────────────────────────
+async function nouvConfirmer() {
+  var essEl = document.getElementById('saisie-essence');
+  var proEl = document.getElementById('saisie-provenance');
+  var cauEl = document.getElementById('saisie-cause');
+  var nomEl = document.getElementById('modal-nom-input');
+  var ptgEl = document.getElementById('modal-partage');
+
+  if (!essEl || !essEl.value) { showError('Essence manquante.'); return; }
+  if (!proEl || !proEl.value) { showError('Provenance manquante.'); return; }
+  if (!cauEl || !cauEl.value) { showError("Cause d'abattage manquante."); return; }
+
+  var essence    = essEl.value;
+  var provenance = proEl.value;
+  var cause      = cauEl.value;
+  var nom        = (nomEl && nomEl.value.trim()) ? nomEl.value.trim() : (essence + ' — ' + communeConnectee.nom);
+  var partage    = ptgEl ? ptgEl.checked : false;
+
+  // Expansion des lignes : quantité → grumes individuelles
+  var grumesFlat = [];
+  nouvGrumes.forEach(function (g) {
+    for (var i = 0; i < g.quantite; i++) {
+      grumesFlat.push({ longueur: g.longueur, diametre: g.diametre });
+    }
+  });
+
+  var nbGrumes = grumesFlat.length;
+  var volBrut  = grumesFlat.reduce(function (s, g) { return s + calcVol(g.diametre, g.longueur); }, 0);
+
+  var lot = {
+    id:           crypto.randomUUID(),
+    commune_code: communeConnectee.code,
+    nom:          nom,
+    essence:      essence,
+    commune:      communeConnectee.nom,
+    cause:        cause,
+    provenance:   provenance,
+    annee:        nouvAnnee,
+    usage:        'Non défini',
+    partage:      partage,
+    epaisseur:    0,
+    delta:        0,
+    nb_grumes:    nbGrumes,
+    vol_brut:     +volBrut.toFixed(4),
+    vol_utile:    +volBrut.toFixed(4),
+    vol_dechets:  0,
+    nb_planches:  0,
+    lineaire:     0,
+    date:         nouvDate.toLocaleDateString('fr-FR'),
+    date_iso:     nouvDate.toISOString(),
+    grumes:       grumesFlat
+  };
+
+  try {
+    showLoading(true);
+    await sbInsert('lots', lot);
+    await chargerDonnees();
+    nouvFermerModal();
+    effacerBrouillonSaisie();
+    // Toast de confirmation
+    var toast = cel('div', 'toast-succes', '"' + nom + '" sauvegardé — ' + volBrut.toFixed(3) + ' m³');
+    document.body.appendChild(toast);
+    setTimeout(function () {
+      toast.classList.add('hidden');
+      setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 400);
+    }, 4000);
+    // Réinitialiser le formulaire
+    nouvGrumes = [];
+    nouvDate   = new Date();
+    nouvGPS    = { lat: null, lon: null };
+    initialiserPanelSaisie();
+    captureGPS();
+  } catch (err) {
+    showError('Erreur sauvegarde : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ─── Brouillon v2 ─────────────────────────────────────────────────────────
+function nouvSauverBrouillon() {
+  var essEl = document.getElementById('saisie-essence');
+  var proEl = document.getElementById('saisie-provenance');
+  var cauEl = document.getElementById('saisie-cause');
+  var draft = {
+    essence:    essEl ? essEl.value : '',
+    provenance: proEl ? proEl.value : '',
+    cause:      cauEl ? cauEl.value : '',
+    annee:      nouvAnnee,
+    grumes:     nouvGrumes.slice()
+  };
+  localStorage.setItem('duramen_draft_v2', JSON.stringify(draft));
+}
+function effacerBrouillonSaisie() {
+  localStorage.removeItem('duramen_draft_v2');
+  localStorage.removeItem('duramen_draft'); // nettoyage de l'ancien format
+}
+function nouvRestaurerBrouillon() {
+  var raw = localStorage.getItem('duramen_draft_v2');
+  if (!raw) return;
+  try {
+    var d = JSON.parse(raw);
+    if (!d || !Array.isArray(d.grumes) || d.grumes.length === 0) return;
+    if (!confirm('Reprendre la saisie en cours ?')) { effacerBrouillonSaisie(); return; }
+    var essEl = document.getElementById('saisie-essence');
+    var proEl = document.getElementById('saisie-provenance');
+    var cauEl = document.getElementById('saisie-cause');
+    if (essEl) essEl.value = d.essence    || '';
+    if (proEl) proEl.value = d.provenance || '';
+    if (cauEl) cauEl.value = d.cause      || '';
+    if (d.annee) {
+      nouvAnnee = d.annee;
+      var valEl = document.querySelector('.saisie-annee-val');
+      if (valEl) valEl.textContent = nouvAnnee;
+    }
+    nouvGrumes = d.grumes;
+    nouvRendreGrumes();
+  } catch (e) {
+    effacerBrouillonSaisie();
+  }
+}
+
+// ─── Helper : créer un champ select dans la grille ────────────────────────
+function creerSelectSaisie(id, labelTxt, options) {
+  var f   = cel('div', 'field');
+  var l   = cel('label', '', labelTxt);
+  l.htmlFor = id;
+  var sel = document.createElement('select');
+  sel.id  = id;
+  options.forEach(function (opt) {
+    var o         = document.createElement('option');
+    o.value       = opt[0];
+    o.textContent = opt[1];
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', nouvSauverBrouillon);
+  f.appendChild(l);
+  f.appendChild(sel);
+  return f;
+}
+
+// ─── Construction du panel saisie ─────────────────────────────────────────
+function initialiserPanelSaisie() {
+  var panel = document.getElementById('panel-saisie');
+  if (!panel) return;
+
+  // Réinitialiser l'état
+  nouvGrumes = [];
+  nouvDate   = new Date();
+  nouvAnnee  = String(nouvDate.getFullYear());
+
+  // Vider le panel
+  while (panel.firstChild) panel.removeChild(panel.firstChild);
+
+  // ── Chips méta : date + GPS ──────────────────────────────────────────
+  var meta     = cel('div', 'saisie-meta');
+  var dateStr  = nouvDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  meta.appendChild(cel('div', 'saisie-chip', '📅 ' + dateStr));
+  var gpsChip  = cel('div', 'saisie-chip', '📍 Localisation…');
+  gpsChip.id   = 'saisie-gps-chip';
+  meta.appendChild(gpsChip);
+  panel.appendChild(meta);
+
+  // ── Année de coupe ──────────────────────────────────────────────────
+  var anneeRow = cel('div', 'saisie-annee-row');
+  anneeRow.id  = 'saisie-annee-row';
+  anneeRow.appendChild(cel('span', 'saisie-annee-lbl', 'Année de coupe'));
+  anneeRow.appendChild(cel('span', 'saisie-annee-val', nouvAnnee));
+  var anneeBtn = cel('button', 'saisie-annee-btn', 'modifier');
+  anneeBtn.type    = 'button';
+  anneeBtn.onclick = nouvModifierAnnee;
+  anneeRow.appendChild(anneeBtn);
+  var anneeInp = document.createElement('input');
+  anneeInp.className = 'saisie-annee-input hidden';
+  anneeInp.type  = 'number';
+  anneeInp.min   = '2015';
+  anneeInp.max   = '2035';
+  anneeInp.onblur = nouvValiderAnnee;
+  anneeInp.addEventListener('keydown', function (e) { if (e.key === 'Enter') nouvValiderAnnee(); });
+  anneeRow.appendChild(anneeInp);
+  panel.appendChild(anneeRow);
+
+  // ── Sélects : essence / provenance / cause ──────────────────────────
+  var selGrid = cel('div', 'saisie-selects');
+  selGrid.appendChild(creerSelectSaisie('saisie-essence', 'Essence *', [
+    ['', '— Choisir —'],
+    ['Aulne', 'Aulne'], ['Châtaignier', 'Châtaignier'], ['Chêne', 'Chêne'],
+    ['Cyprès', 'Cyprès'], ['Douglas', 'Douglas'], ['Épicéa', 'Épicéa'],
+    ['Frêne', 'Frêne'], ['Hêtre', 'Hêtre'], ['Mélèze', 'Mélèze'],
+    ['Merisier', 'Merisier'], ['Noyer', 'Noyer'], ['Peuplier', 'Peuplier'],
+    ['Pin maritime', 'Pin maritime'], ['Pin sylvestre', 'Pin sylvestre'],
+    ['Platane', 'Platane'], ['Robinier (Acacia)', 'Robinier (Acacia)'],
+    ['Séquoia', 'Séquoia'], ['Tilleul', 'Tilleul'], ['Autre', 'Autre']
+  ]));
+  selGrid.appendChild(creerSelectSaisie('saisie-provenance', 'Provenance *', [
+    ['', '— Choisir —'],
+    ['Alignement', 'Alignement urbain'], ['Bosquet', 'Bosquet'],
+    ['Forêt', 'Forêt'], ['Haie bocagère', 'Haie bocagère'], ['Parc', 'Parc municipal']
+  ]));
+  selGrid.appendChild(creerSelectSaisie('saisie-cause', "Cause d'abattage *", [
+    ['', '— Choisir —'],
+    ['Coupe sanitaire', 'Coupe sanitaire'],
+    ['Intempérie', 'Intempérie (chablis, neige…)'],
+    ['Entretien', 'Entretien courant'],
+    ['Aménagement', 'Aménagement urbain'],
+    ['Plantation', 'Renouvellement plantation']
+  ]));
+  panel.appendChild(selGrid);
+
+  // ── Section grumes ──────────────────────────────────────────────────
+  var section = cel('div', 'saisie-grumes-section');
+
+  var gHead  = cel('div', 'saisie-grumes-header');
+  gHead.appendChild(cel('div', 'saisie-grumes-title', 'Grumes'));
+  var gAddBt = cel('button', 'saisie-add-btn', '+ Ajouter une grume');
+  gAddBt.type    = 'button';
+  gAddBt.onclick = nouvAjouterLigne;
+  gHead.appendChild(gAddBt);
+  section.appendChild(gHead);
+
+  var liste = cel('div', '');
+  liste.id  = 'saisie-grumes-liste';
+  section.appendChild(liste);
+
+  // Barre de synthèse — masquée jusqu'à la première grume
+  var synthese = cel('div', 'saisie-synthese hidden');
+  synthese.id  = 'saisie-synthese';
+  [
+    { id: 'synth-pieces', lbl: 'pièces' },
+    { id: 'synth-vol',    lbl: 'm³ bruts' },
+    { id: 'synth-lignes', lbl: 'lignes' }
+  ].forEach(function (s) {
+    var item = cel('div', 'saisie-synth-item');
+    var val  = cel('div', 'saisie-synth-val', '—');
+    val.id   = s.id;
+    item.appendChild(val);
+    item.appendChild(cel('div', 'saisie-synth-lbl', s.lbl));
+    synthese.appendChild(item);
+  });
+  section.appendChild(synthese);
+  panel.appendChild(section);
+
+  // ── Actions ─────────────────────────────────────────────────────────
+  var actions = cel('div', 'saisie-actions');
+  var btnAnn  = cel('button', 'saisie-btn saisie-btn-annuler', 'Annuler');
+  btnAnn.type    = 'button';
+  btnAnn.onclick = nouvAnnuler;
+  var btnNom  = cel('button', 'saisie-btn saisie-btn-nommer', 'Nommer le lot →');
+  btnNom.type    = 'button';
+  btnNom.onclick = nouvOuvrirModal;
+  actions.appendChild(btnAnn);
+  actions.appendChild(btnNom);
+  panel.appendChild(actions);
+
+  // Créer la modal une seule fois dans le DOM body
+  assureModalNommer();
+
+  // Restaurer le brouillon s'il existe
+  nouvRestaurerBrouillon();
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────
 function switchTab(panel, btn) {
   document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
@@ -874,14 +1468,17 @@ function demarrerRafraichissement() {
   }, 120000); // 120 000 ms = 2 minutes
 }
 
-// ─── Écouteurs auto-sauvegarde brouillon ─────────────────────────────────
+// ─── Écouteurs auto-sauvegarde (ancien formulaire — gardés pour compatibilité) ──
 ['lot-nom', 'commune', 'epaisseur'].forEach(function (id) {
-  document.getElementById(id).addEventListener('input', sauverBrouillon);
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('input', sauverBrouillon);
 });
 ['essence', 'cause', 'provenance', 'annee', 'usage'].forEach(function (id) {
-  document.getElementById(id).addEventListener('change', sauverBrouillon);
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('change', sauverBrouillon);
 });
-document.getElementById('lot-partage').addEventListener('change', sauverBrouillon);
+var lpEl = document.getElementById('lot-partage');
+if (lpEl) lpEl.addEventListener('change', sauverBrouillon);
 
 window.addEventListener('online',  mettreAJourStatutReseau);
 window.addEventListener('offline', mettreAJourStatutReseau);
