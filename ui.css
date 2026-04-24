@@ -272,6 +272,11 @@ main {
 .field input:not(:placeholder-shown):not(:focus) {
   border-bottom: var(--border-filled);
 }
+input.commune-locked {
+  color: #7A7469;
+  cursor: default;
+  border-bottom-color: #C9BAA3;
+}
 .field input::placeholder, .field textarea::placeholder {
   font-family: var(--font-body);
   font-weight: var(--font-weight-light);
@@ -354,6 +359,14 @@ select {
 .btn-outline:hover { color: var(--sumi); }
 
 .btn-sm { padding: 5px 12px; font-size: 0.62rem; }
+
+.btn-deconnexion {
+  color: #7A7469;
+  border-color: rgba(201,186,163,0.3);
+  font-size: 0.6rem;
+  margin-top: 2px;
+  padding: 3px 10px;
+}
 
 /* ─── GRUMES LIST ─── */
 .grume-item {
@@ -756,6 +769,7 @@ tr:hover td { background: var(--neige); }
   font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
   font-weight: var(--font-weight-medium);
 }
+#header-stats .commune-chip { margin-bottom: 5px; }
 .home-commune-badge {
   background: var(--indigo);
   color: #fff;
@@ -847,7 +861,7 @@ tr:hover td { background: var(--neige); }
 
 /* ─── MENTIONS LÉGALES ─── */
 #panel-mentions {
-  max-width: 760px; margin: 0 auto; padding: 28px 20px 80px;
+  max-width: 760px; margin: 0 auto; padding: 32px 20px;
 }
 .mentions-body {
   background: var(--washi); border: var(--border-thin);
@@ -905,6 +919,22 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .ec-platane      { background: #85a855; }
 .ec-tilleul      { background: #b5cc44; }
 .ec-autre        { background: #8a9f74; }
+
+/* ─── TOAST ERREUR ─── */
+.toast-erreur {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--rouge);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.78rem;
+  z-index: 3000;
+  max-width: 90vw;
+  text-align: center;
+}
 
 /* ─── LOADING OVERLAY ─── */
 .loading-overlay {

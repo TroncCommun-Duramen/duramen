@@ -53,7 +53,7 @@ function showError(msg) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'toast-err';
-    el.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#c0392b;color:#fff;padding:10px 22px;border-radius:4px;font-size:0.78rem;z-index:3000;max-width:90vw;text-align:center';
+    el.className = 'toast-erreur';
     document.body.appendChild(el);
   }
   el.textContent = msg;
@@ -127,9 +127,7 @@ function appliquerCommuneLocked() {
   var hint = document.getElementById('commune-hint');
   if (!inp) return;
   inp.readOnly = true;
-  inp.style.color = '#7A7469';
-  inp.style.cursor = 'default';
-  inp.style.borderBottomColor = '#C9BAA3';
+  inp.classList.add('commune-locked');
   if (hint) hint.style.display = '';
 }
 function chargerCommune() {
@@ -143,7 +141,7 @@ function reinitialiserCommune() {
   var inp  = document.getElementById('commune');
   var hint = document.getElementById('commune-hint');
   inp.value = ''; inp.readOnly = false;
-  inp.style.color = inp.style.cursor = inp.style.borderBottomColor = '';
+  inp.classList.remove('commune-locked');
   if (hint) hint.style.display = 'none';
   inp.focus();
 }
@@ -750,11 +748,9 @@ function ouvrirApp() {
   document.getElementById('ecran-connexion').classList.remove('visible');
   var chip = document.createElement('div');
   chip.className    = 'commune-chip';
-  chip.style.marginBottom = '5px';
   chip.textContent  = '📍 ' + communeConnectee.nom;
   var btnD = document.createElement('button');
-  btnD.className    = 'btn btn-sm';
-  btnD.style.cssText = 'color:#7A7469;border-color:rgba(201,186,163,0.3);font-size:0.6rem;margin-top:2px;padding:3px 10px';
+  btnD.className    = 'btn btn-sm btn-deconnexion';
   btnD.textContent  = 'Deconnexion';
   btnD.onclick = function () {
     if (confirm('Se deconnecter ?')) {
@@ -792,7 +788,7 @@ function afficherMentions() {
   ['header', 'main', 'footer'].forEach(function (t) { document.querySelector(t).style.display = 'none'; });
   document.querySelector('.tabs-wrap').style.display  = 'none';
   document.querySelector('.bottom-nav').style.display = 'none';
-  document.getElementById('panel-mentions').style.cssText = 'display:block;padding:32px 20px;max-width:760px;margin:0 auto';
+  document.getElementById('panel-mentions').style.display = 'block';
 }
 function fermerMentions() {
   document.getElementById('panel-mentions').style.display = 'none';
