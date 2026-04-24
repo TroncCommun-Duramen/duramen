@@ -1273,6 +1273,10 @@ window.addEventListener('online',  () => mettreAJourAccueil());
 window.addEventListener('offline', () => mettreAJourAccueil());
 
 verifierAcces();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
 </script>
 </body>
 </html>
