@@ -21,6 +21,7 @@
 | Styles inline groupes A+B+C supprimés — `.toast-erreur`, `.btn-deconnexion`, `.commune-locked`, `#header-stats .commune-chip` ✅ | app.js + ui.css | 24 avril 2026 |
 | Boutons accueil — icône SVG + sous-titre + flèche ›, suppression indicateur réseau ✅ | Design | 24 avril 2026 |
 | Badge commune border-radius 20px + icône "Voir le stock" fond indigo ✅ | Design | 24 avril 2026 |
+| Groupe D : 30 occurrences style.display → classList + .hidden ✅ | app.js + ui.css + index.html | 24 avril 2026 |
 
 ---
 
@@ -34,7 +35,7 @@ _(aucune)_
 
 | # | Tâche | Session | Priorité |
 |---|-------|---------|----------|
-| 1 | Groupe D : remplacer 20 occurrences `style.display` par `classList` + `.hidden` | app.js + ui.css | Haute |
+| 1 | Responsive desktop : layout bureau distinct du layout mobile | Design | Haute |
 | 2 | Responsive desktop : layout bureau distinct du layout mobile | Design | Moyenne |
 | 3 | Icône PWA : fond `--indigo` + icône blanche (coordonner avec graphiste) | Design | Basse |
 

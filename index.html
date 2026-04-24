@@ -198,7 +198,7 @@
           <input class="lot-nom-hero-input" type="text" id="lot-nom"
             placeholder="Ex : Chênes bord du chemin de la Haie…"
             autocomplete="off">
-          <div class="lot-nom-required" id="lot-nom-required" style="display:none">⚠ Le nom du lot est obligatoire</div>
+          <div class="lot-nom-required hidden" id="lot-nom-required">⚠ Le nom du lot est obligatoire</div>
         </div>
       </div>
 
@@ -236,7 +236,7 @@
           <div class="field">
             <label>Commune</label>
             <input type="text" id="commune" placeholder="Ex : votre commune" autocomplete="off">
-            <span id="commune-hint" style="font-size:0.62rem;color:var(--cendre);display:none"><a href="#" onclick="reinitialiserCommune();return false;" style="color:var(--signal)">Modifier la commune</a></span>
+            <span id="commune-hint" class="commune-hint hidden"><a href="#" onclick="reinitialiserCommune();return false;" style="color:var(--signal)">Modifier la commune</a></span>
           </div>
           <div class="field">
             <label>Cause d'abattage *</label>
@@ -307,7 +307,7 @@
     </div>
 
     <!-- ÉTAPE 2 -->
-    <div id="etape2" style="display:none">
+    <div id="etape2" class="hidden">
       <div class="card">
         <div class="card-title">
           <svg class="icon-inline" viewBox="0 0 130 110" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="22" y1="28" x2="112" y2="33" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="92" x2="112" y2="87" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M72 33 Q80 18 96 8" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><ellipse cx="22" cy="60" rx="14" ry="32" fill="white" stroke="currentColor" stroke-width="3"/><ellipse cx="22" cy="60" rx="9" ry="21" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="22" cy="60" rx="4.5" ry="11" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="112" cy="60" rx="10" ry="27" fill="white" stroke="currentColor" stroke-width="3"/></svg>
@@ -345,7 +345,7 @@
     </div>
 
     <!-- ÉTAPE 3 -->
-    <div id="etape3" style="display:none">
+    <div id="etape3" class="hidden">
       <div class="card">
         <div class="card-title">⚙ Paramètres de sciage</div>
         <div id="info-essence-debit" class="info-box"></div>
@@ -367,7 +367,7 @@
         </div>
       </div>
 
-      <div id="resultats-container" style="display:none">
+      <div id="resultats-container" class="hidden">
         <div class="result-block">
           <h3>📊 Résultats du débit</h3>
           <div class="result-grid" id="result-grid"></div>
@@ -496,7 +496,7 @@
       <label>Notes complémentaires</label>
       <textarea id="ext-notes" placeholder="Détails sur la commande, conditions particulières…"></textarea>
     </div>
-    <div id="ext-disponible" class="info-box" style="margin-top:14px;display:none"></div>
+    <div id="ext-disponible" class="info-box ext-disponible hidden"></div>
     <div class="flex-end" style="margin-top:20px">
       <button class="btn btn-outline" onclick="fermerModalExtraction()">Annuler</button>
       <button class="btn btn-primary" onclick="enregistrerExtraction()">↗ Enregistrer l'extraction</button>
@@ -527,7 +527,7 @@
 </div>
 
 <!-- ─── MENTIONS LÉGALES ─── -->
-<div id="panel-mentions" style="display:none">
+<div id="panel-mentions" class="hidden">
   <div id="panel-mentions-inner">
     <div class="mentions-body">
       <h2>Mentions légales &amp; Conditions d'utilisation</h2>

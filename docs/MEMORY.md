@@ -76,8 +76,15 @@
 - Bug : `.btn-home-secondary .btn-home-icon-box` (spécificité 0,2,0) écrasait `.btn-home-icon-voir` (spécificité 0,1,0) malgré l'ordre dans le fichier
 - Correction : sélecteur changé en `.btn-home-icon-box.btn-home-icon-voir` (spécificité 0,2,0, placé après → gagne par cascade)
 
+### Groupe D — migration style.display → classList (app.js + ui.css + index.html) ✅
+- **30 occurrences** migrées (estimation MEMORY était 20 — corrigé)
+- `ui.css` : ajout `.hidden { display: none !important; }`, `.commune-hint`, `.ext-disponible`
+- `index.html` : 7 inline `style="display:none"` remplacés par `class="hidden"` ; propriétés `font-size/color/margin-top` extraites vers ui.css
+- `app.js` : 30 occurrences remplacées par `classList.add/remove/toggle('hidden')`
+- Zéro `style.display` restant dans app.js
+
 ### Service Worker
-- Cache actuel : **duramen-v9**
+- Cache actuel : **duramen-v10**
 
 **Migration Supabase — 19 avril 2026 :**
 Colonnes `id` des tables `lots` et `extractions` migrées de `bigint` → `uuid`.

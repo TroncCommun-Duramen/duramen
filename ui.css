@@ -17,6 +17,13 @@ body {
   line-height: 1.7;
 }
 
+/* ─── UTILITAIRES ─── */
+.hidden { display: none !important; }
+
+/* Extrait de HTML (inline styles supprimés) */
+.commune-hint { font-size: 0.62rem; color: var(--cendre); }
+.ext-disponible { margin-top: 14px; }
+
 /* ─── HEADER ─── */
 header {
   background: var(--washi);

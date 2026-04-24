@@ -45,7 +45,7 @@ function showLoading(on) {
     el.innerHTML = '<div class="loading-box">Chargement...</div>';
     document.body.appendChild(el);
   }
-  el.style.display = on ? 'flex' : 'none';
+  if (on) { el.classList.remove('hidden'); } else { el.classList.add('hidden'); }
 }
 
 function showError(msg) {
@@ -57,8 +57,8 @@ function showError(msg) {
     document.body.appendChild(el);
   }
   el.textContent = msg;
-  el.style.display = 'block';
-  setTimeout(function () { el.style.display = 'none'; }, 6000);
+  el.classList.remove('hidden');
+  setTimeout(function () { el.classList.add('hidden'); }, 6000);
 }
 
 // ─── Bandeau hors ligne ───────────────────────────────────────────────────
@@ -72,7 +72,7 @@ function showOfflineBanner(visible) {
     var main = document.querySelector('main');
     if (main) main.insertBefore(el, main.firstChild);
   }
-  el.style.display = visible ? '' : 'none';
+  el.classList.toggle('hidden', !visible);
 }
 
 // ─── Chargement Supabase ──────────────────────────────────────────────────
@@ -128,7 +128,7 @@ function appliquerCommuneLocked() {
   if (!inp) return;
   inp.readOnly = true;
   inp.classList.add('commune-locked');
-  if (hint) hint.style.display = '';
+  if (hint) hint.classList.remove('hidden');
 }
 function chargerCommune() {
   var saved = localStorage.getItem('duramen_commune');
@@ -142,7 +142,7 @@ function reinitialiserCommune() {
   var hint = document.getElementById('commune-hint');
   inp.value = ''; inp.readOnly = false;
   inp.classList.remove('commune-locked');
-  if (hint) hint.style.display = 'none';
+  if (hint) hint.classList.add('hidden');
   inp.focus();
 }
 
@@ -156,9 +156,9 @@ function setStep(n) {
   });
 }
 function goToEtape1() {
-  document.getElementById('etape1').style.display = '';
-  document.getElementById('etape2').style.display = 'none';
-  document.getElementById('etape3').style.display = 'none';
+  document.getElementById('etape1').classList.remove('hidden');
+  document.getElementById('etape2').classList.add('hidden');
+  document.getElementById('etape3').classList.add('hidden');
   setStep(1);
 }
 function goToEtape2() {
@@ -170,11 +170,11 @@ function goToEtape2() {
   var ann = document.getElementById('annee').value;
   var usa = document.getElementById('usage').value;
   if (!nom) {
-    document.getElementById('lot-nom-required').style.display = '';
+    document.getElementById('lot-nom-required').classList.remove('hidden');
     document.getElementById('lot-nom').focus();
     return;
   }
-  document.getElementById('lot-nom-required').style.display = 'none';
+  document.getElementById('lot-nom-required').classList.add('hidden');
   if (!ess || !cau || !pro || !ann || !usa) {
     alert('Merci de renseigner tous les champs obligatoires.');
     return;
@@ -183,15 +183,15 @@ function goToEtape2() {
     localStorage.setItem('duramen_commune', com);
     appliquerCommuneLocked();
   }
-  document.getElementById('etape1').style.display = 'none';
-  document.getElementById('etape2').style.display = '';
-  document.getElementById('etape3').style.display = 'none';
+  document.getElementById('etape1').classList.add('hidden');
+  document.getElementById('etape2').classList.remove('hidden');
+  document.getElementById('etape3').classList.add('hidden');
   setStep(2);
 }
 function goToEtape3() {
   if (grumes.length === 0) { alert('Veuillez saisir au moins une grume.'); return; }
-  document.getElementById('etape2').style.display = 'none';
-  document.getElementById('etape3').style.display = '';
+  document.getElementById('etape2').classList.add('hidden');
+  document.getElementById('etape3').classList.remove('hidden');
   setStep(3);
   var ess  = document.getElementById('essence').value;
   var info = DuramenCore.ESSENCES_INFO[ess];
@@ -241,7 +241,7 @@ function calculerDebit() {
   var epaisseur = parseFloat(document.getElementById('epaisseur').value);
   var container = document.getElementById('resultats-container');
   var K = 3;
-  if (!epaisseur || grumes.length === 0) { container.style.display = 'none'; return; }
+  if (!epaisseur || grumes.length === 0) { container.classList.add('hidden'); return; }
   var res  = DuramenCore.calculerVolumes(grumes, epaisseur);
   var rows = res.details.map(function (d, i) {
     var lm = d.largeurMoy > 0 ? d.largeurMoy.toFixed(1) : '0';
@@ -261,7 +261,7 @@ function calculerDebit() {
     + ' m3</strong> &mdash; Pertes estimees : <strong>' + res.volDechets.toFixed(3) + ' m3</strong>'
     + ' (rendement 55% x ' + (epaisseur / (epaisseur + K) * 100).toFixed(1) + '%)</span>';
   document.getElementById('result-tbody').innerHTML = rows.join('');
-  container.style.display = '';
+  container.classList.remove('hidden');
 }
 
 // ─── Sauvegarde lot ───────────────────────────────────────────────────────
@@ -312,7 +312,7 @@ async function sauvegarderLot() {
     ['essence', 'cause', 'provenance', 'annee', 'usage', 'epaisseur', 'lot-nom']
       .forEach(function (id) { document.getElementById(id).value = ''; });
     document.getElementById('lot-partage').checked = false;
-    document.getElementById('resultats-container').style.display = 'none';
+    document.getElementById('resultats-container').classList.add('hidden');
     goToEtape1();
     effacerBrouillon();
     alert('Lot sauvegarde !\n' + lot.nom + '\n' + tVD.toFixed(3) + ' m3 debites - ' + tP + ' planches');
@@ -384,7 +384,7 @@ function ouvrirModalExtraction() {
       }).join('');
   ['ext-essence', 'ext-volume', 'ext-usage', 'ext-destination', 'ext-commune', 'ext-contact', 'ext-notes']
     .forEach(function (id) { document.getElementById(id).value = ''; });
-  document.getElementById('ext-disponible').style.display = 'none';
+  document.getElementById('ext-disponible').classList.add('hidden');
   document.getElementById('modal-extraction').classList.add('open');
 }
 function ouvrirModalExtractionEssence(essence) {
@@ -400,12 +400,12 @@ function fermerModalExtraction() {
 function majDisponible() {
   var essence = document.getElementById('ext-essence').value;
   var box     = document.getElementById('ext-disponible');
-  if (!essence) { box.style.display = 'none'; return; }
+  if (!essence) { box.classList.add('hidden'); return; }
   var stock = DuramenCore.getStock();
   if (stock[essence]) {
     box.innerHTML = 'Disponible <strong>' + essence + '</strong> : <strong>'
       + stock[essence].dispo.toFixed(3) + ' m3 utiles</strong>';
-    box.style.display = '';
+    box.classList.remove('hidden');
   }
 }
 document.getElementById('ext-essence').addEventListener('change', majDisponible);
@@ -785,16 +785,16 @@ function ouvrirApp() {
 // ─── Mentions legales ────────────────────────────────────────────────────
 function afficherMentions() {
   document.getElementById('ecran-connexion').classList.remove('visible');
-  ['header', 'main', 'footer'].forEach(function (t) { document.querySelector(t).style.display = 'none'; });
-  document.querySelector('.tabs-wrap').style.display  = 'none';
-  document.querySelector('.bottom-nav').style.display = 'none';
-  document.getElementById('panel-mentions').style.display = 'block';
+  ['header', 'main', 'footer'].forEach(function (t) { document.querySelector(t).classList.add('hidden'); });
+  document.querySelector('.tabs-wrap').classList.add('hidden');
+  document.querySelector('.bottom-nav').classList.add('hidden');
+  document.getElementById('panel-mentions').classList.remove('hidden');
 }
 function fermerMentions() {
-  document.getElementById('panel-mentions').style.display = 'none';
-  ['header', 'main', 'footer'].forEach(function (t) { document.querySelector(t).style.display = ''; });
-  document.querySelector('.tabs-wrap').style.display  = '';
-  document.querySelector('.bottom-nav').style.display = '';
+  document.getElementById('panel-mentions').classList.add('hidden');
+  ['header', 'main', 'footer'].forEach(function (t) { document.querySelector(t).classList.remove('hidden'); });
+  document.querySelector('.tabs-wrap').classList.remove('hidden');
+  document.querySelector('.bottom-nav').classList.remove('hidden');
   if (!localStorage.getItem('duramen_session'))
     document.getElementById('ecran-connexion').classList.add('visible');
 }
