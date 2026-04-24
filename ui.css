@@ -191,6 +191,7 @@ main {
   .header-stats-mobile { display: none !important; }
   .tabs-wrap { display: none; }
   .bottom-nav { display: block; }
+  footer { display: none; }
   main { padding: 14px 12px 84px; }
   .card { padding: 14px 13px; }
   .card-title { font-size: 0.62rem; }
