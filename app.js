@@ -98,6 +98,7 @@ async function chargerDonnees() {
     localStorage.setItem('duramen_lots_cache',        JSON.stringify(lots));
     localStorage.setItem('duramen_extractions_cache', JSON.stringify(extractions));
     mettreAJourHeaderStats();
+    mettreAJourAccueil();
     afficherHistorique();
     showOfflineBanner(false);
   } catch (err) {
@@ -107,6 +108,7 @@ async function chargerDonnees() {
       lots        = JSON.parse(cachedLots);
       extractions = cachedExt ? JSON.parse(cachedExt) : [];
       mettreAJourHeaderStats();
+      mettreAJourAccueil();
       afficherHistorique();
       showOfflineBanner(true);
     } else {
@@ -610,6 +612,32 @@ function mettreAJourHeaderStats() {
   ['hs-essences', 'hs-essences-m'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = nbE; });
 }
 
+// ─── Accueil mobile ───────────────────────────────────────────────────────
+function mettreAJourStatutReseau() {
+  var el = document.getElementById('accueil-online-dot');
+  if (!el) return;
+  var label = el.querySelector('.accueil-network-label');
+  if (navigator.onLine) {
+    el.classList.add('online');
+    el.classList.remove('offline');
+    if (label) label.textContent = 'En ligne';
+  } else {
+    el.classList.remove('online');
+    el.classList.add('offline');
+    if (label) label.textContent = 'Hors ligne';
+  }
+}
+
+function mettreAJourAccueil() {
+  var communeEl = document.getElementById('accueil-commune');
+  if (communeEl && communeConnectee) communeEl.textContent = communeConnectee.nom;
+  var stock = DuramenCore.getStock();
+  var tD = Object.values(stock).reduce(function (s, e) { return s + e.dispo; }, 0);
+  var stockEl = document.getElementById('accueil-stock-val');
+  if (stockEl) stockEl.textContent = tD.toFixed(2);
+  mettreAJourStatutReseau();
+}
+
 // ─── Territoire ───────────────────────────────────────────────────────────
 async function afficherTerritoire() {
   var container = document.getElementById('territoire-container');
@@ -691,7 +719,7 @@ async function tentativeConnexion() {
   erreur.textContent = '';
   if (!code) { erreur.textContent = 'Veuillez saisir votre code.'; return; }
   btn.disabled = true;
-  btn.textContent = 'Verification...';
+  btn.textContent = 'VÉRIFICATION…';
   try {
     var res = await fetch(
       SUPABASE_URL + '/rest/v1/codes_acces?code=eq.' + encodeURIComponent(code) + '&actif=eq.true&select=code,commune',
@@ -714,7 +742,7 @@ async function tentativeConnexion() {
     erreur.textContent = 'Erreur de connexion : ' + err.message;
   } finally {
     btn.disabled    = false;
-    btn.textContent = 'Acceder';
+    btn.textContent = 'ACCÉDER';
   }
 }
 
@@ -751,6 +779,11 @@ function ouvrirApp() {
   restaurerBrouillon();
   chargerDonnees();
   demarrerRafraichissement();
+  mettreAJourAccueil();
+  if (window.innerWidth <= 600) {
+    var btnAccueil = document.querySelector('[data-panel="accueil"]');
+    if (btnAccueil) switchTab('accueil', btnAccueil);
+  }
 }
 
 // ─── Mentions legales ────────────────────────────────────────────────────
@@ -853,5 +886,8 @@ function demarrerRafraichissement() {
   document.getElementById(id).addEventListener('change', sauverBrouillon);
 });
 document.getElementById('lot-partage').addEventListener('change', sauverBrouillon);
+
+window.addEventListener('online',  mettreAJourStatutReseau);
+window.addEventListener('offline', mettreAJourStatutReseau);
 
 verifierAcces();
