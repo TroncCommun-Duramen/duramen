@@ -776,6 +776,7 @@ tr:hover td { background: var(--neige); }
   font-size: 0.85rem;
   padding: 10px 20px;
   letter-spacing: 0.1em;
+  border-radius: 20px;
 }
 
 /* ─── NOM DU LOT HERO ─── */
@@ -1053,6 +1054,11 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 
 .btn-home-secondary .btn-home-icon-box {
   background: var(--neige);
+}
+
+.btn-home-icon-voir {
+  background: var(--indigo);
+  color: #fff;
 }
 
 .btn-home-icon-svg {

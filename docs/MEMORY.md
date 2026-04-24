@@ -66,8 +66,14 @@
 - Nouvelles classes CSS dans `ui.css` : `.btn-home-icon-box`, `.btn-home-icon-svg`, `.btn-home-text`, `.btn-home-label`, `.btn-home-sub`, `.btn-home-arrow`
 - Zéro style inline — tout dans `ui.css`
 
+### Ajustements visuels accueil (ui.css + index.html) ✅
+- Badge commune `.home-commune-badge` : `border-radius: 20px` (style pilule)
+- Icône "Voir le stock" : classe `.btn-home-icon-voir` créée dans `ui.css` (`background: var(--indigo)`, `color: #fff`)
+  — ajoutée sur le `<span class="btn-home-icon-box">` du 2e bouton dans `index.html`
+  — le SVG blanchit automatiquement via `stroke="currentColor"` + `color: #fff` sur le conteneur
+
 ### Service Worker
-- Cache actuel : **duramen-v7**
+- Cache actuel : **duramen-v8**
 - Dernier commit : à venir
 
 **Migration Supabase — 19 avril 2026 :**
