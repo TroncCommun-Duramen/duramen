@@ -113,6 +113,10 @@
 <!-- ─── BOTTOM NAV mobile ─── -->
 <nav class="bottom-nav" aria-label="Navigation principale">
   <div class="bottom-nav-inner">
+    <button class="bnav-btn" onclick="switchTab('accueil',this)" data-panel="accueil">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12L12 3L21 12V20C21 20.5523 20.5523 21 20 21H15V15H9V21H4C3.44772 21 3 20.5523 3 20V12Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Accueil
+    </button>
     <button class="bnav-btn active" onclick="switchTab('saisie',this)" data-panel="saisie">
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       Nouveau
@@ -137,6 +141,26 @@
 </nav>
 
 <main>
+
+  <!-- ═══ ACCUEIL MOBILE ═══ -->
+  <div class="panel" id="panel-accueil">
+    <div class="accueil-commune-row">
+      <span class="commune-chip" id="accueil-commune">—</span>
+      <span class="accueil-network" id="accueil-online-dot">
+        <span class="accueil-network-dot"></span>
+        <span class="accueil-network-label">—</span>
+      </span>
+    </div>
+    <div class="accueil-stock">
+      <div class="accueil-stock-val" id="accueil-stock-val">—</div>
+      <div class="accueil-stock-lbl">m³ disponibles</div>
+    </div>
+    <div class="accueil-actions">
+      <button class="btn-accueil btn-accueil-primary" onclick="switchTab('saisie',this)" data-panel="saisie">Ajouter au stock</button>
+      <button class="btn-accueil btn-accueil-secondary" onclick="switchTab('stock',this)" data-panel="stock">Voir le stock</button>
+      <button class="btn-accueil btn-accueil-secondary" onclick="switchTab('extraction',this)" data-panel="extraction">Extraire du stock</button>
+    </div>
+  </div>
 
   <!-- ═══ ONGLET 1 : NOUVEAU LOT ═══ -->
   <div class="panel active" id="panel-saisie">
@@ -468,37 +492,20 @@
 <div id="ecran-connexion" class="visible">
   <div class="login-card">
     <div class="login-logo">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
-        <g transform="translate(100,100)">
-          <circle cx="0" cy="0" r="88" stroke="currentColor" stroke-width="5"/>
-          <rect x="-96" y="-14" width="20" height="8" rx="2" fill="currentColor"/>
-          <rect x="76" y="-14" width="20" height="8" rx="2" fill="currentColor"/>
-          <rect x="-14" y="-96" width="8" height="20" rx="2" fill="currentColor"/>
-          <rect x="-14" y="76" width="8" height="20" rx="2" fill="currentColor"/>
-          <circle cx="0" cy="0" r="64" stroke="currentColor" stroke-width="3.5"/>
-          <circle cx="0" cy="0" r="38" stroke="currentColor" stroke-width="3"/>
-          <circle cx="0" cy="0" r="12" stroke="currentColor" stroke-width="3"/>
-          <circle cx="0" cy="0" r="4" fill="currentColor"/>
-          <line x1="-88" y1="0" x2="-12" y2="0" stroke="currentColor" stroke-width="2.5"/>
-          <line x1="12" y1="0" x2="88" y2="0" stroke="currentColor" stroke-width="2.5"/>
-          <line x1="0" y1="-88" x2="0" y2="-12" stroke="currentColor" stroke-width="2.5"/>
-          <line x1="0" y1="12" x2="0" y2="88" stroke="currentColor" stroke-width="2.5"/>
-          <line x1="-52" y1="-52" x2="-9" y2="-9" stroke="currentColor" stroke-width="2.5"/>
-          <line x1="9" y1="9" x2="52" y2="52" stroke="currentColor" stroke-width="2.5"/>
-        </g>
-      </svg>
+      <img src="icon-512.png" alt="DURAMEN" class="login-logo-img">
     </div>
     <div class="login-title">DURAMEN</div>
-    <div class="login-sub">Outil de recensement du bois d'œuvre<br>Accès réservé aux communes partenaires</div>
-    <label class="login-field-label" for="login-code">Code d'accès commune</label>
+    <div class="login-sub">Gestion du bois d'œuvre</div>
+    <label class="login-field-label" for="login-code">CODE</label>
     <input class="login-input" type="text" id="login-code"
       placeholder="ex : DURAMEN-01"
-      autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+      autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
       onkeydown="if(event.key==='Enter') tentativeConnexion()">
-    <button class="login-btn" id="btn-login" onclick="tentativeConnexion()">Accéder →</button>
+    <button class="login-btn" id="btn-login" onclick="tentativeConnexion()">ACCÉDER</button>
     <div class="login-error" id="login-erreur"></div>
     <div class="login-footer-links">
-      <a href="#" onclick="afficherMentions();return false;">Mentions légales &amp; Conditions d'utilisation</a>
+      <span class="login-copyright">© Tronc Commun</span>
+      <a href="#" onclick="afficherMentions();return false;">Mentions légales</a>
     </div>
   </div>
 </div>
