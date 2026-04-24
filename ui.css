@@ -187,15 +187,8 @@ main {
   .title-sub { display: none; }
   .title-tc { font-size: 0.6rem; margin-top: 4px; letter-spacing: 0.06em; }
   .header-right { display: none; }
-  .header-stats-mobile {
-    display: flex !important;
-    gap: 6px;
-    padding: 0 14px 10px;
-    background: var(--washi);
-  }
-  .header-stats-mobile .stat-pill {
-    flex: 1; text-align: center; margin-bottom: 0; font-size: 0.62rem; padding: 4px 6px;
-  }
+  header { display: none; }
+  .header-stats-mobile { display: none !important; }
   .tabs-wrap { display: none; }
   .bottom-nav { display: block; }
   main { padding: 14px 12px 84px; }
@@ -215,7 +208,6 @@ main {
   .login-footer-links { font-size: 0.875rem; }
 
   /* Accueil — règle 16px mobile */
-  .accueil-stock-lbl { font-size: 1rem; }
   .accueil-network { font-size: 1rem; }
 }
 
@@ -763,6 +755,15 @@ tr:hover td { background: var(--neige); }
   font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
   font-weight: var(--font-weight-medium);
 }
+.home-commune-badge {
+  background: var(--indigo);
+  color: #fff;
+  border-color: var(--indigo);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 10px 20px;
+  letter-spacing: 0.1em;
+}
 
 /* ─── NOM DU LOT HERO ─── */
 .lot-nom-hero {
@@ -976,9 +977,10 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   letter-spacing: -0.03em;
 }
 
-.accueil-stock-lbl {
-  font-size: 0.62rem;
-  color: var(--cendre);
+.home-stock-unit {
+  font-size: 16px;
+  color: var(--sumi);
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   margin-top: 10px;
@@ -990,38 +992,39 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   gap: 12px;
 }
 
-.btn-accueil {
+.btn-home {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 56px;
-  width: 100%;
+  width: calc(100% - 32px);
+  margin: 0 16px;
   padding: 16px 24px;
   font-family: var(--font-body);
   font-size: 17px;
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.02em;
-  border-radius: var(--border-radius-md);
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
 
-.btn-accueil-primary {
+.btn-home-primary {
   background: var(--sumi);
   color: var(--washi);
   border: none;
 }
-.btn-accueil-primary:hover,
-.btn-accueil-primary:active { background: #000; }
+.btn-home-primary:hover,
+.btn-home-primary:active { background: #000; }
 
-.btn-accueil-secondary {
+.btn-home-secondary {
   background: var(--washi);
   color: var(--sumi);
   border: var(--border-thin);
 }
-.btn-accueil-secondary:hover,
-.btn-accueil-secondary:active { background: var(--neige); }
+.btn-home-secondary:hover,
+.btn-home-secondary:active { background: var(--neige); }
 
 .accueil-network {
   display: inline-flex;
