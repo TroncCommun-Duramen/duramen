@@ -1056,7 +1056,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   background: var(--neige);
 }
 
-.btn-home-icon-voir {
+.btn-home-icon-box.btn-home-icon-voir {
   background: var(--indigo);
   color: #fff;
 }

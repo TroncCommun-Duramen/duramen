@@ -72,9 +72,12 @@
   — ajoutée sur le `<span class="btn-home-icon-box">` du 2e bouton dans `index.html`
   — le SVG blanchit automatiquement via `stroke="currentColor"` + `color: #fff` sur le conteneur
 
+### Correctif spécificité CSS — icône "Voir le stock" (ui.css) ✅
+- Bug : `.btn-home-secondary .btn-home-icon-box` (spécificité 0,2,0) écrasait `.btn-home-icon-voir` (spécificité 0,1,0) malgré l'ordre dans le fichier
+- Correction : sélecteur changé en `.btn-home-icon-box.btn-home-icon-voir` (spécificité 0,2,0, placé après → gagne par cascade)
+
 ### Service Worker
-- Cache actuel : **duramen-v8**
-- Dernier commit : à venir
+- Cache actuel : **duramen-v9**
 
 **Migration Supabase — 19 avril 2026 :**
 Colonnes `id` des tables `lots` et `extractions` migrées de `bigint` → `uuid`.
