@@ -425,11 +425,11 @@
 
   <!-- ═══ ONGLET 4 : HISTORIQUE ═══ -->
   <div class="panel" id="panel-historique">
-    <div class="flex-between" style="margin-bottom:20px">
-      <div><div class="stock-title">Historique des lots</div><div class="stock-subtitle">Tous les lots de votre commune</div></div>
-      <button class="btn btn-outline" onclick="exporterCSV()">&#11015; Exporter CSV</button>
+    <div class="histo-toggle-bar">
+      <button class="histo-toggle-btn active" id="histo-btn-commune" onclick="switchHistoVue('commune')">Ma commune</button>
+      <button class="histo-toggle-btn" id="histo-btn-communaute" onclick="switchHistoVue('communaute')">Communauté</button>
     </div>
-    <div id="historique-container"></div>
+    <div id="histo-content"></div>
   </div>
 
   <!-- ═══ ONGLET 5 : TERRITOIRE ═══ -->

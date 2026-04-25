@@ -40,6 +40,7 @@
   /* ─── Rayons ─── */
   --border-radius-sm:   2px;
   --border-radius-md:   4px;
+  --border-radius-bar:  3px;   /* barres de progression */
   --border-radius-card: 12px;  /* cartes et boutons mobiles */
   --border-radius-lg:   18px;  /* cadre téléphone uniquement */
 

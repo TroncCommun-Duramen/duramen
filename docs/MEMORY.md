@@ -88,8 +88,20 @@
 - `ui.css` section SAISIE : 6× `font-weight: 600` → `var(--font-weight-semibold)` ; 4× `border-radius: 12px` + `6px` + `8px` → tokens ; `rgba` → `var(--indigo-border)` ; `min-height: 44px` → `56px` (règle mobile)
 - Reste hors périmètre (à traiter dans une session Design dédiée) : `.home-commune-badge`, `.btn-home`, `.toggle-slider`, `.login-input:focus` — valeurs en dur présentes
 
+### Refonte page Historique (app.js + ui.css + index.html) ✅
+- Toggle Ma commune / Communauté : `switchHistoVue()`, actif = fond `var(--indigo)`
+- Vue Commune : données `lots` (session courante), rendu synchrone
+- Vue Communauté : `sbSelect('lots', ...)` sans filtre commune, rendu asynchrone
+- Bloc total : fond `var(--sumi)`, volume m³ + nombre de lots
+- Liste par essence : nom, volume indigo en gras, barre `var(--indigo)` sur piste `var(--brume)`, 6px, `--border-radius-bar`
+- Lots récents : 20 max, cartes `var(--neige)`, badges commune/essence/cause
+- Boutons export : Excel (CSV UTF-8 BOM) et PDF (`window.print()`)
+- Nouveau fichier : `docs/EVOLUTIONS.md` (réservoir d'idées v2)
+- Nouveau token : `--border-radius-bar: 3px` dans `theme.css`
+- Cache SW : **duramen-v12**
+
 ### Service Worker
-- Cache actuel : **duramen-v10**
+- Cache actuel : **duramen-v12**
 
 **Migration Supabase — 19 avril 2026 :**
 Colonnes `id` des tables `lots` et `extractions` migrées de `bigint` → `uuid`.

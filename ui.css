@@ -1481,6 +1481,226 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   border-top: 2px solid var(--indigo);
 }
 
+/* ═══════════════════════════════════════
+   HISTORIQUE — Toggle Ma commune / Communauté
+═══════════════════════════════════════ */
+
+/* ─── Toggle ─── */
+.histo-toggle-bar {
+  display: flex;
+  gap: 0;
+  background: var(--neige);
+  border: var(--border-thin);
+  border-radius: var(--border-radius-card);
+  padding: 4px;
+  margin-bottom: 24px;
+  width: fit-content;
+}
+.histo-toggle-btn {
+  padding: 9px 22px;
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--cendre);
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+.histo-toggle-btn.active {
+  background: var(--indigo);
+  color: var(--washi);
+  border-radius: var(--border-radius-md);
+}
+
+/* ─── Bloc total ─── */
+.histo-total-block {
+  background: var(--sumi);
+  color: var(--washi);
+  border-radius: var(--border-radius-card);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.histo-total-vol {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: var(--font-weight-light);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.histo-total-lots {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: var(--font-weight-light);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.histo-total-unit {
+  font-size: 0.62rem;
+  font-weight: var(--font-weight-medium);
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 5px;
+}
+.histo-total-divider {
+  width: 1px;
+  background: var(--washi);
+  opacity: 0.2;
+  align-self: stretch;
+  min-height: 40px;
+}
+
+/* ─── Titre de section ─── */
+.histo-section-title {
+  font-size: 0.54rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--cendre);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: var(--border-thin);
+}
+
+/* ─── Liste par essence ─── */
+.histo-essence-item {
+  padding: 12px 0;
+  border-bottom: var(--border-thin);
+}
+.histo-essence-item:last-child { border-bottom: none; }
+.histo-essence-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.histo-essence-name {
+  font-size: 0.88rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--sumi);
+}
+.histo-essence-vol {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--indigo);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.histo-essence-meta {
+  font-size: 0.68rem;
+  color: var(--cendre);
+  margin-bottom: 8px;
+}
+.histo-bar-track {
+  height: 6px;
+  background: var(--brume);
+  border-radius: var(--border-radius-bar);
+  overflow: hidden;
+}
+.histo-bar-fill {
+  height: 100%;
+  background: var(--indigo);
+  border-radius: var(--border-radius-bar);
+  transition: width 0.4s ease;
+}
+
+/* ─── Cartes lots récents ─── */
+.histo-lot-card {
+  background: var(--neige);
+  border: 1px solid var(--brume);
+  border-radius: var(--border-radius-card);
+  padding: 13px 16px;
+  margin-bottom: 8px;
+}
+.histo-lot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.histo-lot-nom {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: var(--font-weight-light);
+  color: var(--sumi);
+  letter-spacing: 0.01em;
+  flex: 1;
+}
+.histo-lot-vol {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--indigo);
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+}
+.histo-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.histo-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.54rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.histo-badge-commune {
+  background: var(--indigo-clair);
+  color: var(--indigo);
+  border: 1px solid var(--indigo);
+}
+.histo-badge-essence {
+  background: var(--washi);
+  color: var(--cendre);
+  border: var(--border-thin);
+}
+.histo-badge-cause {
+  background: var(--washi);
+  color: var(--cendre);
+  border: var(--border-thin);
+}
+
+/* ─── Boutons export ─── */
+.histo-export-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: var(--border-thin);
+}
+.histo-export-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: var(--border-radius-card);
+  border: var(--border-thin);
+  background: transparent;
+  color: var(--sumi);
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.histo-export-btn:hover { background: var(--neige); }
+
 /* ─── Toast succès ─── */
 .toast-succes {
   position: fixed;

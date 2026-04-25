@@ -504,40 +504,173 @@ async function supprimerExtraction(idx) {
   }
 }
 
-// ─── Historique ───────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// HISTORIQUE — Toggle Ma commune / Communauté
+// ═══════════════════════════════════════════════════════════════════════════
+
+var histoVue = 'commune';
+
+function switchHistoVue(vue) {
+  histoVue = vue;
+  var btnC  = document.getElementById('histo-btn-commune');
+  var btnCo = document.getElementById('histo-btn-communaute');
+  if (btnC)  btnC.classList.toggle('active',  vue === 'commune');
+  if (btnCo) btnCo.classList.toggle('active', vue === 'communaute');
+  afficherHistorique();
+}
+
 function afficherHistorique() {
-  var container = document.getElementById('historique-container');
-  if (!container) return;
-  if (lots.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">&#x1F4C2;</div><p>Aucun lot enregistre.</p></div>';
+  var content = document.getElementById('histo-content');
+  if (!content) return;
+  while (content.firstChild) content.removeChild(content.firstChild);
+  if (histoVue === 'commune') {
+    rendreHistoriqueContenu(content, lots);
+  } else {
+    afficherHistoriqueCommunaute(content);
+  }
+}
+
+async function afficherHistoriqueCommunaute(content) {
+  var loading = cel('div', 'empty-state');
+  loading.appendChild(cel('p', '', 'Chargement des données du réseau…'));
+  content.appendChild(loading);
+  try {
+    var tousLots = await sbSelect('lots', 'order=created_at.desc');
+    while (content.firstChild) content.removeChild(content.firstChild);
+    rendreHistoriqueContenu(content, tousLots);
+  } catch (err) {
+    while (content.firstChild) content.removeChild(content.firstChild);
+    var errEl = cel('div', 'empty-state');
+    errEl.appendChild(cel('p', '', 'Erreur chargement réseau : ' + err.message));
+    content.appendChild(errEl);
+  }
+}
+
+function rendreHistoriqueContenu(container, lotsData) {
+  if (!lotsData || lotsData.length === 0) {
+    var es = cel('div', 'empty-state');
+    es.appendChild(cel('p', '', 'Aucun lot enregistré.'));
+    container.appendChild(es);
+    container.appendChild(creerBoutonsExportHisto(lotsData || []));
     return;
   }
-  container.innerHTML = lots.map(function (lot, idx) {
-    var vU  = lot.vol_utile   || 0;
-    var vD  = lot.vol_dechets || 0;
-    var nbG = lot.nb_grumes   || 0;
-    var nbP = lot.nb_planches || 0;
-    var lin = lot.lineaire    || 0;
-    return '<div class="lot-card">'
-      + '<div class="lot-card-header"><div>'
-      + '<div class="lot-card-title">' + lot.nom + '</div>'
-      + '<div class="lot-card-meta">'
-      + lot.commune + ' &mdash; ' + lot.annee + ' &mdash; ' + lot.date
-      + ' &mdash; ' + lot.cause + ' &mdash; ' + lot.provenance
-      + ' &mdash; <span class="badge ' + badgeClass(lot.usage) + '">' + lot.usage + '</span>'
-      + '</div></div>'
-      + '<button class="btn btn-danger btn-sm" onclick="supprimerLot(' + idx + ');event.stopPropagation()">x</button>'
-      + '</div>'
-      + '<div class="lot-card-stats">'
-      + '<div class="lot-stat">Essence : <strong>' + lot.essence + '</strong></div>'
-      + '<div class="lot-stat">' + nbG + ' grume' + (nbG > 1 ? 's' : '') + '</div>'
-      + '<div class="lot-stat">Planches : <strong>' + nbP + '</strong></div>'
-      + '<div class="lot-stat">Lineaire : <strong>' + lin.toFixed(1) + ' m</strong></div>'
-      + '<div class="lot-stat">Vol. utile : <strong>' + vU.toFixed(3) + ' m3</strong></div>'
-      + '<div class="lot-stat">Dechets : ' + vD.toFixed(3)
-      + ' m3 &mdash; Ep.' + lot.epaisseur + 'mm &mdash; Delta ' + lot.delta + '%</div>'
-      + '</div></div>';
-  }).join('');
+
+  // ── Bloc total ──────────────────────────────────────────────────────
+  var totalVol  = lotsData.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
+  var totalLots = lotsData.length;
+
+  var bloc = cel('div', 'histo-total-block');
+
+  var itemVol = cel('div', '');
+  itemVol.appendChild(cel('div', 'histo-total-vol', totalVol.toFixed(2)));
+  itemVol.appendChild(cel('div', 'histo-total-unit', 'm³ utiles'));
+  bloc.appendChild(itemVol);
+
+  bloc.appendChild(cel('div', 'histo-total-divider'));
+
+  var itemLots = cel('div', '');
+  itemLots.appendChild(cel('div', 'histo-total-lots', String(totalLots)));
+  itemLots.appendChild(cel('div', 'histo-total-unit', totalLots > 1 ? 'lots' : 'lot'));
+  bloc.appendChild(itemLots);
+
+  container.appendChild(bloc);
+
+  // ── Par essence ─────────────────────────────────────────────────────
+  container.appendChild(cel('div', 'histo-section-title', 'Par essence'));
+
+  var parEss = {};
+  lotsData.forEach(function (l) {
+    var e = l.essence || 'Autre';
+    if (!parEss[e]) parEss[e] = { vol: 0, lots: 0, causes: [] };
+    parEss[e].vol  += (l.vol_utile || 0);
+    parEss[e].lots += 1;
+    if (l.cause && parEss[e].causes.indexOf(l.cause) === -1) parEss[e].causes.push(l.cause);
+  });
+
+  var essList = cel('div', '');
+  Object.keys(parEss)
+    .sort(function (a, b) { return parEss[b].vol - parEss[a].vol; })
+    .forEach(function (ess) {
+      var d    = parEss[ess];
+      var pct  = totalVol > 0 ? (d.vol / totalVol * 100) : 0;
+      var item = cel('div', 'histo-essence-item');
+
+      var top = cel('div', 'histo-essence-top');
+      top.appendChild(cel('span', 'histo-essence-name', ess));
+      top.appendChild(cel('span', 'histo-essence-vol', d.vol.toFixed(3) + ' m³'));
+      item.appendChild(top);
+
+      item.appendChild(cel('div', 'histo-essence-meta',
+        d.lots + (d.lots > 1 ? ' lots' : ' lot') +
+        (d.causes.length ? ' — ' + d.causes.join(', ') : '')
+      ));
+
+      var track = cel('div', 'histo-bar-track');
+      var fill  = cel('div', 'histo-bar-fill');
+      fill.style.width = pct.toFixed(1) + '%';
+      track.appendChild(fill);
+      item.appendChild(track);
+      essList.appendChild(item);
+    });
+  container.appendChild(essList);
+
+  // ── Lots récents ────────────────────────────────────────────────────
+  container.appendChild(cel('div', 'histo-section-title mt-16', 'Lots récents'));
+
+  var lotsList = cel('div', '');
+  lotsData.slice(0, 20).forEach(function (lot) {
+    var card   = cel('div', 'histo-lot-card');
+    var header = cel('div', 'histo-lot-header');
+    header.appendChild(cel('div', 'histo-lot-nom', lot.nom || '—'));
+    header.appendChild(cel('div', 'histo-lot-vol', (lot.vol_utile || 0).toFixed(3) + ' m³'));
+    card.appendChild(header);
+
+    var badges = cel('div', 'histo-badges');
+    if (lot.commune) badges.appendChild(cel('span', 'histo-badge histo-badge-commune', lot.commune));
+    if (lot.essence) badges.appendChild(cel('span', 'histo-badge histo-badge-essence', lot.essence));
+    if (lot.cause)   badges.appendChild(cel('span', 'histo-badge histo-badge-cause',   lot.cause));
+    card.appendChild(badges);
+    lotsList.appendChild(card);
+  });
+  container.appendChild(lotsList);
+
+  container.appendChild(creerBoutonsExportHisto(lotsData));
+}
+
+function creerBoutonsExportHisto(lotsData) {
+  var row    = cel('div', 'histo-export-row');
+  var btnXls = cel('button', 'histo-export-btn', 'Exporter Excel');
+  btnXls.type    = 'button';
+  btnXls.onclick = function () { exporterHistoriqueCSV(lotsData); };
+  var btnPdf = cel('button', 'histo-export-btn', 'Exporter PDF');
+  btnPdf.type    = 'button';
+  btnPdf.onclick = exporterHistoriquePDF;
+  row.appendChild(btnXls);
+  row.appendChild(btnPdf);
+  return row;
+}
+
+function exporterHistoriqueCSV(lotsData) {
+  if (!lotsData || lotsData.length === 0) { showError('Aucun lot à exporter.'); return; }
+  var h = ['Nom','Essence','Commune','Cause','Provenance','Annee','Usage',
+           'Nb grumes','Vol. brut','Vol. utile','Vol. dechets','Nb planches','Lineaire','Date'];
+  var r = lotsData.map(function (l) {
+    return [l.nom, l.essence, l.commune, l.cause, l.provenance, l.annee, l.usage,
+            l.nb_grumes || 0, (l.vol_brut || 0).toFixed(3), (l.vol_utile || 0).toFixed(3),
+            (l.vol_dechets || 0).toFixed(3), l.nb_planches || 0, (l.lineaire || 0).toFixed(2), l.date];
+  });
+  var csv = [h].concat(r).map(function (row) {
+    return row.map(function (v) { return '"' + String(v || '').replace(/"/g, '""') + '"'; }).join(';');
+  }).join('\n');
+  var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  var a    = document.createElement('a');
+  a.href   = URL.createObjectURL(blob);
+  a.download = 'duramen_historique_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+}
+
+function exporterHistoriquePDF() {
+  window.print();
 }
 
 function badgeClass(usage) {
