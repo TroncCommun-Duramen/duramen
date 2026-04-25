@@ -380,15 +380,14 @@
 
   <!-- ═══ ONGLET 2 : STOCK ═══ -->
   <div class="panel" id="panel-stock">
-    <div class="stock-header">
-      <div>
-        <div class="stock-title">Extraction</div>
-        <div class="stock-subtitle">Volumes disponibles après déduction des extractions</div>
+    <div id="ext-content"></div>
+    <div id="grume-sel-sheet-wrap">
+      <div id="grume-sel-sheet-overlay" onclick="fermerGrumeSelSheet()"></div>
+      <div id="grume-sel-sheet">
+        <div class="grume-sel-handle"></div>
+        <div id="grume-sel-content"></div>
       </div>
-      <button class="btn btn-outline" onclick="exporterStockCSV()">⬇ Exporter le stock CSV</button>
     </div>
-    <div id="stock-totals"></div>
-    <div id="stock-essences"></div>
   </div>
 
   <!-- ═══ ONGLET 3 : EXTRACTIONS ═══ -->
