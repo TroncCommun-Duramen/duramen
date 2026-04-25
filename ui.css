@@ -1133,10 +1133,9 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: var(--indigo-clair);
-  color: var(--indigo);
-  border: 1px solid var(--indigo);
-  border-radius: var(--border-radius-sm);
+  background: var(--indigo);
+  color: var(--washi);
+  border-radius: var(--border-radius-lg);
   padding: 4px 10px;
   font-size: 0.62rem;
   font-weight: var(--font-weight-medium);
@@ -1224,10 +1223,10 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   letter-spacing: 0.12em;
 }
 .saisie-add-btn {
-  background: transparent;
-  color: var(--sumi);
-  border: 1px dashed var(--pierre);
-  border-radius: var(--border-radius-card);
+  background: var(--indigo);
+  color: var(--washi);
+  border: none;
+  border-radius: 12px;
   padding: 10px 18px;
   font-family: var(--font-body);
   font-size: 0.62rem;
@@ -1236,10 +1235,10 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   text-transform: uppercase;
   cursor: pointer;
   min-height: 56px;
-  transition: background 0.15s;
+  transition: opacity 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
-.saisie-add-btn:hover { background: var(--neige); }
+.saisie-add-btn:hover { opacity: 0.85; }
 
 /* ─── Carte grume ─── */
 .saisie-grume-card {
@@ -1798,10 +1797,10 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .grume-sheet-btn-save {
   flex: 2;
   height: 48px;
-  background: var(--vert);
-  color: #fff;
+  background: var(--indigo);
+  color: var(--washi);
   border: none;
-  border-radius: var(--border-radius-card);
+  border-radius: 12px;
   font-family: var(--font-body);
   font-size: 0.88rem;
   font-weight: var(--font-weight-medium);
@@ -1839,12 +1838,17 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   color: var(--indigo);
 }
 .grume-summary-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   background: var(--vert);
   color: #fff;
   font-size: 0.75rem;
   font-weight: var(--font-weight-medium);
-  padding: 2px 7px;
-  border-radius: 4px;
+  flex-shrink: 0;
 }
 .grume-summary-del {
   background: transparent;
