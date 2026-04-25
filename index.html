@@ -159,11 +159,7 @@
   </div>
 
   <!-- ═══ ONGLET 1 : NOUVEAU LOT ═══ -->
-  <div id="saisie-sheet-wrap">
-    <div id="saisie-sheet-overlay" onclick="fermerSaisieSheet()"></div>
-    <div id="saisie-sheet">
-      <div class="sheet-handle"></div>
-      <div class="panel active" id="panel-saisie">
+  <div class="panel active" id="panel-saisie">
 
     <div class="step-indicator" id="steps">
       <div class="step active" id="step1"><div class="step-dot">1</div> Informations du lot</div>
@@ -380,8 +376,6 @@
       </div>
     </div>
 
-      </div>
-    </div>
   </div>
 
   <!-- ═══ ONGLET 2 : STOCK ═══ -->
@@ -430,6 +424,15 @@
       Seuls les lots dont les communes ont activé le partage sont visibles ici. Chaque commune reste libre de partager ou non ses données.
     </div>
     <div id="territoire-container"></div>
+  </div>
+
+  <!-- ═══ GRUME SHEET ═══ -->
+  <div id="grume-sheet-wrap">
+    <div id="grume-sheet-overlay" onclick="fermerGrumeSheet()"></div>
+    <div id="grume-sheet">
+      <div class="grume-sheet-handle"></div>
+      <div id="grume-sheet-content"></div>
+    </div>
   </div>
 
 </main>

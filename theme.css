@@ -18,9 +18,10 @@
   --indigo:       #2B3F8C;   /* onglet actif, champ focus, valeur calculée, badge commune, barre stock */
   --indigo-clair: #EEF0FA;   /* fond badge indigo */
 
-  /* ─── Statuts — inchangés ─── */
+  /* ─── Statuts ─── */
   --rouge:        #c0392b;
   --orange:       #d35400;
+  --vert:         #788d5d;   /* validation, enregistrement */
 
   /* ─── Typographie ─── */
   --font-display:         'Outfit', sans-serif;

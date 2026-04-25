@@ -1063,86 +1063,28 @@ function creerDrum(valeurs, defaut, afficher, onChange) {
   return wrap;
 }
 
-// ─── Carte d'une grume ────────────────────────────────────────────────────
+// ─── Carte sommaire d'une grume (lecture seule) ───────────────────────────
 function creerCarteGrume(idx) {
   var g    = nouvGrumes[idx];
-  var card = cel('div', 'saisie-grume-card');
+  var card = cel('div', 'grume-summary-card');
   card.dataset.grumeIdx = String(idx);
 
-  // Tête : volume total de la ligne + bouton supprimer
-  var top = cel('div', 'saisie-grume-top');
-  var vol = cel('div', 'saisie-grume-vol', '— m³');
-  vol.id  = 'saisie-vol-' + idx;
-  var del = cel('button', 'saisie-grume-del', '×');
+  var dims = cel('div', 'grume-summary-dims');
+  dims.textContent = 'L ' + g.longueur.toFixed(2) + ' m  ·  Ø ' + g.diametre + ' cm  ·  ×' + g.quantite;
+  card.appendChild(dims);
+
+  var right = cel('div', 'grume-summary-right');
+  var v = calcVol(g.diametre, g.longueur) * g.quantite;
+  right.appendChild(cel('div', 'grume-summary-vol', v.toFixed(3) + ' m³'));
+  right.appendChild(cel('span', 'grume-summary-check', '✓'));
+
+  var del = cel('button', 'grume-summary-del', '×');
   del.type    = 'button';
   del.title   = 'Supprimer cette ligne';
   del.onclick = function () { nouvSupprimerLigne(idx); };
-  top.appendChild(vol);
-  top.appendChild(del);
-  card.appendChild(top);
+  right.appendChild(del);
 
-  // Corps : longueur | diamètre | quantité
-  var body = cel('div', 'saisie-grume-body');
-
-  // Colonne longueur
-  var colL = cel('div', 'saisie-grume-col');
-  colL.appendChild(cel('div', 'saisie-col-label', 'Longueur'));
-  var drumL = creerDrum(LON_VALS, g.longueur,
-    function (v) { return v.toFixed(2) + ' m'; },
-    function (v) { g.longueur = v; nouvMajVol(idx); nouvRendreSynthese(); nouvSauverBrouillon(); }
-  );
-  colL.appendChild(drumL);
-  body.appendChild(colL);
-
-  // Colonne diamètre médian
-  var colD = cel('div', 'saisie-grume-col');
-  colD.appendChild(cel('div', 'saisie-col-label', 'Diam. médian'));
-  var drumD = creerDrum(DIA_VALS, g.diametre,
-    function (v) { return v + ' cm'; },
-    function (v) { g.diametre = v; nouvMajVol(idx); nouvRendreSynthese(); nouvSauverBrouillon(); }
-  );
-  colD.appendChild(drumD);
-  body.appendChild(colD);
-
-  // Colonne quantité
-  var colQ = cel('div', 'saisie-grume-col saisie-col-qty');
-  colQ.appendChild(cel('div', 'saisie-col-label', 'Quantité'));
-  var qtyW  = cel('div', 'qty-ctrl');
-  var btnM  = cel('button', 'qty-btn', '−');
-  btnM.type = 'button';
-  var qNum  = cel('span', 'qty-num', String(g.quantite));
-  var btnP  = cel('button', 'qty-btn', '+');
-  btnP.type = 'button';
-  btnM.onclick = function () {
-    if (g.quantite <= 1) return;
-    g.quantite--;
-    qNum.textContent = String(g.quantite);
-    nouvMajVol(idx);
-    nouvRendreSynthese();
-    nouvSauverBrouillon();
-  };
-  btnP.onclick = function () {
-    g.quantite++;
-    qNum.textContent = String(g.quantite);
-    nouvMajVol(idx);
-    nouvRendreSynthese();
-    nouvSauverBrouillon();
-  };
-  qtyW.appendChild(btnM);
-  qtyW.appendChild(qNum);
-  qtyW.appendChild(btnP);
-  colQ.appendChild(qtyW);
-  body.appendChild(colQ);
-
-  card.appendChild(body);
-
-  // Initialise les molettes après insertion dans le DOM
-  setTimeout(function () {
-    if (drumL._init) drumL._init();
-    if (drumD._init) drumD._init();
-    nouvMajVol(idx);
-  }, 30);
-
+  card.appendChild(right);
   return card;
 }
 
@@ -1188,6 +1130,119 @@ function nouvSupprimerLigne(idx) {
   nouvSauverBrouillon();
 }
 
+// ─── Grume sheet ──────────────────────────────────────────────────────────
+var grumeDraft = { longueur: 3.00, diametre: 30, quantite: 1 };
+
+function ouvrirGrumeSheet() {
+  grumeDraft = { longueur: 3.00, diametre: 30, quantite: 1 };
+  construireContenuGrumeSheet();
+  var wrap = document.getElementById('grume-sheet-wrap');
+  if (wrap) wrap.classList.add('open');
+}
+
+function fermerGrumeSheet() {
+  var wrap = document.getElementById('grume-sheet-wrap');
+  if (wrap) wrap.classList.remove('open');
+}
+
+function majVolSheet() {
+  var v  = calcVol(grumeDraft.diametre, grumeDraft.longueur) * grumeDraft.quantite;
+  var el = document.getElementById('grume-sheet-vol');
+  if (el) el.textContent = v.toFixed(3) + ' m³';
+}
+
+function construireContenuGrumeSheet() {
+  var content = document.getElementById('grume-sheet-content');
+  if (!content) return;
+  while (content.firstChild) content.removeChild(content.firstChild);
+
+  // Longueur
+  var rowL = cel('div', 'grume-sheet-row');
+  rowL.appendChild(cel('div', 'grume-sheet-label', 'Longueur'));
+  var drumL = creerDrum(LON_VALS, grumeDraft.longueur,
+    function (v) { return v.toFixed(2) + ' m'; },
+    function (v) { grumeDraft.longueur = v; majVolSheet(); }
+  );
+  rowL.appendChild(drumL);
+  content.appendChild(rowL);
+
+  // Diamètre médian
+  var rowD = cel('div', 'grume-sheet-row');
+  rowD.appendChild(cel('div', 'grume-sheet-label', 'Ø médian'));
+  var drumD = creerDrum(DIA_VALS, grumeDraft.diametre,
+    function (v) { return v + ' cm'; },
+    function (v) { grumeDraft.diametre = v; majVolSheet(); }
+  );
+  rowD.appendChild(drumD);
+  content.appendChild(rowD);
+
+  // Quantité
+  var rowQ = cel('div', 'grume-sheet-row');
+  rowQ.appendChild(cel('div', 'grume-sheet-label', 'Quantité'));
+  var qtyW = cel('div', 'qty-ctrl');
+  var btnM = cel('button', 'qty-btn', '−');
+  btnM.type = 'button';
+  var qNum = cel('span', 'qty-num', String(grumeDraft.quantite));
+  var btnP = cel('button', 'qty-btn', '+');
+  btnP.type = 'button';
+  btnM.onclick = function () {
+    if (grumeDraft.quantite <= 1) return;
+    grumeDraft.quantite--;
+    qNum.textContent = String(grumeDraft.quantite);
+    majVolSheet();
+  };
+  btnP.onclick = function () {
+    grumeDraft.quantite++;
+    qNum.textContent = String(grumeDraft.quantite);
+    majVolSheet();
+  };
+  qtyW.appendChild(btnM);
+  qtyW.appendChild(qNum);
+  qtyW.appendChild(btnP);
+  rowQ.appendChild(qtyW);
+  content.appendChild(rowQ);
+
+  // Volume calculé
+  var volEl = cel('div', 'grume-sheet-vol', '— m³');
+  volEl.id = 'grume-sheet-vol';
+  content.appendChild(volEl);
+
+  // Boutons
+  var btns   = cel('div', 'grume-sheet-btns');
+  var btnAnn = cel('button', 'grume-sheet-btn-ann', 'Annuler');
+  btnAnn.type    = 'button';
+  btnAnn.onclick = fermerGrumeSheet;
+  var btnSave = cel('button', 'grume-sheet-btn-save', '✓ Enregistrer');
+  btnSave.type    = 'button';
+  btnSave.onclick = enregistrerGrumeDraft;
+  btns.appendChild(btnAnn);
+  btns.appendChild(btnSave);
+  content.appendChild(btns);
+
+  // Init molettes après insertion dans le DOM
+  setTimeout(function () {
+    if (drumL._init) drumL._init();
+    if (drumD._init) drumD._init();
+    majVolSheet();
+  }, 30);
+}
+
+function enregistrerGrumeDraft() {
+  nouvGrumes.push({ longueur: grumeDraft.longueur, diametre: grumeDraft.diametre, quantite: grumeDraft.quantite });
+  var idx   = nouvGrumes.length - 1;
+  var liste = document.getElementById('saisie-grumes-liste');
+  if (liste) {
+    var card = creerCarteGrume(idx);
+    liste.appendChild(card);
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  var syn = document.getElementById('saisie-synthese');
+  if (syn) syn.classList.remove('hidden');
+  nouvRendreSynthese();
+  nouvSauverBrouillon();
+  fermerGrumeSheet();
+}
+
 // ─── Barre de synthèse ────────────────────────────────────────────────────
 function nouvRendreSynthese() {
   var pieces = nouvGrumes.reduce(function (s, g) { return s + g.quantite; }, 0);
@@ -1205,10 +1260,7 @@ function nouvRendreSynthese() {
 // ─── Annuler avec confirmation ────────────────────────────────────────────
 function nouvAnnuler() {
   var essEl = document.getElementById('saisie-essence');
-  if (nouvGrumes.length === 0 && (!essEl || !essEl.value)) {
-    fermerSaisieSheet();
-    return;
-  }
+  if (nouvGrumes.length === 0 && (!essEl || !essEl.value)) return;
   if (!confirm('Effacer toute la saisie en cours ?')) return;
   effacerBrouillonSaisie();
   nouvGrumes = [];
@@ -1216,7 +1268,6 @@ function nouvAnnuler() {
   nouvGPS    = { lat: null, lon: null };
   initialiserPanelSaisie();
   captureGPS();
-  fermerSaisieSheet();
 }
 
 // ─── Modifier l'année de coupe ────────────────────────────────────────────
@@ -1532,7 +1583,7 @@ function initialiserPanelSaisie() {
   gHead.appendChild(cel('div', 'saisie-grumes-title', 'Grumes'));
   var gAddBt = cel('button', 'saisie-add-btn', '+ Ajouter une grume');
   gAddBt.type    = 'button';
-  gAddBt.onclick = nouvAjouterLigne;
+  gAddBt.onclick = ouvrirGrumeSheet;
   gHead.appendChild(gAddBt);
   section.appendChild(gHead);
 
@@ -1579,10 +1630,6 @@ function initialiserPanelSaisie() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 function switchTab(panel, btn) {
-  if (panel === 'saisie' && window.innerWidth <= 600) {
-    ouvrirSaisieSheet(btn);
-    return;
-  }
   document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
   document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
   document.querySelectorAll('.bnav-btn').forEach(function (t) { t.classList.remove('active'); });
@@ -1593,18 +1640,6 @@ function switchTab(panel, btn) {
   if (panel === 'extraction') afficherExtractions();
   if (panel === 'historique') afficherHistorique();
   if (panel === 'territoire') afficherTerritoire();
-}
-
-function ouvrirSaisieSheet(btn) {
-  var wrap = document.getElementById('saisie-sheet-wrap');
-  if (wrap) wrap.classList.add('open');
-  document.querySelectorAll('.bnav-btn').forEach(function (t) { t.classList.remove('active'); });
-  if (btn) btn.classList.add('active');
-}
-
-function fermerSaisieSheet() {
-  var wrap = document.getElementById('saisie-sheet-wrap');
-  if (wrap) wrap.classList.remove('open');
 }
 
 

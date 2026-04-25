@@ -1720,54 +1720,140 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .toast-succes.hidden { opacity: 0; }
 
 /* ════════════════════════════════════════════
-   BOTTOM SHEET — Nouveau lot (mobile)
+   GRUME SHEET — bottom sheet de saisie grume
 ════════════════════════════════════════════ */
 
-/* Desktop : wrappers transparents, panel-saisie dans le flux normal */
-@media (min-width: 601px) {
-  #saisie-sheet-wrap    { display: contents; }
-  #saisie-sheet         { display: contents; }
-  #saisie-sheet-overlay { display: none; }
-  .sheet-handle         { display: none; }
+#grume-sheet-wrap {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+#grume-sheet-wrap.open { display: flex; }
+
+#grume-sheet-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 15, 14, 0.4);
+}
+#grume-sheet {
+  position: relative;
+  z-index: 1;
+  background: var(--washi);
+  border-radius: 12px 12px 0 0;
+  padding-bottom: 80px;
+}
+.grume-sheet-handle {
+  width: 28px;
+  height: 3px;
+  background: var(--pierre);
+  border-radius: 2px;
+  margin: 12px auto 8px;
+}
+#grume-sheet-content { padding: 20px; }
+
+.grume-sheet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.grume-sheet-label {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--cendre);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.grume-sheet-vol {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--indigo);
+  text-align: center;
+  padding: 14px 0 6px;
+  letter-spacing: -0.02em;
+}
+.grume-sheet-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.grume-sheet-btn-ann {
+  flex: 1;
+  height: 48px;
+  background: transparent;
+  color: var(--sumi);
+  border: var(--border-field);
+  border-radius: var(--border-radius-card);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.grume-sheet-btn-save {
+  flex: 2;
+  height: 48px;
+  background: var(--vert);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius-card);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Mobile : overlay + panneau remontant du bas */
-@media (max-width: 600px) {
-  #saisie-sheet-wrap {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-  }
-  #saisie-sheet-wrap.open {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-  #saisie-sheet-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(15, 15, 14, 0.3);
-  }
-  #saisie-sheet {
-    position: relative;
-    z-index: 1;
-    background: var(--washi);
-    border-radius: 12px 12px 0 0;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding-bottom: 80px;
-  }
-  .sheet-handle {
-    width: 32px;
-    height: 3px;
-    background: var(--pierre);
-    border-radius: 2px;
-    margin: 12px auto 8px;
-    flex-shrink: 0;
-  }
-  #saisie-sheet-wrap.open #panel-saisie {
-    display: block !important;
-  }
+/* ─── Carte grume sommaire ─── */
+.grume-summary-card {
+  display: flex;
+  align-items: center;
+  background: var(--neige);
+  border: 1px solid var(--brume);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  gap: 10px;
 }
+.grume-summary-dims {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: var(--font-weight-regular);
+  color: var(--sumi);
+}
+.grume-summary-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.grume-summary-vol {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--indigo);
+}
+.grume-summary-check {
+  background: var(--vert);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.grume-summary-del {
+  background: transparent;
+  border: none;
+  color: var(--pierre);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+.grume-summary-del:hover { color: var(--rouge); }
 
