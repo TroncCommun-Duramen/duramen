@@ -1476,7 +1476,8 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .saisie-btn-nommer:hover { filter: brightness(0.85); }
 
 /* ─── Modal "Nommer le lot" ─── */
-.modal-nommer {
+.modal-nommer,
+.modal-extraction-dest {
   border-top: 2px solid var(--indigo);
 }
 

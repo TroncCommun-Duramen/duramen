@@ -325,7 +325,7 @@ async function sauvegarderLot() {
 
 // ─── Stock ────────────────────────────────────────────────────────────────
 // ─── État de l'écran Extraction ───────────────────────────────────────────
-var extDraft     = { destination: '', communeInstall: '', usage: '' };
+var extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '', partage: false };
 var extGrumesSel = [];
 var extCommunes  = [];
 var extEssFiltre = null;
@@ -350,45 +350,6 @@ function afficherExtraction() {
   while (panel.firstChild) panel.removeChild(panel.firstChild);
   extGrumesSel = [];
   extEssFiltre = null;
-
-  // Section destination
-  var secDest = cel('div', 'ext-section');
-  secDest.appendChild(cel('div', 'ext-section-title', 'Destination'));
-
-  var fNom = cel('div', 'ext-field');
-  fNom.appendChild(cel('label', 'ext-label', 'Nom du projet'));
-  var iNom = cel('input', 'ext-input');
-  iNom.type = 'text';
-  iNom.placeholder = 'Ex. : Mairie de Rezé, bancs publics…';
-  iNom.value = extDraft.destination;
-  iNom.addEventListener('input', function () { extDraft.destination = iNom.value; });
-  fNom.appendChild(iNom);
-  secDest.appendChild(fNom);
-
-  var fCom = cel('div', 'ext-field');
-  fCom.appendChild(cel('label', 'ext-label', 'Commune d\'installation'));
-  var sCom = cel('select', 'ext-select');
-  sCom.id = 'ext-commune-sel';
-  var optDef = cel('option', '', '— Choisir —');
-  optDef.value = '';
-  sCom.appendChild(optDef);
-  sCom.addEventListener('change', function () { extDraft.communeInstall = sCom.value; });
-  fCom.appendChild(sCom);
-  secDest.appendChild(fCom);
-
-  var fUsa = cel('div', 'ext-field');
-  fUsa.appendChild(cel('label', 'ext-label', 'Usage'));
-  var sUsa = cel('select', 'ext-select');
-  ['', 'Mobilier', 'Charpente', 'Bois de chauffage', 'Autre'].forEach(function (u) {
-    var o = cel('option', '', u || '— Choisir —');
-    o.value = u;
-    sUsa.appendChild(o);
-  });
-  sUsa.value = extDraft.usage;
-  sUsa.addEventListener('change', function () { extDraft.usage = sUsa.value; });
-  fUsa.appendChild(sUsa);
-  secDest.appendChild(fUsa);
-  panel.appendChild(secDest);
 
   // Section grumes à extraire
   var secGrumes = cel('div', 'ext-section');
@@ -501,12 +462,12 @@ function afficherExtraction() {
   panel.appendChild(synthese);
 
   // Bouton valider
-  var btnVal = cel('button', 'ext-valider-btn', 'Valider l\'extraction');
+  var btnVal = cel('button', 'ext-valider-btn', 'Valider l\'extraction →');
   btnVal.type    = 'button';
-  btnVal.onclick = validerExtraction;
+  btnVal.onclick = ouvrirModalExtractionDest;
   panel.appendChild(btnVal);
 
-  chargerCommunesExtraction();
+  assureModalExtractionDest();
 }
 
 async function chargerCommunesExtraction() {
@@ -519,7 +480,7 @@ async function chargerCommunesExtraction() {
 }
 
 function remplirCommunesSel() {
-  var sel = document.getElementById('ext-commune-sel');
+  var sel = document.getElementById('modal-ext-commune');
   if (!sel) return;
   while (sel.firstChild) sel.removeChild(sel.firstChild);
   var optD = cel('option', '', '— Choisir —');
@@ -531,6 +492,123 @@ function remplirCommunesSel() {
     sel.appendChild(o);
   });
   sel.value = extDraft.communeInstall;
+}
+
+// ─── Modale Destination (extraction) ─────────────────────────────────────
+function assureModalExtractionDest() {
+  if (document.getElementById('modal-ext-bg')) return;
+
+  var bg    = cel('div', 'extract-modal-bg');
+  bg.id     = 'modal-ext-bg';
+  var modal = cel('div', 'extract-modal modal-extraction-dest');
+
+  var closeBtn = cel('button', 'modal-close', '✕');
+  closeBtn.onclick = fermerModalExtractionDest;
+  modal.appendChild(closeBtn);
+
+  modal.appendChild(cel('h2', '', 'Destination'));
+  modal.appendChild(cel('p', 'modal-sub', 'À qui vont ces grumes ?'));
+
+  var fNom = cel('div', 'field');
+  var lNom = cel('label', '', 'Nom du projet');
+  lNom.htmlFor = 'modal-ext-nom';
+  var iNom = document.createElement('input');
+  iNom.type        = 'text';
+  iNom.id          = 'modal-ext-nom';
+  iNom.autocomplete = 'off';
+  iNom.placeholder = 'Ex. : Mairie de Rezé, bancs publics…';
+  fNom.appendChild(lNom);
+  fNom.appendChild(iNom);
+  modal.appendChild(fNom);
+
+  var fCom = cel('div', 'field');
+  var lCom = cel('label', '', 'Commune d\'installation');
+  lCom.htmlFor = 'modal-ext-commune';
+  var sCom = cel('select', '');
+  sCom.id = 'modal-ext-commune';
+  var optDef = cel('option', '', '— Choisir —');
+  optDef.value = '';
+  sCom.appendChild(optDef);
+  fCom.appendChild(lCom);
+  fCom.appendChild(sCom);
+  modal.appendChild(fCom);
+
+  var fUsa = cel('div', 'field');
+  var lUsa = cel('label', '', 'Usage');
+  lUsa.htmlFor = 'modal-ext-usage';
+  var sUsa = cel('select', '');
+  sUsa.id = 'modal-ext-usage';
+  ['', 'Intérieur', 'Extérieur'].forEach(function (u) {
+    var o = cel('option', '', u || '— Choisir —');
+    o.value = u;
+    sUsa.appendChild(o);
+  });
+  fUsa.appendChild(lUsa);
+  fUsa.appendChild(sUsa);
+  modal.appendChild(fUsa);
+
+  var fLieu = cel('div', 'field');
+  var lLieu = cel('label', '', 'Lieu (optionnel)');
+  lLieu.htmlFor = 'modal-ext-lieu';
+  var iLieu = document.createElement('input');
+  iLieu.type        = 'text';
+  iLieu.id          = 'modal-ext-lieu';
+  iLieu.autocomplete = 'off';
+  iLieu.placeholder = 'Ex. : salle des fêtes, école…';
+  fLieu.appendChild(lLieu);
+  fLieu.appendChild(iLieu);
+  modal.appendChild(fLieu);
+
+  var pWrap = cel('div', 'partage-toggle-wrap');
+  var pLbl  = cel('div', 'partage-toggle-label');
+  var pTxt  = cel('strong', '', 'Partager avec toutes les communes');
+  var pSub  = cel('small', '', 'Cette extraction sera visible par toutes les communes.');
+  pLbl.appendChild(pTxt);
+  pLbl.appendChild(pSub);
+  var tSwitch = cel('label', 'toggle-switch');
+  var tInp    = document.createElement('input');
+  tInp.type   = 'checkbox';
+  tInp.id     = 'modal-ext-partage';
+  tSwitch.appendChild(tInp);
+  tSwitch.appendChild(cel('span', 'toggle-slider'));
+  pWrap.appendChild(pLbl);
+  pWrap.appendChild(tSwitch);
+  modal.appendChild(pWrap);
+
+  var acts   = cel('div', 'flex-end');
+  var btnRet = cel('button', 'btn btn-outline', '← Retour');
+  btnRet.type    = 'button';
+  btnRet.onclick = fermerModalExtractionDest;
+  var btnOk  = cel('button', 'btn btn-primary', 'Confirmer');
+  btnOk.type    = 'button';
+  btnOk.onclick = confirmerExtractionDest;
+  acts.appendChild(btnRet);
+  acts.appendChild(btnOk);
+  modal.appendChild(acts);
+
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+}
+
+function ouvrirModalExtractionDest() {
+  if (extGrumesSel.length === 0) { showError('Sélectionnez au moins une grume.'); return; }
+  assureModalExtractionDest();
+  var nomEl  = document.getElementById('modal-ext-nom');
+  var usaEl  = document.getElementById('modal-ext-usage');
+  var lieuEl = document.getElementById('modal-ext-lieu');
+  var ptgEl  = document.getElementById('modal-ext-partage');
+  if (nomEl)  nomEl.value    = extDraft.destination;
+  if (usaEl)  usaEl.value    = extDraft.usage;
+  if (lieuEl) lieuEl.value   = extDraft.lieu;
+  if (ptgEl)  ptgEl.checked  = extDraft.partage;
+  document.getElementById('modal-ext-bg').classList.add('open');
+  chargerCommunesExtraction();
+  if (nomEl) nomEl.focus();
+}
+
+function fermerModalExtractionDest() {
+  var bg = document.getElementById('modal-ext-bg');
+  if (bg) bg.classList.remove('open');
 }
 
 function ouvrirGrumeSelSheet() {
@@ -700,10 +778,27 @@ function majDebitExtraction() {
   if (dcEl)  dcEl.textContent = 'Volume déchet : ' + vDech.toFixed(3) + ' m³';
 }
 
-async function validerExtraction() {
-  if (!extDraft.destination.trim()) { showError('Renseignez le nom du projet.'); return; }
-  if (!extDraft.usage)               { showError('Choisissez un usage.'); return; }
-  if (extGrumesSel.length === 0)     { showError('Sélectionnez au moins une grume.'); return; }
+async function confirmerExtractionDest() {
+  var nomEl  = document.getElementById('modal-ext-nom');
+  var comEl  = document.getElementById('modal-ext-commune');
+  var usaEl  = document.getElementById('modal-ext-usage');
+  var lieuEl = document.getElementById('modal-ext-lieu');
+  var ptgEl  = document.getElementById('modal-ext-partage');
+
+  var destination    = nomEl  ? nomEl.value.trim()  : '';
+  var usage          = usaEl  ? usaEl.value          : '';
+  var communeInstall = comEl  ? comEl.value          : '';
+  var lieu           = lieuEl ? lieuEl.value.trim()  : '';
+  var partage        = ptgEl  ? ptgEl.checked        : false;
+
+  if (!destination) { showError('Renseignez le nom du projet.'); return; }
+  if (!usage)        { showError('Choisissez un usage.'); return; }
+
+  extDraft.destination    = destination;
+  extDraft.communeInstall = communeInstall;
+  extDraft.usage          = usage;
+  extDraft.lieu           = lieu;
+  extDraft.partage        = partage;
 
   var parEssence = {};
   extGrumesSel.forEach(function (g) {
@@ -714,7 +809,7 @@ async function validerExtraction() {
   for (var i = 0; i < essences.length; i++) {
     var valid = DuramenCore.validerSortie({
       essence: essences[i], volume: parEssence[essences[i]],
-      usage: extDraft.usage, destination: extDraft.destination.trim()
+      usage: extDraft.usage, destination: extDraft.destination
     });
     if (!valid.ok) { showError(valid.erreur); return; }
   }
@@ -730,10 +825,10 @@ async function validerExtraction() {
         essence:      ess,
         volume:       parEssence[ess],
         usage:        extDraft.usage,
-        destination:  extDraft.destination.trim(),
+        destination:  extDraft.destination,
         commune:      extDraft.communeInstall || '',
         contact:      '',
-        notes:        '',
+        notes:        extDraft.lieu ? 'Lieu : ' + extDraft.lieu : '',
         date:         now.toLocaleDateString('fr-FR'),
         date_iso:     now.toISOString()
       };
@@ -741,8 +836,9 @@ async function validerExtraction() {
       await sbInsert('extractions', ext);
     }
     await chargerDonnees();
-    extDraft     = { destination: '', communeInstall: '', usage: '' };
+    extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '', partage: false };
     extGrumesSel = [];
+    fermerModalExtractionDest();
     showToastSucces('Extraction enregistrée.');
     var btnAcc = document.querySelector('.bnav-btn[data-panel="accueil"]');
     if (btnAcc) switchTab('accueil', btnAcc);
