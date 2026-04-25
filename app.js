@@ -325,7 +325,7 @@ async function sauvegarderLot() {
 
 // ─── Stock ────────────────────────────────────────────────────────────────
 // ─── État de l'écran Extraction ───────────────────────────────────────────
-var extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '', partage: false };
+var extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '' };
 var extGrumesSel = [];
 var extCommunes  = [];
 var extEssFiltre = null;
@@ -559,22 +559,6 @@ function assureModalExtractionDest() {
   fLieu.appendChild(iLieu);
   modal.appendChild(fLieu);
 
-  var pWrap = cel('div', 'partage-toggle-wrap');
-  var pLbl  = cel('div', 'partage-toggle-label');
-  var pTxt  = cel('strong', '', 'Partager avec toutes les communes');
-  var pSub  = cel('small', '', 'Cette extraction sera visible par toutes les communes.');
-  pLbl.appendChild(pTxt);
-  pLbl.appendChild(pSub);
-  var tSwitch = cel('label', 'toggle-switch');
-  var tInp    = document.createElement('input');
-  tInp.type   = 'checkbox';
-  tInp.id     = 'modal-ext-partage';
-  tSwitch.appendChild(tInp);
-  tSwitch.appendChild(cel('span', 'toggle-slider'));
-  pWrap.appendChild(pLbl);
-  pWrap.appendChild(tSwitch);
-  modal.appendChild(pWrap);
-
   var acts   = cel('div', 'flex-end');
   var btnRet = cel('button', 'btn btn-outline', '← Retour');
   btnRet.type    = 'button';
@@ -596,11 +580,9 @@ function ouvrirModalExtractionDest() {
   var nomEl  = document.getElementById('modal-ext-nom');
   var usaEl  = document.getElementById('modal-ext-usage');
   var lieuEl = document.getElementById('modal-ext-lieu');
-  var ptgEl  = document.getElementById('modal-ext-partage');
-  if (nomEl)  nomEl.value    = extDraft.destination;
-  if (usaEl)  usaEl.value    = extDraft.usage;
-  if (lieuEl) lieuEl.value   = extDraft.lieu;
-  if (ptgEl)  ptgEl.checked  = extDraft.partage;
+  if (nomEl)  nomEl.value  = extDraft.destination;
+  if (usaEl)  usaEl.value  = extDraft.usage;
+  if (lieuEl) lieuEl.value = extDraft.lieu;
   document.getElementById('modal-ext-bg').classList.add('open');
   chargerCommunesExtraction();
   if (nomEl) nomEl.focus();
@@ -783,22 +765,18 @@ async function confirmerExtractionDest() {
   var comEl  = document.getElementById('modal-ext-commune');
   var usaEl  = document.getElementById('modal-ext-usage');
   var lieuEl = document.getElementById('modal-ext-lieu');
-  var ptgEl  = document.getElementById('modal-ext-partage');
 
   var destination    = nomEl  ? nomEl.value.trim()  : '';
   var usage          = usaEl  ? usaEl.value          : '';
   var communeInstall = comEl  ? comEl.value          : '';
   var lieu           = lieuEl ? lieuEl.value.trim()  : '';
-  var partage        = ptgEl  ? ptgEl.checked        : false;
 
-  if (!destination) { showError('Renseignez le nom du projet.'); return; }
-  if (!usage)        { showError('Choisissez un usage.'); return; }
+  if (!usage) { showError('Choisissez un usage.'); return; }
 
   extDraft.destination    = destination;
   extDraft.communeInstall = communeInstall;
   extDraft.usage          = usage;
   extDraft.lieu           = lieu;
-  extDraft.partage        = partage;
 
   var parEssence = {};
   extGrumesSel.forEach(function (g) {
@@ -836,7 +814,7 @@ async function confirmerExtractionDest() {
       await sbInsert('extractions', ext);
     }
     await chargerDonnees();
-    extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '', partage: false };
+    extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '' };
     extGrumesSel = [];
     fermerModalExtractionDest();
     showToastSucces('Extraction enregistrée.');
