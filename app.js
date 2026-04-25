@@ -389,11 +389,21 @@ function afficherExtraction() {
   extDebitActif = false;
   var secDebit = cel('div', 'ext-section');
 
-  var btnDebitToggle = cel('button', 'ext-debit-toggle', 'Grume brute');
-  btnDebitToggle.type    = 'button';
-  btnDebitToggle.id      = 'ext-debit-toggle';
-  btnDebitToggle.onclick = basculerDebitExtraction;
-  secDebit.appendChild(btnDebitToggle);
+  var toggleGrid = cel('div', 'ext-debit-grid');
+
+  var btnBrute = cel('button', 'ext-debit-toggle active', 'Grume brute');
+  btnBrute.type    = 'button';
+  btnBrute.id      = 'ext-btn-brute';
+  btnBrute.onclick = function () { basculerDebitExtraction(false); };
+
+  var btnDebit = cel('button', 'ext-debit-toggle', 'Débit en planches');
+  btnDebit.type    = 'button';
+  btnDebit.id      = 'ext-btn-debit';
+  btnDebit.onclick = function () { basculerDebitExtraction(true); };
+
+  toggleGrid.appendChild(btnBrute);
+  toggleGrid.appendChild(btnDebit);
+  secDebit.appendChild(toggleGrid);
 
   var slidersWrap = cel('div', 'ext-debit-sliders hidden');
   slidersWrap.id = 'ext-debit-sliders';
@@ -477,15 +487,14 @@ function afficherExtraction() {
   assureModalExtractionDest();
 }
 
-function basculerDebitExtraction() {
-  extDebitActif = !extDebitActif;
-  var btn     = document.getElementById('ext-debit-toggle');
-  var sliders = document.getElementById('ext-debit-sliders');
-  if (btn) {
-    btn.textContent = extDebitActif ? 'Débit en planches' : 'Grume brute';
-    btn.classList.toggle('active', extDebitActif);
-  }
-  if (sliders) sliders.classList.toggle('hidden', !extDebitActif);
+function basculerDebitExtraction(activer) {
+  extDebitActif = activer;
+  var btnBrute = document.getElementById('ext-btn-brute');
+  var btnDebit = document.getElementById('ext-btn-debit');
+  var sliders  = document.getElementById('ext-debit-sliders');
+  if (btnBrute) btnBrute.classList.toggle('active', !extDebitActif);
+  if (btnDebit) btnDebit.classList.toggle('active', extDebitActif);
+  if (sliders)  sliders.classList.toggle('hidden', !extDebitActif);
   majSyntheseExtraction();
 }
 
