@@ -1879,18 +1879,54 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   letter-spacing: 0.12em;
   margin-bottom: 14px;
 }
-.ext-debit-header {
+.ext-debit-toggle {
+  display: inline-block;
+  padding: 10px 18px;
+  margin-bottom: 16px;
+  background: var(--neige);
+  border: 1px solid var(--pierre);
+  border-radius: var(--border-radius-card);
+  color: var(--cendre);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.ext-debit-toggle.active {
+  background: var(--vert);
+  border-color: transparent;
+  color: #fff;
+}
+.ext-debit-sliders { padding-top: 4px; }
+.ext-formula-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
 }
-.ext-debit-header .ext-section-title { margin-bottom: 0; }
-.ext-optional {
+.ext-lineaire-box {
+  background: var(--indigo);
+  color: var(--washi);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.ext-lineaire-lbl {
   font-family: var(--font-body);
-  font-size: 0.62rem;
-  color: var(--pierre);
-  font-style: italic;
+  font-size: 0.55rem;
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+  margin-bottom: 3px;
+}
+.ext-lineaire-val {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
 }
 .ext-field { margin-bottom: 14px; }
 .ext-label {

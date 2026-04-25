@@ -329,6 +329,7 @@ var extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '' };
 var extGrumesSel = [];
 var extCommunes  = [];
 var extEssFiltre = null;
+var extDebitActif = false;
 
 function showToastSucces(msg) {
   var el = document.getElementById('toast-ok');
@@ -385,11 +386,17 @@ function afficherExtraction() {
   panel.appendChild(secGrumes);
 
   // Section débit en planches
+  extDebitActif = false;
   var secDebit = cel('div', 'ext-section');
-  var debitHdr = cel('div', 'ext-debit-header');
-  debitHdr.appendChild(cel('div', 'ext-section-title', 'Débit en planches'));
-  debitHdr.appendChild(cel('span', 'ext-optional', 'optionnel'));
-  secDebit.appendChild(debitHdr);
+
+  var btnDebitToggle = cel('button', 'ext-debit-toggle', 'Grume brute');
+  btnDebitToggle.type    = 'button';
+  btnDebitToggle.id      = 'ext-debit-toggle';
+  btnDebitToggle.onclick = basculerDebitExtraction;
+  secDebit.appendChild(btnDebitToggle);
+
+  var slidersWrap = cel('div', 'ext-debit-sliders hidden');
+  slidersWrap.id = 'ext-debit-sliders';
 
   var slidersDef = [
     { id: 'ext-epaisseur', label: 'Épaisseur planche',  min: 20, max: 50, step: 1, def: 27, unit: 'mm' },
@@ -416,22 +423,13 @@ function afficherExtraction() {
       majDebitExtraction();
     });
     row.appendChild(inp);
-    secDebit.appendChild(row);
+    slidersWrap.appendChild(row);
   });
 
-  var debitRes = cel('div', 'ext-debit-result hidden');
-  debitRes.id = 'ext-debit-result';
-  var debitUtile = cel('div', 'ext-debit-utile');
-  debitUtile.id  = 'ext-debit-utile';
-  var debitDech  = cel('div', 'ext-debit-dech');
-  debitDech.id   = 'ext-debit-dech';
-  debitRes.appendChild(debitUtile);
-  debitRes.appendChild(debitDech);
-  secDebit.appendChild(debitRes);
-
+  var formulaRow  = cel('div', 'ext-formula-row');
   var formuleLien = cel('button', 'ext-formula-link', 'Voir la formule');
   formuleLien.type = 'button';
-  var formuleZone = cel('div', 'ext-formula-zone hidden');
+  var formuleZone  = cel('div', 'ext-formula-zone hidden');
   var ftxt = cel('p', 'ext-formula-text', 'V_utile = V × R × (e ÷ (e + t))   —   V_déchet = V − V_utile');
   var fdet = cel('p', 'ext-formula-detail', 'V = volume brut · R = rendement géom. · e = épaisseur planche · t = trait de scie');
   formuleZone.appendChild(ftxt);
@@ -440,8 +438,17 @@ function afficherExtraction() {
     formuleZone.classList.toggle('hidden');
     formuleLien.textContent = formuleZone.classList.contains('hidden') ? 'Voir la formule' : 'Masquer la formule';
   };
-  secDebit.appendChild(formuleLien);
-  secDebit.appendChild(formuleZone);
+  var lineaireBox = cel('div', 'ext-lineaire-box');
+  var linLbl = cel('div', 'ext-lineaire-lbl', 'Linéaire indicatif');
+  var linVal = cel('div', 'ext-lineaire-val', '—');
+  linVal.id = 'ext-lineaire-val';
+  lineaireBox.appendChild(linLbl);
+  lineaireBox.appendChild(linVal);
+  formulaRow.appendChild(formuleLien);
+  formulaRow.appendChild(lineaireBox);
+  slidersWrap.appendChild(formulaRow);
+  slidersWrap.appendChild(formuleZone);
+  secDebit.appendChild(slidersWrap);
   panel.appendChild(secDebit);
 
   // Barre de synthèse
@@ -468,6 +475,18 @@ function afficherExtraction() {
   panel.appendChild(btnVal);
 
   assureModalExtractionDest();
+}
+
+function basculerDebitExtraction() {
+  extDebitActif = !extDebitActif;
+  var btn     = document.getElementById('ext-debit-toggle');
+  var sliders = document.getElementById('ext-debit-sliders');
+  if (btn) {
+    btn.textContent = extDebitActif ? 'Débit en planches' : 'Grume brute';
+    btn.classList.toggle('active', extDebitActif);
+  }
+  if (sliders) sliders.classList.toggle('hidden', !extDebitActif);
+  majSyntheseExtraction();
 }
 
 async function chargerCommunesExtraction() {
@@ -728,6 +747,10 @@ function majSyntheseExtraction() {
   var volBrut = extGrumesSel.reduce(function (s, g) { return s + g.vol; }, 0);
   var syn = document.getElementById('ext-synthese');
   if (syn) syn.classList.toggle('hidden', volBrut === 0);
+  var elUtile = document.getElementById('ext-syn-utile');
+  var elDech  = document.getElementById('ext-syn-dech');
+  if (elUtile) elUtile.parentNode.classList.toggle('hidden', !extDebitActif);
+  if (elDech)  elDech.parentNode.classList.toggle('hidden', !extDebitActif);
   majDebitExtraction();
 }
 
@@ -752,12 +775,11 @@ function majDebitExtraction() {
   if (elUtile) elUtile.textContent = vUtile.toFixed(3);
   if (elDech)  elDech.textContent  = vDech.toFixed(3);
 
-  var resEl  = document.getElementById('ext-debit-result');
-  var utEl   = document.getElementById('ext-debit-utile');
-  var dcEl   = document.getElementById('ext-debit-dech');
-  if (resEl) resEl.classList.toggle('hidden', volBrut === 0);
-  if (utEl)  utEl.textContent = 'Volume utile : ' + vUtile.toFixed(3) + ' m³';
-  if (dcEl)  dcEl.textContent = 'Volume déchet : ' + vDech.toFixed(3) + ' m³';
+  var linEl = document.getElementById('ext-lineaire-val');
+  if (linEl && extDebitActif && e > 0) {
+    var lin = vUtile / (e / 1000 * 0.20);
+    linEl.textContent = lin.toFixed(1) + ' m';
+  }
 }
 
 async function confirmerExtractionDest() {
