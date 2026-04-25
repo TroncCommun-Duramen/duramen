@@ -24,6 +24,9 @@
 | Groupe D : 30 occurrences style.display → classList + .hidden ✅ | app.js + ui.css + index.html | 24 avril 2026 |
 | Formulaire "Ajouter au stock" — conformité charte design ✅ | theme.css + ui.css | 25 avril 2026 |
 | Refonte page Historique — toggle Ma commune / Communauté, blocs, barres, export ✅ | app.js + ui.css + index.html | 25 avril 2026 |
+| Navigation 4 onglets — Accueil · Nouveau · Stock · Extraction ✅ | app.js + index.html | 25 avril 2026 |
+| Écran Nouveau — bottom sheet grumes + cartes résumé + modale nommer le lot ✅ | app.js + ui.css | 25 avril 2026 |
+| Écran Extraction — sélection grumes, bascule brute/débit, sliders, linéaire, modale destination ✅ | app.js + ui.css + index.html | 25 avril 2026 |
 
 ---
 
@@ -38,8 +41,7 @@ _(aucune)_
 | # | Tâche | Session | Priorité |
 |---|-------|---------|----------|
 | 1 | Responsive desktop : layout bureau distinct du layout mobile | Design | Haute |
-| 2 | Responsive desktop : layout bureau distinct du layout mobile | Design | Moyenne |
-| 3 | Icône PWA : fond `--indigo` + icône blanche (coordonner avec graphiste) | Design | Basse |
+| 2 | Icône PWA : fond `--indigo` + icône blanche (coordonner avec graphiste) | Design | Basse |
 
 ---
 

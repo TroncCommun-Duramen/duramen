@@ -103,6 +103,41 @@
 ### Service Worker
 - Cache actuel : **duramen-v12**
 
+---
+
+## Session 25 avril 2026 — Interfaces écrans métier
+
+### Navigation — 4 onglets (app.js + index.html) ✅
+- Onglets bottom nav : **Accueil · Nouveau · Stock · Extraction**
+- Panel IDs stables : `panel-accueil`, `panel-saisie` (Nouveau), `panel-historique` (Stock), `panel-stock` (Extraction)
+- `switchTab(panel, btn)` gère le routing et déclenche `afficherExtraction()`, `afficherExtractions()`, `afficherHistorique()`, `afficherTerritoire()` selon l'onglet
+
+### Écran Nouveau — panel-saisie (app.js + ui.css) ✅
+- Formulaire saisie grumes : essence (select), provenance, cause d'abattage
+- `+ Ajouter une grume` ouvre un bottom sheet (drums longueur/diamètre + quantité)
+- Chaque grume enregistrée apparaît en carte résumé avec badge ✓ vert (`--vert: #788d5d`)
+- Modale "Nommer le lot" à la validation : nom libre + toggle partage communes
+- Sauvegarde via `DuramenCore.entree()` + `sbInsert('lots', ...)`
+- État : `nouvGrumes[]`, brouillon auto-sauvegardé clé `duramen_draft`
+
+### Écran Stock — panel-historique (app.js + ui.css) ✅
+- Anciennement "Historique" — toggle **Ma commune / Nantes Métropole**
+- Bloc total : fond `var(--sumi)`, volume m³ + nombre de lots
+- Liste par essence : barres proportionnelles `var(--indigo)` sur piste `var(--brume)`
+- 5 lots récents max (anciennement 20), cartes `var(--neige)`, badges commune/essence/cause
+- Export Excel (CSV UTF-8 BOM) et PDF (`window.print()`)
+
+### Écran Extraction — panel-stock (app.js + ui.css) ✅
+- Sélection grumes par essence via chips filtres + bottom sheet (grumes cochables par lot)
+- Bascule **Grume brute / Débit en planches** (2 boutons côte à côte, grid 2 colonnes)
+  - Grume brute (défaut) : barre synthèse 1 bloc — m³ brut fond `var(--sumi)`
+  - Débit en planches : sliders épaisseur 20–50 mm (défaut 27), trait de scie 2–4 mm (défaut 3), rendement 30–70 % (défaut 50 %)
+  - Barre synthèse 3 blocs : m³ extrait (sumi) · m³ utile (vert) · m³ déchet (orange)
+  - Linéaire indicatif : `V_utile ÷ (e/1000 × 0.20)` en mètres, aligné droite, fond indigo
+- Modale destination à la validation : nom projet (optionnel), commune d'installation, usage Intérieur/Extérieur, lieu (optionnel)
+- Confirmation : `DuramenCore.sortie()` + `sbInsert('extractions', ...)` + toast + retour accueil
+- État : `extGrumesSel[]`, `extDraft{}`, `extDebitActif` (bool), `extCommunes[]`
+
 **Migration Supabase — 19 avril 2026 :**
 Colonnes `id` des tables `lots` et `extractions` migrées de `bigint` → `uuid`.
 `app.js` utilise `crypto.randomUUID()` — les types sont désormais cohérents.
