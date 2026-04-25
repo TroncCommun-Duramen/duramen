@@ -1584,7 +1584,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   margin-bottom: 4px;
 }
 .histo-essence-name {
-  font-size: 0.88rem;
+  font-size: 17px;
   font-weight: var(--font-weight-medium);
   color: var(--sumi);
 }
@@ -1597,7 +1597,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   white-space: nowrap;
 }
 .histo-essence-meta {
-  font-size: 0.68rem;
+  font-size: 13px;
   color: var(--cendre);
   margin-bottom: 8px;
 }
@@ -1654,7 +1654,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   display: inline-block;
   padding: 2px 8px;
   border-radius: var(--border-radius-sm);
-  font-size: 0.54rem;
+  font-size: 12px;
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.08em;
   text-transform: uppercase;

@@ -618,7 +618,7 @@ function rendreHistoriqueContenu(container, lotsData) {
   container.appendChild(cel('div', 'histo-section-title mt-16', 'Lots récents'));
 
   var lotsList = cel('div', '');
-  lotsData.slice(0, 20).forEach(function (lot) {
+  lotsData.slice(0, 5).forEach(function (lot) {
     var card   = cel('div', 'histo-lot-card');
     var header = cel('div', 'histo-lot-header');
     header.appendChild(cel('div', 'histo-lot-nom', lot.nom || '—'));
@@ -904,6 +904,10 @@ function ouvrirApp() {
   hr.appendChild(document.createTextNode(' lots'));
   hr.appendChild(document.createElement('br'));
   hr.appendChild(btnD);
+  var btnCommune = document.getElementById('histo-btn-commune');
+  if (btnCommune) btnCommune.textContent = communeConnectee.nom;
+  var btnCommunaute = document.getElementById('histo-btn-communaute');
+  if (btnCommunaute) btnCommunaute.textContent = 'Nantes Métropole';
   initialiserPanelSaisie();
   captureGPS();
   chargerCommune();
