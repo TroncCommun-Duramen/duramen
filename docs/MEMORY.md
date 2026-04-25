@@ -83,6 +83,11 @@
 - `app.js` : 30 occurrences remplacées par `classList.add/remove/toggle('hidden')`
 - Zéro `style.display` restant dans app.js
 
+### Formulaire "Ajouter au stock" — conformité charte (theme.css + ui.css) ✅
+- `theme.css` : ajout de `--border-radius-card: 12px` (cartes/boutons mobiles) et `--indigo-border: rgba(43,63,140,0.2)` (séparateur synthèse)
+- `ui.css` section SAISIE : 6× `font-weight: 600` → `var(--font-weight-semibold)` ; 4× `border-radius: 12px` + `6px` + `8px` → tokens ; `rgba` → `var(--indigo-border)` ; `min-height: 44px` → `56px` (règle mobile)
+- Reste hors périmètre (à traiter dans une session Design dédiée) : `.home-commune-badge`, `.btn-home`, `.toggle-slider`, `.login-input:focus` — valeurs en dur présentes
+
 ### Service Worker
 - Cache actuel : **duramen-v10**
 

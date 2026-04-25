@@ -1166,7 +1166,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 .saisie-annee-val {
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--sumi);
 }
 .saisie-annee-btn {
@@ -1183,7 +1183,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .saisie-annee-input {
   width: 72px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--sumi);
   border: none;
   border-bottom: 2px solid var(--indigo);
@@ -1216,7 +1216,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   border-bottom: var(--border-thin);
 }
 .saisie-grumes-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.62rem;
   font-weight: var(--font-weight-medium);
   color: var(--sumi);
@@ -1224,10 +1224,10 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   letter-spacing: 0.12em;
 }
 .saisie-add-btn {
-  background: var(--sumi);
-  color: var(--washi);
-  border: none;
-  border-radius: 12px;
+  background: transparent;
+  color: var(--sumi);
+  border: 1px dashed var(--pierre);
+  border-radius: var(--border-radius-card);
   padding: 10px 18px;
   font-family: var(--font-body);
   font-size: 0.62rem;
@@ -1235,17 +1235,17 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
-  min-height: 44px;
+  min-height: 56px;
   transition: background 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
-.saisie-add-btn:hover { background: #000; }
+.saisie-add-btn:hover { background: var(--neige); }
 
 /* ─── Carte grume ─── */
 .saisie-grume-card {
-  background: var(--washi);
+  background: var(--neige);
   border: var(--border-thin);
-  border-radius: 12px;
+  border-radius: var(--border-radius-card);
   padding: 14px 16px;
   margin-bottom: 10px;
 }
@@ -1257,14 +1257,14 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 .saisie-grume-vol {
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--indigo);
   letter-spacing: -0.02em;
 }
 .saisie-grume-del {
   background: none;
   border: 1px solid var(--rouge);
-  border-radius: 6px;
+  border-radius: var(--border-radius-md);
   color: var(--rouge);
   font-size: 1rem;
   line-height: 1;
@@ -1298,7 +1298,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   font-weight: var(--font-weight-medium);
   color: var(--cendre);
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.14em;
   text-align: center;
   line-height: 1.3;
 }
@@ -1361,10 +1361,10 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--sumi);
   white-space: nowrap;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
 }
 
 /* ─── Contrôle quantité ─── */
@@ -1373,7 +1373,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   display: flex;
   align-items: center;
   border: var(--border-thin);
-  border-radius: 8px;
+  border-radius: var(--border-radius-card);
   overflow: hidden;
   background: var(--washi);
 }
@@ -1401,11 +1401,11 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--sumi);
   border-left: var(--border-thin);
   border-right: var(--border-thin);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
 }
 
 /* ─── Barre de synthèse ─── */
@@ -1413,7 +1413,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   display: flex;
   background: var(--indigo-clair);
   border: 1px solid var(--indigo);
-  border-radius: 12px;
+  border-radius: var(--border-radius-card);
   padding: 14px 8px;
   margin-top: 14px;
   margin-bottom: 14px;
@@ -1421,15 +1421,15 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .saisie-synth-item {
   flex: 1;
   text-align: center;
-  border-right: 1px solid rgba(43,63,140,0.2);
+  border-right: 1px solid var(--indigo-border);
 }
 .saisie-synth-item:last-child { border-right: none; }
 .saisie-synth-val {
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--indigo);
   line-height: 1;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   letter-spacing: -0.02em;
 }
 .saisie-synth-lbl {
@@ -1451,7 +1451,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .saisie-btn {
   padding: 16px;
   min-height: 56px;
-  border-radius: 12px;
+  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 0.69rem;
   font-weight: var(--font-weight-medium);
@@ -1474,7 +1474,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   color: var(--washi);
   border: none;
 }
-.saisie-btn-nommer:hover { background: #000; }
+.saisie-btn-nommer:hover { filter: brightness(0.85); }
 
 /* ─── Modal "Nommer le lot" ─── */
 .modal-nommer {

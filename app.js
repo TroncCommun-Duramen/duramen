@@ -879,10 +879,10 @@ function captureGPS() {
     nouvGPS.lat = +pos.coords.latitude.toFixed(6);
     nouvGPS.lon = +pos.coords.longitude.toFixed(6);
     var chip = document.getElementById('saisie-gps-chip');
-    if (chip) chip.textContent = '📍 ' + nouvGPS.lat + '° / ' + nouvGPS.lon + '°';
+    if (chip) chip.textContent = nouvGPS.lat + '° / ' + nouvGPS.lon + '°';
   }, function () {
     var chip = document.getElementById('saisie-gps-chip');
-    if (chip) chip.textContent = '📍 Non disponible';
+    if (chip) chip.textContent = 'GPS indisponible';
   }, { timeout: 15000, enableHighAccuracy: false });
 }
 
@@ -1332,8 +1332,8 @@ function initialiserPanelSaisie() {
   // ── Chips méta : date + GPS ──────────────────────────────────────────
   var meta     = cel('div', 'saisie-meta');
   var dateStr  = nouvDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-  meta.appendChild(cel('div', 'saisie-chip', '📅 ' + dateStr));
-  var gpsChip  = cel('div', 'saisie-chip', '📍 Localisation…');
+  meta.appendChild(cel('div', 'saisie-chip', dateStr));
+  var gpsChip  = cel('div', 'saisie-chip', 'GPS · en cours…');
   gpsChip.id   = 'saisie-gps-chip';
   meta.appendChild(gpsChip);
   panel.appendChild(meta);

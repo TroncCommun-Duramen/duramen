@@ -38,7 +38,11 @@
   --border-filled:  1px solid var(--sumi);
 
   /* ─── Rayons ─── */
-  --border-radius-sm: 2px;
-  --border-radius-md: 4px;
-  --border-radius-lg: 18px;   /* cadre téléphone uniquement */
+  --border-radius-sm:   2px;
+  --border-radius-md:   4px;
+  --border-radius-card: 12px;  /* cartes et boutons mobiles */
+  --border-radius-lg:   18px;  /* cadre téléphone uniquement */
+
+  /* ─── Couleurs composées ─── */
+  --indigo-border: rgba(43, 63, 140, 0.2);  /* séparateur indigo léger */
 }
