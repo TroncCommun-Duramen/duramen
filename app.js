@@ -555,6 +555,7 @@ function construireContenuGrumeSelSheet() {
   });
 
   var selState = {};
+  var allVolMap = {};
   extGrumesSel.forEach(function (g) { selState[g.key] = true; });
 
   if (lotsFiltrés.length === 0) {
@@ -566,9 +567,14 @@ function construireContenuGrumeSelSheet() {
       hdr.appendChild(cel('span', 'grume-sel-lot-ess', lot.essence));
       content.appendChild(hdr);
 
+      var volMap = {};
       lot.grumes.forEach(function (g, gi) {
         var key = lot.id + '_' + gi;
-        var v   = calcVol(g.diametre, g.longueur) * g.quantite;
+        var d   = parseFloat(g.diametre) || 0;
+        var l   = parseFloat(g.longueur) || 0;
+        var qty = g.quantite || 1;
+        var v   = calcVol(d, l) * qty;
+        volMap[key] = v;
 
         var item  = cel('div', 'grume-sel-item');
         if (selState[key]) item.classList.add('selected');
@@ -579,8 +585,7 @@ function construireContenuGrumeSelSheet() {
 
         var info = cel('div', 'grume-sel-info');
         info.appendChild(cel('div', 'grume-sel-dims',
-          'L ' + g.longueur.toFixed(2) + ' m  ·  Ø ' + g.diametre + ' cm  ·  n°' + (gi + 1)));
-        info.appendChild(cel('div', 'grume-sel-qty', 'Quantité : ' + g.quantite));
+          'L ' + l.toFixed(2) + ' m  ·  Ø ' + d + ' cm  ·  n°' + (gi + 1)));
         item.appendChild(info);
 
         item.appendChild(cel('div', 'grume-sel-vol', v.toFixed(3) + ' m³'));
@@ -589,16 +594,31 @@ function construireContenuGrumeSelSheet() {
           selState[key] = !selState[key];
           item.classList.toggle('selected', selState[key]);
           chk.textContent = selState[key] ? '✓' : '';
+          majVolTotalSel(selState, allVolMap, volTotalEl);
         };
         content.appendChild(item);
       });
+      Object.assign(allVolMap, volMap);
     });
   }
+
+  var volTotalEl = cel('div', 'grume-sel-vol-total hidden');
+  volTotalEl.id  = 'grume-sel-vol-total';
+  majVolTotalSel(selState, allVolMap, volTotalEl);
+  content.appendChild(volTotalEl);
 
   var btnConf = cel('button', 'ext-conf-btn', 'Confirmer la sélection');
   btnConf.type    = 'button';
   btnConf.onclick = function () { confirmerSelectionGrumes(lotsFiltrés, selState); };
   content.appendChild(btnConf);
+}
+
+function majVolTotalSel(selState, volMap, el) {
+  var total = Object.keys(selState).reduce(function (s, k) {
+    return s + (selState[k] && volMap[k] ? volMap[k] : 0);
+  }, 0);
+  el.textContent = 'Volume sélectionné : ' + total.toFixed(3) + ' m³';
+  el.classList.toggle('hidden', total === 0);
 }
 
 function confirmerSelectionGrumes(lotsFiltrés, selState) {
@@ -608,15 +628,18 @@ function confirmerSelectionGrumes(lotsFiltrés, selState) {
     lot.grumes.forEach(function (g, gi) {
       var key = lot.id + '_' + gi;
       if (!selState[key]) return;
+      var d   = parseFloat(g.diametre) || 0;
+      var l   = parseFloat(g.longueur) || 0;
+      var qty = g.quantite || 1;
       extGrumesSel.push({
         key:      key,
         lotId:    lot.id,
         lotNom:   lot.nom || 'Lot sans nom',
         essence:  lot.essence,
-        longueur: g.longueur,
-        diametre: g.diametre,
-        quantite: g.quantite,
-        vol:      calcVol(g.diametre, g.longueur) * g.quantite
+        longueur: l,
+        diametre: d,
+        quantite: qty,
+        vol:      calcVol(d, l) * qty
       });
     });
   });

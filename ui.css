@@ -2247,6 +2247,16 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   color: var(--indigo);
   flex-shrink: 0;
 }
+.grume-sel-vol-total {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--indigo);
+  text-align: center;
+  padding: 14px 0 2px;
+}
+.grume-sel-vol-total.hidden { display: none; }
+
 .ext-conf-btn {
   width: 100%;
   height: 48px;
