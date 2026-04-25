@@ -76,29 +76,17 @@
       </span>
       Nouveau lot
     </button>
-    <button class="tab" onclick="switchTab('stock',this)">
-      <span class="tab-icon">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
-      </span>
-      Stock par essence
-    </button>
-    <button class="tab" onclick="switchTab('extraction',this)">
-      <span class="tab-icon">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 11L11 3M11 3H5M11 3V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </span>
-      Extractions
-    </button>
     <button class="tab" onclick="switchTab('historique',this)">
       <span class="tab-icon">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="2" y1="3" x2="12" y2="3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="7" x2="12" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="11" x2="8" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </span>
-      Historique
+      Stock
     </button>
-    <button class="tab" onclick="switchTab('territoire',this)">
+    <button class="tab" onclick="switchTab('stock',this)">
       <span class="tab-icon">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 1.5C7 1.5 5 4 5 7s2 5.5 2 5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M7 1.5C7 1.5 9 4 9 7s-2 5.5-2 5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="1.5" y1="7" x2="12.5" y2="7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
       </span>
-      Territoire
+      Extraction
     </button>
   </div>
 </div>
@@ -114,21 +102,13 @@
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       Nouveau
     </button>
-    <button class="bnav-btn" onclick="switchTab('stock',this)" data-panel="stock">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
-      Stock
-    </button>
-    <button class="bnav-btn" onclick="switchTab('extraction',this)" data-panel="extraction">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 19L19 5M19 5H9M19 5V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Extractions
-    </button>
     <button class="bnav-btn" onclick="switchTab('historique',this)" data-panel="historique">
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="18" x2="14" y2="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      Historique
+      Stock
     </button>
-    <button class="bnav-btn" onclick="switchTab('territoire',this)" data-panel="territoire">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 3C12 3 9 7 9 12s3 9 3 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M12 3c0 0 3 4 3 9s-3 9-3 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-      Territoire
+    <button class="bnav-btn" onclick="switchTab('stock',this)" data-panel="stock">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+      Extraction
     </button>
   </div>
 </nav>
@@ -155,7 +135,7 @@
         </span>
         <span class="btn-home-arrow">›</span>
       </button>
-      <button class="btn-home btn-home-secondary" onclick="switchTab('stock',this)" data-panel="stock">
+      <button class="btn-home btn-home-secondary" onclick="switchTab('historique',this)" data-panel="historique">
         <span class="btn-home-icon-box btn-home-icon-voir">
           <svg class="btn-home-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         </span>
@@ -165,7 +145,7 @@
         </span>
         <span class="btn-home-arrow">›</span>
       </button>
-      <button class="btn-home btn-home-secondary" onclick="switchTab('extraction',this)" data-panel="extraction">
+      <button class="btn-home btn-home-secondary" onclick="switchTab('stock',this)" data-panel="stock">
         <span class="btn-home-icon-box">
           <svg class="btn-home-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17,11 12,6 7,11"/><line x1="12" y1="6" x2="12" y2="18"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </span>
@@ -402,7 +382,7 @@
   <div class="panel" id="panel-stock">
     <div class="stock-header">
       <div>
-        <div class="stock-title">Stock par essence</div>
+        <div class="stock-title">Extraction</div>
         <div class="stock-subtitle">Volumes disponibles après déduction des extractions</div>
       </div>
       <button class="btn btn-outline" onclick="exporterStockCSV()">⬇ Exporter le stock CSV</button>
