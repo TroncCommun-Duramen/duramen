@@ -159,7 +159,11 @@
   </div>
 
   <!-- ═══ ONGLET 1 : NOUVEAU LOT ═══ -->
-  <div class="panel active" id="panel-saisie">
+  <div id="saisie-sheet-wrap">
+    <div id="saisie-sheet-overlay" onclick="fermerSaisieSheet()"></div>
+    <div id="saisie-sheet">
+      <div class="sheet-handle"></div>
+      <div class="panel active" id="panel-saisie">
 
     <div class="step-indicator" id="steps">
       <div class="step active" id="step1"><div class="step-dot">1</div> Informations du lot</div>
@@ -292,7 +296,7 @@
         <div class="card-title">
           <svg class="icon-inline" viewBox="0 0 130 110" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="22" y1="28" x2="112" y2="33" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="92" x2="112" y2="87" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M72 33 Q80 18 96 8" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><ellipse cx="22" cy="60" rx="14" ry="32" fill="white" stroke="currentColor" stroke-width="3"/><ellipse cx="22" cy="60" rx="9" ry="21" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="22" cy="60" rx="4.5" ry="11" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="112" cy="60" rx="10" ry="27" fill="white" stroke="currentColor" stroke-width="3"/></svg>
           Saisie des grumes
-          <span id="nb-grumes-badge" style="margin-left:auto;background:var(--encre);color:var(--craie);padding:2px 9px;border-radius:2px;font-size:0.65rem;font-weight:400;letter-spacing:0.1em;">0 grume</span>
+          <span id="nb-grumes-badge" style="margin-left:auto;background:var(--encre);color:var(--craie);padding:2px 9px;border-radius:2px;font-size:0.65rem;font-weight:500;letter-spacing:0.1em;">0 grume</span>
         </div>
         <div class="info-box">Saisissez les dimensions de chaque grume. Le diamètre est mesuré au petit bout, sans l'écorce.</div>
         <div class="form-grid three">
@@ -376,6 +380,8 @@
       </div>
     </div>
 
+      </div>
+    </div>
   </div>
 
   <!-- ═══ ONGLET 2 : STOCK ═══ -->

@@ -1205,7 +1205,10 @@ function nouvRendreSynthese() {
 // ─── Annuler avec confirmation ────────────────────────────────────────────
 function nouvAnnuler() {
   var essEl = document.getElementById('saisie-essence');
-  if (nouvGrumes.length === 0 && (!essEl || !essEl.value)) return;
+  if (nouvGrumes.length === 0 && (!essEl || !essEl.value)) {
+    fermerSaisieSheet();
+    return;
+  }
   if (!confirm('Effacer toute la saisie en cours ?')) return;
   effacerBrouillonSaisie();
   nouvGrumes = [];
@@ -1213,6 +1216,7 @@ function nouvAnnuler() {
   nouvGPS    = { lat: null, lon: null };
   initialiserPanelSaisie();
   captureGPS();
+  fermerSaisieSheet();
 }
 
 // ─── Modifier l'année de coupe ────────────────────────────────────────────
@@ -1575,6 +1579,10 @@ function initialiserPanelSaisie() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 function switchTab(panel, btn) {
+  if (panel === 'saisie' && window.innerWidth <= 600) {
+    ouvrirSaisieSheet(btn);
+    return;
+  }
   document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
   document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
   document.querySelectorAll('.bnav-btn').forEach(function (t) { t.classList.remove('active'); });
@@ -1585,6 +1593,18 @@ function switchTab(panel, btn) {
   if (panel === 'extraction') afficherExtractions();
   if (panel === 'historique') afficherHistorique();
   if (panel === 'territoire') afficherTerritoire();
+}
+
+function ouvrirSaisieSheet(btn) {
+  var wrap = document.getElementById('saisie-sheet-wrap');
+  if (wrap) wrap.classList.add('open');
+  document.querySelectorAll('.bnav-btn').forEach(function (t) { t.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+}
+
+function fermerSaisieSheet() {
+  var wrap = document.getElementById('saisie-sheet-wrap');
+  if (wrap) wrap.classList.remove('open');
 }
 
 

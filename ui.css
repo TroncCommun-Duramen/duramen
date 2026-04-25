@@ -208,9 +208,9 @@ main {
   /* Connexion — règle 16px mobile */
   .login-card { padding: 36px 24px 28px; }
   .login-title { font-size: 1.8rem; }
-  .login-sub { font-size: 1rem; font-weight: 400; }
+  .login-sub { font-size: 1rem; font-weight: 500; }
   .login-field-label { font-size: 1rem; font-weight: 500; }
-  .login-input { font-size: 1.125rem; font-weight: 400; }
+  .login-input { font-size: 1.125rem; font-weight: 500; }
   .login-btn { font-size: 1rem; font-weight: 500; }
   .login-error { font-size: 1rem; }
   .login-footer-links { font-size: 0.875rem; }
@@ -1089,7 +1089,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 
 .btn-home-sub {
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.01em;
   opacity: 0.6;
 }
@@ -1097,7 +1097,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .btn-home-arrow {
   flex-shrink: 0;
   font-size: 22px;
-  font-weight: 300;
+  font-weight: 400;
   opacity: 0.4;
   line-height: 1;
 }
@@ -1718,4 +1718,56 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   transition: opacity 0.3s;
 }
 .toast-succes.hidden { opacity: 0; }
+
+/* ════════════════════════════════════════════
+   BOTTOM SHEET — Nouveau lot (mobile)
+════════════════════════════════════════════ */
+
+/* Desktop : wrappers transparents, panel-saisie dans le flux normal */
+@media (min-width: 601px) {
+  #saisie-sheet-wrap    { display: contents; }
+  #saisie-sheet         { display: contents; }
+  #saisie-sheet-overlay { display: none; }
+  .sheet-handle         { display: none; }
+}
+
+/* Mobile : overlay + panneau remontant du bas */
+@media (max-width: 600px) {
+  #saisie-sheet-wrap {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+  }
+  #saisie-sheet-wrap.open {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  #saisie-sheet-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 15, 14, 0.3);
+  }
+  #saisie-sheet {
+    position: relative;
+    z-index: 1;
+    background: var(--washi);
+    border-radius: 12px 12px 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding-bottom: 80px;
+  }
+  .sheet-handle {
+    width: 32px;
+    height: 3px;
+    background: var(--pierre);
+    border-radius: 2px;
+    margin: 12px auto 8px;
+    flex-shrink: 0;
+  }
+  #saisie-sheet-wrap.open #panel-saisie {
+    display: block !important;
+  }
+}
 

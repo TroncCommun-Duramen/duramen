@@ -25,9 +25,9 @@
   /* ─── Typographie ─── */
   --font-display:         'Outfit', sans-serif;
   --font-body:            'Outfit', sans-serif;
-  --font-weight-thin:     200;
-  --font-weight-light:    300;
-  --font-weight-regular:  400;
+  --font-weight-thin:     300;
+  --font-weight-light:    400;
+  --font-weight-regular:  500;
   --font-weight-medium:   500;
   --font-weight-semibold: 600;
 
