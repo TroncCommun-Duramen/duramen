@@ -39,12 +39,23 @@
   --border-filled:  1px solid var(--sumi);
 
   /* ─── Rayons ─── */
-  --border-radius-sm:   2px;
-  --border-radius-md:   4px;
-  --border-radius-bar:  3px;   /* barres de progression */
-  --border-radius-card: 12px;  /* cartes et boutons mobiles */
-  --border-radius-lg:   18px;  /* cadre téléphone uniquement */
+  --border-radius-sm:    2px;
+  --border-radius-md:    4px;
+  --border-radius-bar:   3px;   /* barres de progression */
+  --border-radius-btn:   10px;  /* boutons icône et toggles */
+  --border-radius-inner: 8px;   /* cards internes, cadre valeur calculée */
+  --border-radius-card:  12px;  /* cartes et boutons mobiles */
+  --border-radius-pill:  20px;  /* badge commune, chips pilule */
+  --border-radius-sheet: 14px;  /* arrondis top des bottom sheets */
+  --border-radius-lg:    18px;  /* cadre téléphone uniquement */
 
   /* ─── Couleurs composées ─── */
-  --indigo-border: rgba(43, 63, 140, 0.2);  /* séparateur indigo léger */
+  --indigo-border:  rgba(43, 63, 140, 0.2);    /* séparateur indigo léger */
+  --indigo-sombre:  #1f2e6a;                    /* hover bouton indigo */
+  --overlay-light:  rgba(15, 15, 14, 0.4);     /* fond overlay bottom sheets */
+  --overlay:        rgba(15, 15, 14, 0.5);     /* fond overlay chargement */
+  --overlay-dark:   rgba(15, 15, 14, 0.6);     /* fond overlay modales */
+  --blanc-semi:     rgba(255, 255, 255, 0.65); /* labels sur fond sombre */
+  --blanc-alpha:    rgba(255, 255, 255, 0.12); /* icône sur bouton sumi */
+  --rouge-rgb:      192, 57, 43;               /* pour dégradés rouge semi-transparent */
 }

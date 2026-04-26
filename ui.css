@@ -208,10 +208,10 @@ main {
   /* Connexion — règle 16px mobile */
   .login-card { padding: 36px 24px 28px; }
   .login-title { font-size: 1.8rem; }
-  .login-sub { font-size: 1rem; font-weight: 500; }
-  .login-field-label { font-size: 1rem; font-weight: 500; }
-  .login-input { font-size: 1.125rem; font-weight: 500; }
-  .login-btn { font-size: 1rem; font-weight: 500; }
+  .login-sub { font-size: 1rem; font-weight: var(--font-weight-regular); }
+  .login-field-label { font-size: 1rem; font-weight: var(--font-weight-regular); }
+  .login-input { font-size: 1.125rem; font-weight: var(--font-weight-regular); }
+  .login-btn { font-size: 1rem; font-weight: var(--font-weight-regular); }
   .login-error { font-size: 1rem; }
   .login-footer-links { font-size: 0.875rem; }
 
@@ -278,9 +278,9 @@ main {
   border-bottom: var(--border-filled);
 }
 input.commune-locked {
-  color: #7A7469;
+  color: var(--cendre);
   cursor: default;
-  border-bottom-color: #C9BAA3;
+  border-bottom-color: var(--pierre);
 }
 .field input::placeholder, .field textarea::placeholder {
   font-family: var(--font-body);
@@ -324,28 +324,28 @@ select {
   border: none;
   border-radius: var(--border-radius-md);
 }
-.btn-primary:hover { background: #000; }
+.btn-primary:hover { background: var(--sumi); }
 
 .btn-signal {
   background: var(--indigo);
   color: var(--washi);
   border: none;
 }
-.btn-signal:hover { background: #1f2e6a; }
+.btn-signal:hover { background: var(--indigo-sombre); }
 
 .btn-success {
   background: var(--sumi);
   color: var(--washi);
   border: none;
 }
-.btn-success:hover { background: #000; }
+.btn-success:hover { background: var(--sumi); }
 
 .btn-orange {
   background: var(--sumi);
   color: var(--washi);
   border: none;
 }
-.btn-orange:hover { background: #000; }
+.btn-orange:hover { background: var(--sumi); }
 
 .btn-danger {
   background: transparent;
@@ -366,8 +366,8 @@ select {
 .btn-sm { padding: 5px 12px; font-size: 0.62rem; }
 
 .btn-deconnexion {
-  color: #7A7469;
-  border-color: rgba(201,186,163,0.3);
+  color: var(--cendre);
+  border-color: var(--brume);
   font-size: 0.6rem;
   margin-top: 2px;
   padding: 3px 10px;
@@ -441,8 +441,8 @@ select {
 .result-stat .lbl { font-size: 0.54rem; color: var(--cendre); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.1em; }
 
 .dechets-block {
-  background: rgba(192,57,43,0.06);
-  border: 1px solid rgba(192,57,43,0.2);
+  background: rgba(var(--rouge-rgb), 0.06);
+  border: 1px solid rgba(var(--rouge-rgb), 0.2);
   border-radius: var(--border-radius-sm);
   padding: 12px 16px;
   margin-top: 14px;
@@ -562,7 +562,7 @@ tr:hover td { background: var(--neige); }
 .extract-modal-bg {
   display: none;
   position: fixed; inset: 0;
-  background: rgba(15,15,14,0.6);
+  background: var(--overlay-dark);
   z-index: 100;
   align-items: center; justify-content: center;
   padding: 20px;
@@ -755,7 +755,7 @@ tr:hover td { background: var(--neige); }
   font-weight: var(--font-weight-medium); letter-spacing: 0.14em; text-transform: uppercase;
   cursor: pointer; transition: background 0.15s;
 }
-.login-btn:hover { background: #000; }
+.login-btn:hover { background: var(--sumi); }
 .login-error { color: var(--rouge); font-size: 0.78rem; margin-top: 12px; min-height: 18px; }
 .login-footer-links {
   margin-top: 24px; padding-top: 18px;
@@ -777,13 +777,13 @@ tr:hover td { background: var(--neige); }
 #header-stats .commune-chip { margin-bottom: 5px; }
 .home-commune-badge {
   background: var(--indigo);
-  color: #fff;
+  color: var(--washi);
   border-color: var(--indigo);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   font-size: 0.85rem;
   padding: 10px 20px;
   letter-spacing: 0.1em;
-  border-radius: 20px;
+  border-radius: var(--border-radius-pill);
 }
 
 /* ─── NOM DU LOT HERO ─── */
@@ -830,13 +830,13 @@ tr:hover td { background: var(--neige); }
 .toggle-switch input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
   position: absolute; inset: 0;
-  background: var(--pierre); border-radius: 12px;
+  background: var(--pierre); border-radius: var(--border-radius-card);
   cursor: pointer; transition: background 0.2s;
 }
 .toggle-slider::after {
   content: ''; position: absolute;
   width: 18px; height: 18px; border-radius: 50%;
-  background: white; top: 3px; left: 3px;
+  background: var(--washi); top: 3px; left: 3px;
   transition: transform 0.2s;
 }
 .toggle-switch input:checked + .toggle-slider { background: var(--indigo); }
@@ -933,7 +933,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   left: 50%;
   transform: translateX(-50%);
   background: var(--rouge);
-  color: #fff;
+  color: var(--washi);
   padding: 10px 22px;
   border-radius: var(--border-radius-sm);
   font-size: 0.78rem;
@@ -945,7 +945,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 /* ─── LOADING OVERLAY ─── */
 .loading-overlay {
   position: fixed; inset: 0;
-  background: rgba(15,15,14,0.5);
+  background: var(--overlay);
   z-index: 2000;
   display: flex; align-items: center; justify-content: center;
 }
@@ -1017,7 +1017,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .home-stock-unit {
   font-size: 16px;
   color: var(--sumi);
-  font-weight: 500;
+  font-weight: var(--font-weight-regular);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   margin-top: 10px;
@@ -1038,7 +1038,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   margin: 0 16px;
   padding: 14px 20px;
   font-family: var(--font-body);
-  border-radius: 12px;
+  border-radius: var(--border-radius-card);
   cursor: pointer;
   text-align: left;
   transition: all 0.15s;
@@ -1052,11 +1052,11 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border-radius: var(--border-radius-btn);
 }
 
 .btn-home-primary .btn-home-icon-box {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--blanc-alpha);
 }
 
 .btn-home-secondary .btn-home-icon-box {
@@ -1065,7 +1065,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 
 .btn-home-icon-box.btn-home-icon-voir {
   background: var(--indigo);
-  color: #fff;
+  color: var(--washi);
 }
 
 .btn-home-icon-svg {
@@ -1089,7 +1089,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 
 .btn-home-sub {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--font-weight-regular);
   letter-spacing: 0.01em;
   opacity: 0.6;
 }
@@ -1097,7 +1097,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .btn-home-arrow {
   flex-shrink: 0;
   font-size: 22px;
-  font-weight: 400;
+  font-weight: var(--font-weight-light);
   opacity: 0.4;
   line-height: 1;
 }
@@ -1108,7 +1108,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   border: none;
 }
 .btn-home-primary:hover,
-.btn-home-primary:active { background: #000; }
+.btn-home-primary:active { background: var(--sumi); }
 
 .btn-home-secondary {
   background: var(--washi);
@@ -1226,7 +1226,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   background: var(--indigo);
   color: var(--washi);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--border-radius-card);
   padding: 10px 18px;
   font-family: var(--font-body);
   font-size: 0.62rem;
@@ -1736,20 +1736,20 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 #grume-sheet-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 15, 14, 0.4);
+  background: var(--overlay-light);
 }
 #grume-sheet {
   position: relative;
   z-index: 1;
   background: var(--washi);
-  border-radius: 12px 12px 0 0;
+  border-radius: var(--border-radius-card) var(--border-radius-card) 0 0;
   padding-bottom: 80px;
 }
 .grume-sheet-handle {
   width: 28px;
   height: 3px;
   background: var(--pierre);
-  border-radius: 2px;
+  border-radius: var(--border-radius-sm);
   margin: 12px auto 8px;
 }
 #grume-sheet-content { padding: 20px; }
@@ -1771,7 +1771,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .grume-sheet-vol {
   font-family: var(--font-display);
   font-size: 1.4rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--indigo);
   text-align: center;
   padding: 14px 0 6px;
@@ -1797,11 +1797,11 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 .grume-sheet-btn-save {
   flex: 2;
-  height: 48px;
+  height: 56px;
   background: var(--indigo);
   color: var(--washi);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 0.88rem;
   font-weight: var(--font-weight-medium);
@@ -1815,7 +1815,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   align-items: center;
   background: var(--neige);
   border: 1px solid var(--brume);
-  border-radius: 8px;
+  border-radius: var(--border-radius-inner);
   padding: 12px 14px;
   margin-bottom: 8px;
   gap: 10px;
@@ -1835,7 +1835,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .grume-summary-vol {
   font-family: var(--font-display);
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--indigo);
 }
 .grume-summary-check {
@@ -1846,7 +1846,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   height: 28px;
   border-radius: 50%;
   background: var(--vert);
-  color: #fff;
+  color: var(--washi);
   font-size: 0.75rem;
   font-weight: var(--font-weight-medium);
   flex-shrink: 0;
@@ -1891,7 +1891,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   padding: 0 12px;
   background: var(--neige);
   border: 1px solid var(--pierre);
-  border-radius: 10px;
+  border-radius: var(--border-radius-btn);
   color: var(--cendre);
   font-family: var(--font-body);
   font-size: 0.88rem;
@@ -1903,7 +1903,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .ext-debit-toggle.active {
   background: var(--vert);
   border-color: transparent;
-  color: #fff;
+  color: var(--washi);
 }
 .ext-debit-sliders { padding-top: 4px; }
 .ext-formula-row {
@@ -1916,7 +1916,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .ext-lineaire-box {
   background: var(--indigo);
   color: var(--washi);
-  border-radius: 8px;
+  border-radius: var(--border-radius-inner);
   padding: 10px 14px;
   margin-left: auto;
 }
@@ -1994,11 +1994,11 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 /* Bouton sélectionner */
 .ext-sel-btn {
   width: 100%;
-  height: 48px;
+  height: 56px;
   background: var(--indigo-clair);
   color: var(--indigo);
   border: var(--border-active);
-  border-radius: 12px;
+  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 0.88rem;
   font-weight: var(--font-weight-medium);
@@ -2154,7 +2154,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   font-family: var(--font-body);
   font-size: 0.55rem;
   font-weight: var(--font-weight-regular);
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--blanc-semi);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -2164,11 +2164,11 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   display: block;
   width: calc(100% - 32px);
   margin: 20px 16px 32px;
-  height: 52px;
+  height: 56px;
   background: var(--indigo);
   color: var(--washi);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 1rem;
   font-weight: var(--font-weight-medium);
@@ -2198,13 +2198,13 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 #grume-sel-sheet-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 15, 14, 0.4);
+  background: var(--overlay-light);
 }
 #grume-sel-sheet {
   position: relative;
   z-index: 1;
   background: var(--washi);
-  border-radius: 14px 14px 0 0;
+  border-radius: var(--border-radius-sheet) var(--border-radius-sheet) 0 0;
   max-height: 85vh;
   overflow-y: auto;
   padding-bottom: 80px;
@@ -2213,7 +2213,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   width: 28px;
   height: 3px;
   background: var(--pierre);
-  border-radius: 2px;
+  border-radius: var(--border-radius-sm);
   margin: 12px auto 8px;
 }
 #grume-sel-content { padding: 0 16px 16px; }
@@ -2288,14 +2288,14 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .grume-sel-vol {
   font-family: var(--font-display);
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--indigo);
   flex-shrink: 0;
 }
 .grume-sel-vol-total {
   font-family: var(--font-body);
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--indigo);
   text-align: center;
   padding: 14px 0 2px;
@@ -2304,11 +2304,11 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 
 .ext-conf-btn {
   width: 100%;
-  height: 48px;
+  height: 56px;
   background: var(--indigo);
   color: var(--washi);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 0.88rem;
   font-weight: var(--font-weight-medium);

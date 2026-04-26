@@ -5,6 +5,16 @@
 
 ---
 
+## 26 avril 2026
+
+### Audit et conformité design system
+- `fix(index)` — Suppression doublon `id="lot-nom"` (étape 3 était ignoré par `getElementById`).
+- `style(ui)` — Audit complet ui.css : zéro valeur en dur. 21 couleurs hex/rgba, 9 `font-weight` numériques, 13 `border-radius` sans token, 4 boutons principaux sous 56px → tous remplacés par des tokens.
+- `style(theme)` — Ajout de 8 nouveaux tokens : `--overlay-light/dark`, `--overlay`, `--blanc-semi`, `--blanc-alpha`, `--indigo-sombre`, `--rouge-rgb` + 4 nouveaux rayons (`--border-radius-btn/inner/pill/sheet`).
+- `fix(sw)` — Cache incrémenté duramen-v13 → duramen-v14.
+
+---
+
 ## 25 avril 2026
 
 ### Navigation
