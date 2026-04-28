@@ -184,6 +184,8 @@
 | 2026-04-19 | 0c-2 | `fix(data): remplacer Date.getTime() par crypto.randomUUID()` |
 | 2026-04-19 | 0c-3 | `feat(saisie): auto-sauvegarder le brouillon de formulaire` |
 | 2026-04-19 | 0c-4 | `feat(offline): afficher le cache localStorage si réseau absent` |
+| 2026-04-28 | fix extraction | `fix(extraction): réinitialiser le linéaire indicatif en mode Grume brute` |
+| 2026-04-28 | feat saisie | `feat(saisie): ajouter le choix de méthode diamètre / circonférence dans le panneau Nouvelle grume` |
 ---
 
 ## TÂCHE — Système de rôles utilisateurs

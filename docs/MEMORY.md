@@ -9,10 +9,127 @@
 ## État du projet
 
 - **Phase 0 ✅ entièrement terminée** — architecture 5 fichiers en place :
-  `duramen.html` (HTML pur) · `theme.css` · `ui.css` · `core.js` · `app.js`
+  `index.html` (HTML pur) · `theme.css` · `ui.css` · `core.js` · `app.js`
 - Phase 0a ✅ : theme.css, ui.css extraits, styles inline supprimés
-- Phase 0b ✅ : core.js (DuramenCore), app.js créés — duramen.html = HTML pur 546 lignes
+- Phase 0b ✅ : core.js (DuramenCore), app.js créés — index.html = HTML pur 555 lignes
 - Phase 0c ✅ : accents ESSENCES_INFO, UUIDs, brouillon auto-sauvegardé, cache offline
+- **Phase 1 — En cours** : interfaces mobiles finalisées, prêt pour premier test terrain
+
+---
+
+## Session 28 avril 2026 — Corrections et nouvelle feature saisie
+
+### Bug corrigé — Linéaire indicatif (app.js) ✅
+- Le linéaire indicatif ne se réinitialisait pas à `'—'` quand on repassait en mode "Grume brute" après avoir utilisé "Débit en planches".
+- Corrigé dans `majDebitExtraction()` : ajout d'un `else` qui remet `linEl.textContent = '—'` quand `extDebitActif === false`.
+- Commit : `fix(extraction): réinitialiser le linéaire indicatif en mode Grume brute`
+
+### Nouvelle feature — Choix de méthode de mesure dans le panneau "Nouvelle grume" (app.js + ui.css) ✅
+- Toggle 2 boutons côte à côte : **Ø Diamètre médian** (défaut) / **C Circonférence médiane**
+- Méthode mémorisée dans localStorage, clé `duramen_mesure_methode`
+- Formules : `V = π × (d/2)² × L` (diamètre) — `V = (C² × L) / (4π)` (circonférence, C en mètres)
+- Plage circonférence : 63→220 cm (équivalent 20→70 cm de diamètre), pas 1 cm — via `CIRC_VALS`
+- Stockage interne toujours en diamètre cm : conversion `d = Math.round(C / π)` à l'enregistrement
+- Styles ajoutés dans `ui.css` : `.grume-methode-toggle`, `.grume-methode-btn`, `.grume-methode-btn.active`
+- Commit : `feat(saisie): ajouter le choix de méthode diamètre / circonférence dans le panneau Nouvelle grume`
+
+---
+
+## Session 26 avril 2026 — Audit de conformité
+
+### Audit complet des 3 fichiers principaux (index.html, app.js, core.js)
+
+Objectif : vérifier la conformité au cahier des charges avant première présentation terrain.
+
+### Résultats par fichier
+
+**index.html — 555 lignes ✅ globalement sain**
+
+- Architecture respectée : HTML pur, zéro logique JS, zéro règle CSS inline
+- Fichiers appelés dans le bon ordre : `core.js` → `app.js`
+- Service Worker enregistré au bon endroit (avant `</script>`)
+- Authentification : aucun code d'accès dans le HTML ✅
+
+Problèmes identifiés :
+- **Bug ✅ corrigé** : double `id="lot-nom"` — résolu (vérifié le 26 avril 2026 : une seule occurrence en ligne 178).
+- **Entorse mineure** : un `style="color:var(--lin);text-decoration:none;letter-spacing:0.08em"` subsiste dans le footer (ligne 543). À déplacer en classe `.footer-link` dans `ui.css` lors d'une prochaine session Design.
+
+**app.js — 2164 lignes ✅ robuste sur le noyau**
+
+- `crypto.randomUUID()` utilisé partout ✅
+- Cache offline écrit après chaque succès Supabase ✅
+- `DuramenCore.validerSortie()` appelé avant chaque extraction ✅
+- Éléments DOM construits avec `cel()` dans les fonctions récentes ✅
+
+Problèmes identifiés :
+- **Coexistence de deux formulaires de saisie** : ancien (étapes 1→2→3, `sauvegarderLot`) et nouveau (mobile, `nouvConfirmer`). Les deux écrivent dans `lots[]` et Supabase. Fonctionnel — mais toute modification d'un formulaire doit vérifier l'autre. Ne jamais corriger l'un sans lire l'autre.
+- **Deux systèmes de brouillon** : `duramen_draft` (ancien) et `duramen_draft_v2` (nouveau). `effacerBrouillonSaisie()` nettoie les deux correctement. Risque faible de confusion si un agent alterne les deux formulaires.
+- **Concaténation HTML résiduelle** : les fonctions de l'ancien formulaire (`afficherGrumes`, `afficherExtractions`, `afficherTerritoire`, `calculerDebit`) construisent encore du HTML par concaténation de chaînes. Contraire aux règles du CDC. Fonctionnel aujourd'hui — à migrer vers `cel()` en Phase 2.
+
+**core.js — 161 lignes ✅ propre et conforme**
+
+- Signatures figées intactes ✅
+- Module IIFE : aucune fuite dans l'espace global ✅
+- Clés ESSENCES_INFO avec accents ✅
+- `TRAIT_SCIE_MM` constante nommée ✅
+- `validerSortie` bloque toute extraction supérieure au disponible ✅
+
+---
+
+## Choix assumés — à ne pas confondre avec des bugs
+
+| Choix | Description | Impact |
+|-------|-------------|--------|
+| `vol_utile = vol_brut` dans le nouveau formulaire mobile | Quand un lot est saisi sans calcul de débit (formulaire mobile), `vol_utile` est égal à `vol_brut`. `getStock()` utilise `vol_utile` → le stock affiché est le volume brut, pas le volume débité. | Les chiffres de stock sont légèrement surestimés pour les lots sans débit. Acceptable en phase de test. À afficher clairement dans l'interface en Phase 2 (ex: "volume brut — débit non calculé"). |
+| Double formulaire de saisie | L'ancien formulaire (3 étapes, desktop) et le nouveau (mobile, drums) coexistent. | Intentionnel — transition progressive. Les deux écrivent dans la même table Supabase. |
+
+---
+
+## Points d'attention pour les prochaines sessions
+
+| Priorité | Action | Fichier | Complexité |
+|----------|--------|---------|------------|
+| ✅ Résolu | ~~Corriger le double `id="lot-nom"`~~ — déjà corrigé | `index.html` | — |
+| ✅ Résolu | ~~Linéaire indicatif non réinitialisé en mode Grume brute~~ — corrigé le 28 avril 2026 | `app.js` | — |
+| 🟡 Phase 2 | Migrer concaténations HTML → `cel()` | `app.js` | Session dédiée |
+| 🟡 Phase 2 | Afficher "volume brut" quand pas de débit | `app.js` + `ui.css` | Session dédiée |
+| 🟡 Phase 2 | Déplacer style inline footer en classe CSS | `index.html` + `ui.css` | 5 min |
+| 🟠 Avant production | Vérifier RLS Supabase sur toutes les tables | Supabase dashboard | Hors code |
+
+---
+
+## Session 25 avril 2026 — Interfaces écrans métier
+
+### Navigation — 4 onglets (app.js + index.html) ✅
+- Onglets bottom nav : **Accueil · Nouveau · Stock · Extraction**
+- Panel IDs stables : `panel-accueil`, `panel-saisie` (Nouveau), `panel-historique` (Stock), `panel-stock` (Extraction)
+- `switchTab(panel, btn)` gère le routing et déclenche `afficherExtraction()`, `afficherExtractions()`, `afficherHistorique()`, `afficherTerritoire()` selon l'onglet
+
+### Écran Nouveau — panel-saisie (app.js + ui.css) ✅
+- Formulaire saisie grumes : essence (select), provenance, cause d'abattage
+- `+ Ajouter une grume` ouvre un bottom sheet (drums longueur/diamètre + quantité)
+- Chaque grume enregistrée apparaît en carte résumé avec badge ✓ vert (`--vert: #788d5d`)
+- Modale "Nommer le lot" à la validation : nom libre + toggle partage communes
+- Sauvegarde via `DuramenCore.entree()` + `sbInsert('lots', ...)`
+- État : `nouvGrumes[]`, brouillon auto-sauvegardé clé `duramen_draft_v2`
+
+### Écran Stock — panel-historique (app.js + ui.css) ✅
+- Anciennement "Historique" — toggle **Ma commune / Nantes Métropole**
+- Bloc total : fond `var(--sumi)`, volume m³ + nombre de lots
+- Liste par essence : barres proportionnelles `var(--indigo)` sur piste `var(--brume)`
+- 5 lots récents max, cartes `var(--neige)`, badges commune/essence/cause
+- Export Excel (CSV UTF-8 BOM) et PDF (`window.print()`)
+
+### Écran Extraction — panel-stock (app.js + ui.css) ✅
+- Sélection grumes par essence via chips filtres + bottom sheet (grumes cochables par lot)
+- Bascule **Grume brute / Débit en planches** (2 boutons côte à côte, grid 2 colonnes)
+  - Grume brute (défaut) : barre synthèse 1 bloc — m³ brut fond `var(--sumi)`
+  - Débit en planches : sliders épaisseur 20–50 mm (défaut 27), trait de scie 2–4 mm (défaut 3), rendement 30–70 % (défaut 50 %)
+  - Barre synthèse 3 blocs : m³ extrait (sumi) · m³ utile (vert) · m³ déchet (orange)
+  - Linéaire indicatif : `V_utile ÷ (e/1000 × 0.20)` en mètres, aligné droite, fond indigo
+- Modale destination à la validation : nom projet (optionnel), commune d'installation, usage Intérieur/Extérieur, lieu (optionnel)
+- Confirmation : `DuramenCore.sortie()` + `sbInsert('extractions', ...)` + toast + retour accueil
+- État : `extGrumesSel[]`, `extDraft{}`, `extDebitActif` (bool), `extCommunes[]`
 
 ---
 
@@ -31,168 +148,18 @@
 ### Écran accueil mobile (index.html + ui.css) ✅
 - Panel `#panel-accueil`, affiché sur mobile uniquement (`@media (min-width: 601px) { display: none !important }`)
 - Badge commune : classe `.home-commune-badge`, fond indigo, texte blanc
-- Indicateur réseau : `#accueil-online-dot` — classes `.online` / `.offline` gérées par `app.js`
 - Stock total : `#accueil-stock-val` en gros chiffre + `.home-stock-unit` "m³ disponibles"
-- 3 boutons `.btn-home` : inset `width: calc(100% - 32px)`, `border-radius: 12px`, hauteur min 56px
-  - `.btn-home-primary` (Ajouter au stock) : fond `var(--sumi)`
-  - `.btn-home-secondary` (Voir le stock / Extraire du stock) : fond blanc, bordure
-
-### Navigation mobile (app.js) ✅
-- Après connexion : routing automatique vers `#panel-accueil` si `window.innerWidth <= 600`
-- Les 3 boutons appellent `switchTab()` — met à jour la bottom nav simultanément
-- `mettreAJourAccueil()` : remplit commune, stock total, statut réseau
-- `mettreAJourStatutReseau()` : écoute `online` / `offline`
-
-### Mobile — masquage (ui.css, max-width: 600px) ✅
-- `header { display: none }` — header desktop masqué
-- `footer { display: none }` — footer masqué
-- `.header-stats-mobile { display: none !important }` — supprimé du HTML également
-- `.tabs-wrap { display: none }` — onglets desktop masqués
-- `.bottom-nav { display: block }` — navigation bas activée
-
-### Refactor styles inline — app.js + ui.css ✅
-- Groupes A+B+C traités : suppression de tous les `style.cssText` et propriétés visuelles inline
-- 4 classes créées dans `ui.css` : `.toast-erreur`, `.btn-deconnexion`, `input.commune-locked`, `#header-stats .commune-chip`
-- `#panel-mentions` : padding corrigé à `32px 20px` (bottom nav masquée lors des mentions, 80px inutile)
-- Commit : `6f50dc3`
-- Reste ouvert : **Groupe D** — 20 occurrences `style.display` (show/hide pur) — session dédiée app.js + ui.css
-
-### Boutons accueil — refonte (index.html + ui.css) ✅
-- Indicateur réseau `#accueil-online-dot` / `.accueil-network` supprimé du HTML et du CSS
-- 3 boutons `.btn-home` restructurés : icône SVG carrée arrondie + bloc texte (label + sous-titre) + flèche `›`
-  - Bouton 1 (primary) : icône `+` / "Ajouter au stock" / "Saisir un nouveau lot"
-  - Bouton 2 (secondary) : icône barres / "Voir le stock" / "Par essence, en temps réel"
-  - Bouton 3 (secondary) : icône flèche-sortie / "Extraire du stock" / "Sortie, usage, destination"
-- Nouvelles classes CSS dans `ui.css` : `.btn-home-icon-box`, `.btn-home-icon-svg`, `.btn-home-text`, `.btn-home-label`, `.btn-home-sub`, `.btn-home-arrow`
-- Zéro style inline — tout dans `ui.css`
-
-### Ajustements visuels accueil (ui.css + index.html) ✅
-- Badge commune `.home-commune-badge` : `border-radius: 20px` (style pilule)
-- Icône "Voir le stock" : classe `.btn-home-icon-voir` créée dans `ui.css` (`background: var(--indigo)`, `color: #fff`)
-  — ajoutée sur le `<span class="btn-home-icon-box">` du 2e bouton dans `index.html`
-  — le SVG blanchit automatiquement via `stroke="currentColor"` + `color: #fff` sur le conteneur
-
-### Correctif spécificité CSS — icône "Voir le stock" (ui.css) ✅
-- Bug : `.btn-home-secondary .btn-home-icon-box` (spécificité 0,2,0) écrasait `.btn-home-icon-voir` (spécificité 0,1,0) malgré l'ordre dans le fichier
-- Correction : sélecteur changé en `.btn-home-icon-box.btn-home-icon-voir` (spécificité 0,2,0, placé après → gagne par cascade)
-
-### Groupe D — migration style.display → classList (app.js + ui.css + index.html) ✅
-- **30 occurrences** migrées (estimation MEMORY était 20 — corrigé)
-- `ui.css` : ajout `.hidden { display: none !important; }`, `.commune-hint`, `.ext-disponible`
-- `index.html` : 7 inline `style="display:none"` remplacés par `class="hidden"` ; propriétés `font-size/color/margin-top` extraites vers ui.css
-- `app.js` : 30 occurrences remplacées par `classList.add/remove/toggle('hidden')`
-- Zéro `style.display` restant dans app.js
-
-### Formulaire "Ajouter au stock" — conformité charte (theme.css + ui.css) ✅
-- `theme.css` : ajout de `--border-radius-card: 12px` (cartes/boutons mobiles) et `--indigo-border: rgba(43,63,140,0.2)` (séparateur synthèse)
-- `ui.css` section SAISIE : 6× `font-weight: 600` → `var(--font-weight-semibold)` ; 4× `border-radius: 12px` + `6px` + `8px` → tokens ; `rgba` → `var(--indigo-border)` ; `min-height: 44px` → `56px` (règle mobile)
-- Reste hors périmètre (à traiter dans une session Design dédiée) : `.home-commune-badge`, `.btn-home`, `.toggle-slider`, `.login-input:focus` — valeurs en dur présentes
-
-### Refonte page Historique (app.js + ui.css + index.html) ✅
-- Toggle Ma commune / Communauté : `switchHistoVue()`, actif = fond `var(--indigo)`
-- Vue Commune : données `lots` (session courante), rendu synchrone
-- Vue Communauté : `sbSelect('lots', ...)` sans filtre commune, rendu asynchrone
-- Bloc total : fond `var(--sumi)`, volume m³ + nombre de lots
-- Liste par essence : nom, volume indigo en gras, barre `var(--indigo)` sur piste `var(--brume)`, 6px, `--border-radius-bar`
-- Lots récents : 20 max, cartes `var(--neige)`, badges commune/essence/cause
-- Boutons export : Excel (CSV UTF-8 BOM) et PDF (`window.print()`)
-- Nouveau fichier : `docs/EVOLUTIONS.md` (réservoir d'idées v2)
-- Nouveau token : `--border-radius-bar: 3px` dans `theme.css`
-- Cache SW : **duramen-v12**
+- 3 boutons `.btn-home` : `width: calc(100% - 32px)`, `border-radius: 12px`, hauteur min 56px
 
 ### Service Worker
 - Cache actuel : **duramen-v12**
 
 ---
 
-## Session 25 avril 2026 — Interfaces écrans métier
-
-### Navigation — 4 onglets (app.js + index.html) ✅
-- Onglets bottom nav : **Accueil · Nouveau · Stock · Extraction**
-- Panel IDs stables : `panel-accueil`, `panel-saisie` (Nouveau), `panel-historique` (Stock), `panel-stock` (Extraction)
-- `switchTab(panel, btn)` gère le routing et déclenche `afficherExtraction()`, `afficherExtractions()`, `afficherHistorique()`, `afficherTerritoire()` selon l'onglet
-
-### Écran Nouveau — panel-saisie (app.js + ui.css) ✅
-- Formulaire saisie grumes : essence (select), provenance, cause d'abattage
-- `+ Ajouter une grume` ouvre un bottom sheet (drums longueur/diamètre + quantité)
-- Chaque grume enregistrée apparaît en carte résumé avec badge ✓ vert (`--vert: #788d5d`)
-- Modale "Nommer le lot" à la validation : nom libre + toggle partage communes
-- Sauvegarde via `DuramenCore.entree()` + `sbInsert('lots', ...)`
-- État : `nouvGrumes[]`, brouillon auto-sauvegardé clé `duramen_draft`
-
-### Écran Stock — panel-historique (app.js + ui.css) ✅
-- Anciennement "Historique" — toggle **Ma commune / Nantes Métropole**
-- Bloc total : fond `var(--sumi)`, volume m³ + nombre de lots
-- Liste par essence : barres proportionnelles `var(--indigo)` sur piste `var(--brume)`
-- 5 lots récents max (anciennement 20), cartes `var(--neige)`, badges commune/essence/cause
-- Export Excel (CSV UTF-8 BOM) et PDF (`window.print()`)
-
-### Écran Extraction — panel-stock (app.js + ui.css) ✅
-- Sélection grumes par essence via chips filtres + bottom sheet (grumes cochables par lot)
-- Bascule **Grume brute / Débit en planches** (2 boutons côte à côte, grid 2 colonnes)
-  - Grume brute (défaut) : barre synthèse 1 bloc — m³ brut fond `var(--sumi)`
-  - Débit en planches : sliders épaisseur 20–50 mm (défaut 27), trait de scie 2–4 mm (défaut 3), rendement 30–70 % (défaut 50 %)
-  - Barre synthèse 3 blocs : m³ extrait (sumi) · m³ utile (vert) · m³ déchet (orange)
-  - Linéaire indicatif : `V_utile ÷ (e/1000 × 0.20)` en mètres, aligné droite, fond indigo
-- Modale destination à la validation : nom projet (optionnel), commune d'installation, usage Intérieur/Extérieur, lieu (optionnel)
-- Confirmation : `DuramenCore.sortie()` + `sbInsert('extractions', ...)` + toast + retour accueil
-- État : `extGrumesSel[]`, `extDraft{}`, `extDebitActif` (bool), `extCommunes[]`
-
-**Migration Supabase — 19 avril 2026 :**
-Colonnes `id` des tables `lots` et `extractions` migrées de `bigint` → `uuid`.
-`app.js` utilise `crypto.randomUUID()` — les types sont désormais cohérents.
-
----
-
-## Fichier de départ
-
-- `duramen.html` — fichier unique de 2300 lignes contenant HTML + CSS + JS
-- Connexion Supabase fonctionnelle
-- Design system cohérent avec variables CSS bien nommées
-- Workflow de saisie en 3 étapes opérationnel
-- Authentification par code commune opérationnelle
-
----
-
-## Architecture en place
-
-```
-duramen.html   ← HTML pur (546 lignes), zéro JS inline — ✅
-theme.css      ← variables de design (couleurs, typo) — ✅
-ui.css         ← composants visuels (.card, .btn…) — ✅
-core.js        ← noyau métier : DuramenCore (signatures figées) — ✅
-app.js         ← logique UI, navigation, Supabase (775 lignes) — ✅
-sw.js          ← Service Worker (offline) — à créer
-```
-
-## Architecture cible (initialement présentée)
-
-```
-duramen.html   ← HTML pur, sans CSS ni JS inline
-theme.css      ← variables de design (couleurs, typo)
-ui.css         ← composants visuels (.card, .btn…)
-core.js        ← noyau métier : entrée / stock / sortie
-app.js         ← logique UI, navigation, Supabase
-sw.js          ← Service Worker (offline)
-```
-
----
-
-## Décisions d'architecture
-
-| Décision | Raison | Date |
-|----------|--------|------|
-| HTML/CSS/JS vanilla, pas de framework | Transmissible à n'importe quel informaticien | Démarrage |
-| Noyau `core.js` avec signatures figées | Protéger la logique entrée→stock→sortie | Démarrage |
-| Séparation `theme.css` / `ui.css` | Permettre au graphiste de travailler sans risque | Démarrage |
-| Supabase comme backend | Déjà en place et fonctionnel | Démarrage |
-
----
-
 ## Supabase — Tables et structure
 
 **Table `lots`**
-- `id` — identifiant unique (à migrer vers UUID)
+- `id` — UUID (migré depuis bigint le 19 avril 2026)
 - `commune_code` — code d'accès de la commune
 - `nom` — nom du lot
 - `essence` — essence de l'arbre
@@ -201,7 +168,7 @@ sw.js          ← Service Worker (offline)
 - `provenance` — origine (alignement, bosquet…)
 - `annee` — année de coupe
 - `usage` — usage prévu
-- `vol_brut`, `vol_utile`, `vol_dechets` — volumes en m3
+- `vol_brut`, `vol_utile`, `vol_dechets` — volumes en m³
 - `nb_grumes`, `nb_planches` — comptages
 - `lineaire` — linéaire en mètres
 - `epaisseur`, `delta` — paramètres de débit
@@ -210,10 +177,10 @@ sw.js          ← Service Worker (offline)
 - `created_at` — date de création
 
 **Table `extractions`**
-- `id` — identifiant unique (à migrer vers UUID)
+- `id` — UUID (migré depuis bigint le 19 avril 2026)
 - `commune_code` — code d'accès de la commune
 - `essence` — essence extraite
-- `volume` — volume en m3
+- `volume` — volume en m³
 - `usage` — usage de destination
 - `destination` — destinataire
 - `commune`, `contact`, `notes` — infos complémentaires
@@ -223,18 +190,6 @@ sw.js          ← Service Worker (offline)
 - `code` — code d'accès commune
 - `commune` — nom de la commune
 - `actif` — booléen
-
----
-
-## Bugs connus (à corriger en Phase 0c)
-
-| Bug | Fichier | Impact |
-|-----|---------|--------|
-| Clés ESSENCES_INFO sans accents | `core.js` futur | Delta de débit jamais affiché |
-| IDs basés sur `Date.getTime()` | `app.js` futur | Risque de collision en base |
-| `sauver()` ne fait rien | `app.js` futur | Brouillons perdus en cas d'interruption |
-| Pas de cache offline | `app.js` futur | App inutilisable sans réseau |
-| Styles inline dans le JS | `app.js` futur | Graphiste ne peut pas tout modifier |
 
 ---
 
@@ -253,21 +208,44 @@ DuramenCore.validerSortie(ext)    // Retourne {ok, erreur}
 
 ---
 
+## Architecture en place
+
+```
+index.html     ← HTML pur (555 lignes), zéro JS inline — ✅
+theme.css      ← variables de design (couleurs, typo) — ✅
+ui.css         ← composants visuels (.card, .btn…) — ✅
+core.js        ← noyau métier : DuramenCore (161 lignes, signatures figées) — ✅
+app.js         ← logique UI, navigation, Supabase (2164 lignes) — ✅
+sw.js          ← Service Worker (offline, cache duramen-v12) — ✅
+```
+
+---
+
+## Décisions d'architecture
+
+| Décision | Raison | Date |
+|----------|--------|------|
+| HTML/CSS/JS vanilla, pas de framework | Transmissible à n'importe quel informaticien | Démarrage |
+| Noyau `core.js` avec signatures figées | Protéger la logique entrée→stock→sortie | Démarrage |
+| Séparation `theme.css` / `ui.css` | Permettre au graphiste de travailler sans risque | Démarrage |
+| Supabase comme backend | Déjà en place et fonctionnel | Démarrage |
+| `vol_utile = vol_brut` pour les lots sans débit | Nouveau formulaire mobile : pas de calcul de débit | Avril 2026 |
+
+---
+
+## Sécurité — Points d'attention avant mise en production
+
+- Clé `SUPABASE_ANON_KEY` visible dans `app.js` (ligne 6). Clé anon publique par conception — normal pour une PWA. Vérifier que les règles **RLS (Row Level Security)** sont activées sur toutes les tables pour limiter la lecture aux seules communes authentifiées.
+
+---
+
 ## Évolutions prévues (non planifiées)
 
 - États du bois : brut / débité avec temps de séchage
 - Vue cartographique des lots
 - Notifications bois arrivant à maturité
 - Queue de retry pour les opérations hors ligne
-
----
-
-## Sécurité — Points d'attention avant mise en production
-
-- Les clés de connexion Supabase (`SUPABASE_URL` et `SUPABASE_ANON_KEY`) sont actuellement en dur dans `duramen.html`. La clé anon est publique par conception mais avant mise en production, vérifier que les règles RLS (Row Level Security) de Supabase sont bien activées sur toutes les tables pour limiter l'accès aux seules communes authentifiées.
-
----
-
+- Affichage "volume brut — débit non calculé" pour les lots sans épaisseur
 
 ---
 
@@ -278,39 +256,11 @@ DuramenCore.validerSortie(ext)    // Retourne {ok, erreur}
 | Fichier | Description | Statut |
 |---|---|---|
 | `DURAMEN_presentation_v3.docx` | Note de présentation ADEME — version finale retravaillée | ✅ |
-| `DURAMEN_presentation_financeurs_v2.docx` | Version intermédiaire avec section financement | archivée |
 | `budget_duramen.xlsx` | Budget prévisionnel modulable (jours + taux) | ✅ à compléter |
 | `DURAMEN_budget.md` | Version lisible du budget pour Obsidian | ✅ |
 | `DURAMEN_taches.md` | Suivi global du projet avec cases à cocher | ✅ |
 | `DURAMEN_postes.md` | Détail des tâches par poste de réalisation | ✅ |
-| `DURAMEN_postes_financement.md` | Grandes lignes des postes pour le dossier financeur | ✅ |
 | `REDACTION.md` | Règles rédactionnelles avec exemples | ✅ → `Docs/` |
-
----
-
-### Structure du document de présentation v3
-
-1. Un maillon manquant dans la filière
-2. La philosophie Tronc Commun : catalyseur, pas éditeur
-3. Une application qui se construit avec ceux qui l'utilisent
-4. DURAMEN : un outil au service du stock
-5. Propriété, gouvernance et diffusion
-6. Feuille de route sur 2 ans
-
----
-
-### Décisions rédactionnelles
-
-- **Posture TC** : catalyseur de filière, pas éditeur de logiciel
-- **Ton** : proposition, jamais contrat ni directive
-- **Reprise de mission** : assumée et transparente, sans jugement sur l'ancien partenaire
-- **Périmètre** : outil fiable et appropriable en 2 ans — pas exhaustif
-- **Propriété** : TC éditeur + propriétaire du code / communes propriétaires de leurs données
-- **Diffusion** : TC peut déployer ailleurs / communes sans droit de redistribution
-- **Déploiement ADEME** : gratuit pour les communes Métropole Nantaise, usage conservé après le projet
-- **Questions juridiques futures** (stockage mutualisé) : nommées mais non chiffrées
-
----
 
 ### Budget — état au 22 avril 2026
 
@@ -321,20 +271,6 @@ DuramenCore.validerSortie(ext)    // Retourne {ok, erreur}
 | Frais annexes (2 ans) | — | 3 600 € |
 | **Total** | | **31 100 €** |
 
-Taux illustrateur et nombre de jours à confirmer selon devis.
-
----
-
-### Postes budget (grandes lignes pour financeur)
-
-1. Conception et développement de l'application
-2. Animation et co-construction avec les usagers
-3. Déploiement et suivi
-4. Recherche et documentation technique
-5. Frais de fonctionnement
-
----
-
 ### Règles rédactionnelles — section 14 de CLAUDE.md
 
 1. Phrases courtes, sans surcharge
@@ -343,4 +279,3 @@ Taux illustrateur et nombre de jours à confirmer selon devis.
 4. Pas de jugement direct
 
 **Rappel** : tout changement dans `CLAUDE.md` section 14 doit être répercuté dans `Docs/REDACTION.md`, et inversement.
-
