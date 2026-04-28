@@ -1494,6 +1494,12 @@ function genDiametres() {
 }
 var LON_VALS = genLongueurs(); // 1.70 → 7.00, pas 0.05 m
 var DIA_VALS = genDiametres(); // 20 → 70, pas 1 cm
+function genCirconferences() {
+  var v = [];
+  for (var i = 63; i <= 220; i++) v.push(i);
+  return v;
+}
+var CIRC_VALS = genCirconferences(); // 63 → 220 cm, équivalent 20→70 cm de diamètre
 
 // ─── Volume d'une grume ── V = π × (d/200)² × L ──────────────────────────
 function calcVol(d, l) { return Math.PI * Math.pow(d / 200, 2) * l; }
@@ -1620,10 +1626,11 @@ function nouvSupprimerLigne(idx) {
 }
 
 // ─── Grume sheet ──────────────────────────────────────────────────────────
-var grumeDraft = { longueur: 3.00, diametre: 30, quantite: 1 };
+var grumeDraft = { longueur: 3.00, diametre: 30, circonf: 94, quantite: 1, methode: 'diametre' };
 
 function ouvrirGrumeSheet() {
-  grumeDraft = { longueur: 3.00, diametre: 30, quantite: 1 };
+  var methode = localStorage.getItem('duramen_mesure_methode') || 'diametre';
+  grumeDraft = { longueur: 3.00, diametre: 30, circonf: 94, quantite: 1, methode: methode };
   construireContenuGrumeSheet();
   var wrap = document.getElementById('grume-sheet-wrap');
   if (wrap) wrap.classList.add('open');
@@ -1635,7 +1642,13 @@ function fermerGrumeSheet() {
 }
 
 function majVolSheet() {
-  var v  = calcVol(grumeDraft.diametre, grumeDraft.longueur) * grumeDraft.quantite;
+  var v;
+  if (grumeDraft.methode === 'circonf') {
+    var cM = grumeDraft.circonf / 100;
+    v = (cM * cM * grumeDraft.longueur) / (4 * Math.PI) * grumeDraft.quantite;
+  } else {
+    v = calcVol(grumeDraft.diametre, grumeDraft.longueur) * grumeDraft.quantite;
+  }
   var el = document.getElementById('grume-sheet-vol');
   if (el) el.textContent = v.toFixed(3) + ' m³';
 }
@@ -1644,6 +1657,21 @@ function construireContenuGrumeSheet() {
   var content = document.getElementById('grume-sheet-content');
   if (!content) return;
   while (content.firstChild) content.removeChild(content.firstChild);
+
+  // Toggle méthode de mesure
+  var toggleWrap  = cel('div', 'grume-methode-toggle');
+  var btnMethDiam = cel('button', 'grume-methode-btn', 'Ø Diamètre médian');
+  btnMethDiam.type = 'button';
+  var btnMethCirc = cel('button', 'grume-methode-btn', 'C Circonférence');
+  btnMethCirc.type = 'button';
+  if (grumeDraft.methode === 'diametre') {
+    btnMethDiam.classList.add('active');
+  } else {
+    btnMethCirc.classList.add('active');
+  }
+  toggleWrap.appendChild(btnMethDiam);
+  toggleWrap.appendChild(btnMethCirc);
+  content.appendChild(toggleWrap);
 
   // Longueur
   var rowL = cel('div', 'grume-sheet-row');
@@ -1657,6 +1685,7 @@ function construireContenuGrumeSheet() {
 
   // Diamètre médian
   var rowD = cel('div', 'grume-sheet-row');
+  if (grumeDraft.methode === 'circonf') rowD.classList.add('hidden');
   rowD.appendChild(cel('div', 'grume-sheet-label', 'Ø médian'));
   var drumD = creerDrum(DIA_VALS, grumeDraft.diametre,
     function (v) { return v + ' cm'; },
@@ -1664,6 +1693,37 @@ function construireContenuGrumeSheet() {
   );
   rowD.appendChild(drumD);
   content.appendChild(rowD);
+
+  // Circonférence médiane
+  var rowC = cel('div', 'grume-sheet-row');
+  if (grumeDraft.methode === 'diametre') rowC.classList.add('hidden');
+  rowC.appendChild(cel('div', 'grume-sheet-label', 'C médiane'));
+  var drumC = creerDrum(CIRC_VALS, grumeDraft.circonf,
+    function (v) { return v + ' cm'; },
+    function (v) { grumeDraft.circonf = v; majVolSheet(); }
+  );
+  rowC.appendChild(drumC);
+  content.appendChild(rowC);
+
+  // Handlers toggle
+  btnMethDiam.onclick = function () {
+    grumeDraft.methode = 'diametre';
+    localStorage.setItem('duramen_mesure_methode', 'diametre');
+    btnMethDiam.classList.add('active');
+    btnMethCirc.classList.remove('active');
+    rowD.classList.remove('hidden');
+    rowC.classList.add('hidden');
+    majVolSheet();
+  };
+  btnMethCirc.onclick = function () {
+    grumeDraft.methode = 'circonf';
+    localStorage.setItem('duramen_mesure_methode', 'circonf');
+    btnMethCirc.classList.add('active');
+    btnMethDiam.classList.remove('active');
+    rowC.classList.remove('hidden');
+    rowD.classList.add('hidden');
+    majVolSheet();
+  };
 
   // Quantité
   var rowQ = cel('div', 'grume-sheet-row');
@@ -1712,12 +1772,16 @@ function construireContenuGrumeSheet() {
   setTimeout(function () {
     if (drumL._init) drumL._init();
     if (drumD._init) drumD._init();
+    if (drumC._init) drumC._init();
     majVolSheet();
   }, 30);
 }
 
 function enregistrerGrumeDraft() {
-  nouvGrumes.push({ longueur: grumeDraft.longueur, diametre: grumeDraft.diametre, quantite: grumeDraft.quantite });
+  var diam = grumeDraft.methode === 'circonf'
+    ? Math.round(grumeDraft.circonf / Math.PI)
+    : grumeDraft.diametre;
+  nouvGrumes.push({ longueur: grumeDraft.longueur, diametre: diam, quantite: grumeDraft.quantite });
   var idx   = nouvGrumes.length - 1;
   var liste = document.getElementById('saisie-grumes-liste');
   if (liste) {

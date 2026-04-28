@@ -1757,6 +1757,30 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 #grume-sheet-content { padding: 20px; }
 
+.grume-methode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.grume-methode-btn {
+  padding: 10px 0;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--cendre);
+  background: var(--neige);
+  border: 1px solid var(--pierre);
+  cursor: pointer;
+}
+.grume-methode-btn.active {
+  background: var(--indigo);
+  color: #fff;
+  font-weight: 600;
+  border-color: var(--indigo);
+}
+
 .grume-sheet-row {
   display: flex;
   align-items: center;
