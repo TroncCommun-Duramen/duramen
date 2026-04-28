@@ -785,9 +785,13 @@ function majDebitExtraction() {
   if (elDech)  elDech.textContent  = vDech.toFixed(3);
 
   var linEl = document.getElementById('ext-lineaire-val');
-  if (linEl && extDebitActif && e > 0) {
-    var lin = vUtile / (e / 1000 * 0.20);
-    linEl.textContent = lin.toFixed(1) + ' m';
+  if (linEl) {
+    if (extDebitActif && e > 0) {
+      var lin = vUtile / (e / 1000 * 0.20);
+      linEl.textContent = lin.toFixed(1) + ' m';
+    } else {
+      linEl.textContent = '—';
+    }
   }
 }
 
