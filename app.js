@@ -294,7 +294,7 @@ async function sauvegarderLot() {
     delta:        45, // fixe : rendement 55% = perte 45%
     nb_grumes:    grumes.length,
     vol_brut:     tVB,
-    vol_utile:    tVD,
+    vol_utile:    tVB,
     vol_dechets:  tVB - tVD,
     nb_planches:  tP,
     lineaire:     tL,
