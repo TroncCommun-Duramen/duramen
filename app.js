@@ -1663,9 +1663,9 @@ function construireContenuGrumeSheet() {
 
   // Toggle méthode de mesure
   var toggleWrap  = cel('div', 'grume-methode-toggle');
-  var btnMethDiam = cel('button', 'grume-methode-btn', 'Ø Diamètre médian');
+  var btnMethDiam = cel('button', 'grume-methode-btn', 'Calcul avec diamètre');
   btnMethDiam.type = 'button';
-  var btnMethCirc = cel('button', 'grume-methode-btn', 'C Circonférence');
+  var btnMethCirc = cel('button', 'grume-methode-btn', 'Calcul avec circonférence');
   btnMethCirc.type = 'button';
   if (grumeDraft.methode === 'diametre') {
     btnMethDiam.classList.add('active');
