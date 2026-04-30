@@ -1463,6 +1463,7 @@ function effacerBrouillon() {
 }
 
 function restaurerBrouillon() {
+  if (saisieEnCours) return;
   var raw = localStorage.getItem('duramen_draft');
   if (!raw) return;
   try {
@@ -1488,10 +1489,11 @@ function restaurerBrouillon() {
 // SAISIE "AJOUTER AU STOCK" — Formulaire unique mobile
 // ═══════════════════════════════════════════════════════════════════════════
 
-var nouvGrumes = [];
-var nouvGPS    = { lat: null, lon: null };
-var nouvDate   = new Date();
-var nouvAnnee  = String(new Date().getFullYear());
+var nouvGrumes    = [];
+var nouvGPS       = { lat: null, lon: null };
+var nouvDate      = new Date();
+var nouvAnnee     = String(new Date().getFullYear());
+var saisieEnCours = false;
 
 // Hauteur d'un item de drum en px — doit correspondre à .drum-item dans ui.css
 var DRUM_H = 40;
@@ -2017,6 +2019,7 @@ async function nouvConfirmer() {
 
 // ─── Brouillon v2 ─────────────────────────────────────────────────────────
 function nouvSauverBrouillon() {
+  saisieEnCours = true;
   var essEl = document.getElementById('saisie-essence');
   var proEl = document.getElementById('saisie-provenance');
   var cauEl = document.getElementById('saisie-cause');
@@ -2030,10 +2033,12 @@ function nouvSauverBrouillon() {
   localStorage.setItem('duramen_draft_v2', JSON.stringify(draft));
 }
 function effacerBrouillonSaisie() {
+  saisieEnCours = false;
   localStorage.removeItem('duramen_draft_v2');
   localStorage.removeItem('duramen_draft'); // nettoyage de l'ancien format
 }
 function nouvRestaurerBrouillon() {
+  if (saisieEnCours) return;
   var raw = localStorage.getItem('duramen_draft_v2');
   if (!raw) return;
   try {
