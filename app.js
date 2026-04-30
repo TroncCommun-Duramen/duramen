@@ -1047,7 +1047,8 @@ function rendreHistoriqueContenu(container, lotsData) {
   }
 
   // ── Bloc total ──────────────────────────────────────────────────────
-  var totalVol  = lotsData.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
+  var stock     = DuramenCore.getStock();
+  var totalVol  = Object.keys(stock).reduce(function (s, e) { return s + (stock[e].dispo || 0); }, 0);
   var totalLots = lotsData.length;
 
   var bloc = cel('div', 'histo-total-block');
@@ -1073,7 +1074,7 @@ function rendreHistoriqueContenu(container, lotsData) {
   lotsData.forEach(function (l) {
     var e = l.essence || 'Autre';
     if (!parEss[e]) parEss[e] = { vol: 0, lots: 0, causes: [] };
-    parEss[e].vol  += (l.vol_utile || 0);
+    parEss[e].vol   = stock[e] ? (stock[e].dispo || 0) : 0;
     parEss[e].lots += 1;
     if (l.cause && parEss[e].causes.indexOf(l.cause) === -1) parEss[e].causes.push(l.cause);
   });
