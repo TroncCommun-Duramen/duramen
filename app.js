@@ -852,6 +852,7 @@ async function confirmerExtractionDest() {
     extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '' };
     extGrumesSel = [];
     fermerModalExtractionDest();
+    afficherExtraction();
     showToastSucces('Extraction enregistrée.');
     var btnAcc = document.querySelector('.bnav-btn[data-panel="accueil"]');
     if (btnAcc) switchTab('accueil', btnAcc);
