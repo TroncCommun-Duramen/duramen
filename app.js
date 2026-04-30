@@ -837,7 +837,7 @@ async function confirmerExtractionDest() {
         id:           crypto.randomUUID(),
         commune_code: communeConnectee.code,
         essence:      ess,
-        volume:       parEssence[ess],
+        volume:       Math.round(parEssence[ess] * 10000) / 10000,
         usage:        extDraft.usage,
         destination:  extDraft.destination,
         commune:      extDraft.communeInstall || '',
