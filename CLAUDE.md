@@ -105,22 +105,6 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 
 **Règle d'utilisation de l'indigo :** uniquement pour — onglet actif, champ en cours de saisie, valeur calculée par l'app, badge commune, barre de stock, chip essence disponible. Nulle part ailleurs.
 
-**Typographie :**
-
-Famille unique : `Outfit` (Google Fonts)
-
-- Logo / nom app    : Outfit 200, letterspacing 0.2em, uppercase
-- Titres d'écran    : Outfit 300, letterspacing 0.04em
-- Corps / valeurs   : Outfit 300–400
-- Labels UI         : Outfit 500, 7–8px, uppercase, letterspacing 0.12em
-- Boutons           : Outfit 500, uppercase, letterspacing 0.14em
-- Chiffres stats    : Outfit 300, 16px
-
-**Règles mobile :**
-- Police minimum 16px partout
-- Poids minimum 400 sur mobile (jamais 200 ou 300 en corps de texte)
-- Boutons minimum 56px de hauteur
-
 ---
 
 ## 6. Règles absolues — NE JAMAIS VIOLER
@@ -133,7 +117,6 @@ Famille unique : `Outfit` (Google Fonts)
 
 - **Le fichier principal s'appelle `index.html`** — pas `duramen.html`. Toujours vérifier le nom exact avant toute modification.
 - **Les 5 fichiers forment un ensemble** : index.html + app.js + core.js + theme.css + ui.css. Ne jamais restaurer l'un sans les autres.
-- **TOUJOURS** vérifier la taille des fichiers après restauration : index.html < 35 Ko, app.js > 800 lignes. Si anormal : stopper et signaler.
 
 ### Authentification
 
@@ -149,10 +132,6 @@ Famille unique : `Outfit` (Google Fonts)
 
 - **JAMAIS** utiliser `Date.getTime()` comme identifiant unique. Utiliser `crypto.randomUUID()`.
 - **TOUJOURS** utiliser les noms d'essences avec accents dans `ESSENCES_INFO`. Clés correctes : `'Châtaignier'`, `'Chêne'`, `'Cyprès'`, `'Épicéa'`, `'Frêne'`, `'Séquoia'`, `'Robinier (Acacia)'`.
-
-### DOM & rendu
-
-- **JAMAIS** construire du HTML par concaténation de chaînes dans le JS. Utiliser `document.createElement` + `textContent`.
 
 ### Service Worker & cache
 
@@ -207,28 +186,9 @@ DuramenCore.validerSortie(extraction)
 | ------------------- | ------------------------ | ---------------------- |
 |                     | `index.html`             | tous les autres        |
 
-**Prompt de démarrage à copier-coller à chaque session :**
-
-> "Lis CLAUDE.md, MEMORY.md, LESSONS.md et TASKS.md dans cet ordre. Nous travaillons uniquement sur [fichier]. Ne touche à aucun autre fichier. Confirme la tâche en cours avant de commencer."
-
 ---
 
-## 9. Séquence de démarrage de session Claude Code
-
-Au démarrage de chaque session, Claude Code doit lire dans cet ordre :
-
-1. `CLAUDE.md` (ce fichier)
-2. `Docs/MEMORY.md` — état actuel du projet
-3. `Docs/LESSONS.md` — règles issues des bugs passés
-4. `Docs/TASKS.md` — tâche du jour
-
-Répondre avec :
-
-> "Contexte chargé. Projet : [résumé en une phrase]. Dernière tâche validée : [X]. Aujourd'hui : [tâche en cours]. Je ne toucherai qu'à [fichier(s)]."
-
----
-
-## 10. Convention de commits Git
+## 9. Convention de commits Git
 
 ```
 Format : <type>(<périmètre>): <intention en français>
@@ -240,17 +200,11 @@ Types :
   style    → modification visuelle uniquement
   docs     → mise à jour documentation
   test     → ajout ou modification de tests
-
-Exemples :
-  feat(mobile): écran accueil 3 boutons
-  fix(auth): corriger la connexion Supabase
-  style(connexion): refonte écran login
-  docs(claude): mise à jour règles session
 ```
 
 ---
 
-## 11. Références fichiers satellites
+## 10. Références fichiers satellites
 
 | Fichier                 | Rôle                                            |
 | ----------------------- | ----------------------------------------------- |
@@ -262,73 +216,6 @@ Exemples :
 
 ---
 
-## 12. Protocole de débogage — TOUJOURS SUIVRE
+## 11. Règles rédactionnelles — TOUJOURS APPLIQUER
 
-Avant de toucher au code, suivre ces 4 étapes dans l'ordre :
-
-1. **Nommer le bug** — décrire en une phrase ce qui se passe vs ce qui devrait se passer
-2. **Isoler la zone** — identifier le fichier concerné sans en ouvrir d'autres
-3. **Poser une hypothèse** — énoncer la cause probable avant de chercher
-4. **Vérifier avant de corriger** — confirmer par lecture du code, pas par modification
-
-Répondre avec :
-> "Bug identifié : [description]. Zone : [fichier]. Hypothèse : [cause probable]. Je lis [section] avant de proposer une correction."
-
----
-
-## 13. Clôture de session Claude Code
-
-**Bilan obligatoire avant clôture :**
-
-> "**Bilan de session.**
-> Ce qui a changé : [liste courte].
-> Ce qui reste ouvert : [tâches non terminées].
-> Mise à jour MEMORY.md : [oui / non — et pourquoi si non]."
-
-**Vérifications avant git push :**
-
-- Navigation entre écrans fonctionnelle
-- Affichage des données correct
-- Absence d'erreurs console
-- app.js et core.js de la même version que index.html
-- Taille de index.html cohérente (< 35 Ko)
-- Numéro de cache sw.js incrémenté
-
-**Message de clôture :**
-
-> "Session terminée. Synchronise avec GitHub en ouvrant un terminal dans le dossier 'Appli Duramen' et en tapant :"
-
-```bash
-git add .
-git commit -m "type(périmètre): description en français"
-git push
-```
-
-L'app est mise à jour en ligne automatiquement 1 à 2 minutes après le `git push`.
-
----
-
-## 14. Tâches design en attente
-
-- [ ] **Écran connexion mobile** (mockup validé) : logo + DURAMEN Outfit 200 + "Gestion du bois d'œuvre" + champ Code en indigo + bouton Accéder noir + © Tronc Commun. Saisie automatiquement en majuscules.
-- [ ] **Écran accueil mobile** (mockup validé) : badge commune + stock total + indicateur online/offline + 3 boutons larges (Ajouter au stock / Voir le stock / Extraire du stock). Chaque bouton navigue vers son écran dédié.
-- [ ] **Responsive** : deux layouts distincts — mobile (terrain) et desktop (bureau). Session Design dédiée.
-- [ ] **Icône PWA** : envisager fond --indigo (#2B3F8C) + icône blanche. Coordonner avec le graphiste avant de modifier `manifest.json`.
-
----
-
-## 15. Règles rédactionnelles — TOUJOURS APPLIQUER
-
-### Règle 1 — Phrases courtes
-Une phrase = une idée. Pas de constructions longues.
-
-### Règle 2 — Ton simple
-Sans jargon, sans formules creuses. Lisible par un agent de terrain comme par un financeur.
-
-### Règle 3 — Construire par le positif
-Formuler ce qu'on fait, ce qu'on veut, ce qu'on propose. Le négatif vient après le positif si nécessaire.
-
-### Règle 4 — Pas de jugement direct
-Nommer les faits, pas les responsabilités.
-
-**Référence complète avec exemples** : `Docs/REDACTION.md`
+Voir Docs/REDACTION.md.
