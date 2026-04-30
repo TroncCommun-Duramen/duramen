@@ -1546,7 +1546,7 @@ function captureGPS() {
     } else {
       c.textContent = 'GPS · signal faible — retaper';
     }
-  }, { timeout: 20000, enableHighAccuracy: true, maximumAge: 60000 });
+  }, { timeout: 10000, enableHighAccuracy: false, maximumAge: 300000 });
 }
 
 // ─── Helper createElement ─────────────────────────────────────────────────
