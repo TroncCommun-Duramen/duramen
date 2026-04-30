@@ -61,6 +61,17 @@ function showError(msg) {
   setTimeout(function () { el.classList.add('hidden'); }, 6000);
 }
 
+// ─── Swipe down pour fermer les bottom sheets ─────────────────────────────
+function ajouterSwipeDown(el, fn) {
+  var startY = 0;
+  el.addEventListener('touchstart', function (e) {
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  el.addEventListener('touchend', function (e) {
+    if (e.changedTouches[0].clientY - startY > 80) fn();
+  }, { passive: true });
+}
+
 // ─── Bandeau hors ligne ───────────────────────────────────────────────────
 function showOfflineBanner(visible) {
   var el = document.getElementById('offline-banner');
@@ -599,6 +610,7 @@ function assureModalExtractionDest() {
   acts.appendChild(btnOk);
   modal.appendChild(acts);
 
+  ajouterSwipeDown(modal, fermerModalExtractionDest);
   bg.appendChild(modal);
   document.body.appendChild(bg);
 }
@@ -1906,6 +1918,7 @@ function assureModalNommer() {
   acts.appendChild(btnOk);
   modal.appendChild(acts);
 
+  ajouterSwipeDown(modal, nouvFermerModal);
   bg.appendChild(modal);
   document.body.appendChild(bg);
 }
@@ -2230,5 +2243,17 @@ if (lpEl) lpEl.addEventListener('change', sauverBrouillon);
 
 window.addEventListener('online',  mettreAJourStatutReseau);
 window.addEventListener('offline', mettreAJourStatutReseau);
+
+// ─── Swipe down sur les sheets statiques ─────────────────────────────────
+(function () {
+  var grumeSelSheet = document.getElementById('grume-sel-sheet');
+  if (grumeSelSheet) ajouterSwipeDown(grumeSelSheet, fermerGrumeSelSheet);
+
+  var grumeSheet = document.getElementById('grume-sheet');
+  if (grumeSheet) ajouterSwipeDown(grumeSheet, fermerGrumeSheet);
+
+  var modalExt = document.querySelector('#modal-extraction .extract-modal');
+  if (modalExt) ajouterSwipeDown(modalExt, fermerModalExtraction);
+}());
 
 verifierAcces();
