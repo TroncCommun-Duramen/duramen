@@ -313,7 +313,9 @@ async function sauvegarderLot() {
     date:         now.toLocaleDateString('fr-FR'),
     date_iso:     now.toISOString(),
     grumes:       grumes.slice(),
-    usages:       usages
+    usages:       usages,
+    latitude:     nouvGPS.lat,
+    longitude:    nouvGPS.lon
   };
   try {
     showLoading(true);
@@ -1523,16 +1525,28 @@ function calcVol(d, l) { return Math.PI * Math.pow(d / 200, 2) * l; }
 
 // ─── GPS silencieux ───────────────────────────────────────────────────────
 function captureGPS() {
-  if (!navigator.geolocation) return;
+  var chip = document.getElementById('saisie-gps-chip');
+  if (chip) chip.textContent = 'GPS · en cours…';
+  if (!navigator.geolocation) {
+    if (chip) chip.textContent = 'GPS non supporté';
+    return;
+  }
   navigator.geolocation.getCurrentPosition(function (pos) {
     nouvGPS.lat = +pos.coords.latitude.toFixed(6);
     nouvGPS.lon = +pos.coords.longitude.toFixed(6);
-    var chip = document.getElementById('saisie-gps-chip');
-    if (chip) chip.textContent = nouvGPS.lat + '° / ' + nouvGPS.lon + '°';
-  }, function () {
-    var chip = document.getElementById('saisie-gps-chip');
-    if (chip) chip.textContent = 'GPS indisponible';
-  }, { timeout: 15000, enableHighAccuracy: false });
+    var c = document.getElementById('saisie-gps-chip');
+    if (c) c.textContent = nouvGPS.lat + '° / ' + nouvGPS.lon + '°';
+  }, function (err) {
+    var c = document.getElementById('saisie-gps-chip');
+    if (!c) return;
+    if (err.code === 1) {
+      c.textContent = 'GPS · permission refusée';
+    } else if (err.code === 3) {
+      c.textContent = 'GPS · délai dépassé — retaper';
+    } else {
+      c.textContent = 'GPS · signal faible — retaper';
+    }
+  }, { timeout: 20000, enableHighAccuracy: true, maximumAge: 60000 });
 }
 
 // ─── Helper createElement ─────────────────────────────────────────────────
@@ -1988,7 +2002,9 @@ async function nouvConfirmer() {
     lineaire:     0,
     date:         nouvDate.toLocaleDateString('fr-FR'),
     date_iso:     nouvDate.toISOString(),
-    grumes:       grumesFlat
+    grumes:       grumesFlat,
+    latitude:     nouvGPS.lat,
+    longitude:    nouvGPS.lon
   };
 
   try {
@@ -2100,7 +2116,8 @@ function initialiserPanelSaisie() {
   var dateStr  = nouvDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   meta.appendChild(cel('div', 'saisie-chip', dateStr));
   var gpsChip  = cel('div', 'saisie-chip', 'GPS · en cours…');
-  gpsChip.id   = 'saisie-gps-chip';
+  gpsChip.id      = 'saisie-gps-chip';
+  gpsChip.onclick = captureGPS;
   meta.appendChild(gpsChip);
   panel.appendChild(meta);
 

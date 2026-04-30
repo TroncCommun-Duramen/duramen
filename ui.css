@@ -1146,6 +1146,10 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   pointer-events: none;
   user-select: none;
 }
+#saisie-gps-chip {
+  pointer-events: auto;
+  cursor: pointer;
+}
 
 /* ─── Année de coupe ─── */
 .saisie-annee-row {

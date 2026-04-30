@@ -1,4 +1,4 @@
-const CACHE_NAME = 'duramen-v14';
+const CACHE_NAME = 'duramen-v16';
 
 const FICHIERS = [
   './',
