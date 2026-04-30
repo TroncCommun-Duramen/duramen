@@ -100,6 +100,7 @@ async function chargerDonnees() {
     mettreAJourHeaderStats();
     mettreAJourAccueil();
     afficherHistorique();
+    afficherExtraction();
     showOfflineBanner(false);
   } catch (err) {
     var cachedLots = localStorage.getItem('duramen_lots_cache');
