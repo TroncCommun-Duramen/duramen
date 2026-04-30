@@ -1,6 +1,6 @@
 # CLAUDE_QUICK.md — Sections essentielles au démarrage
 
-> Extrait de CLAUDE.md — sections §1, §6, §7, §8, §9 uniquement.
+> Extrait de CLAUDE.md — sections §1, §6, §7, §8 uniquement.
 > À lire à chaque démarrage de session, quelle que soit la tâche.
 
 ---
@@ -31,7 +31,6 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 
 - **Le fichier principal s'appelle `index.html`** — pas `duramen.html`. Toujours vérifier le nom exact avant toute modification.
 - **Les 5 fichiers forment un ensemble** : index.html + app.js + core.js + theme.css + ui.css. Ne jamais restaurer l'un sans les autres.
-- **TOUJOURS** vérifier la taille des fichiers après restauration : index.html < 35 Ko, app.js > 800 lignes. Si anormal : stopper et signaler.
 
 ### Authentification
 
@@ -47,10 +46,6 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 
 - **JAMAIS** utiliser `Date.getTime()` comme identifiant unique. Utiliser `crypto.randomUUID()`.
 - **TOUJOURS** utiliser les noms d'essences avec accents dans `ESSENCES_INFO`. Clés correctes : `'Châtaignier'`, `'Chêne'`, `'Cyprès'`, `'Épicéa'`, `'Frêne'`, `'Séquoia'`, `'Robinier (Acacia)'`.
-
-### DOM & rendu
-
-- **JAMAIS** construire du HTML par concaténation de chaînes dans le JS. Utiliser `document.createElement` + `textContent`.
 
 ### Service Worker & cache
 
@@ -104,24 +99,5 @@ DuramenCore.validerSortie(extraction)
 | Session "Structure" | Fichiers autorisés       | Fichiers interdits     |
 | ------------------- | ------------------------ | ---------------------- |
 |                     | `index.html`             | tous les autres        |
-
-**Prompt de démarrage à copier-coller à chaque session :**
-
-> "Lis CLAUDE.md, MEMORY.md, LESSONS.md et TASKS.md dans cet ordre. Nous travaillons uniquement sur [fichier]. Ne touche à aucun autre fichier. Confirme la tâche en cours avant de commencer."
-
----
-
-## 5. Séquence de démarrage de session Claude Code
-
-Au démarrage de chaque session, Claude Code doit lire dans cet ordre :
-
-1. `CLAUDE.md` (ce fichier)
-2. `Docs/MEMORY.md` — état actuel du projet
-3. `Docs/LESSONS.md` — règles issues des bugs passés
-4. `Docs/TASKS.md` — tâche du jour
-
-Répondre avec :
-
-> "Contexte chargé. Projet : [résumé en une phrase]. Dernière tâche validée : [X]. Aujourd'hui : [tâche en cours]. Je ne toucherai qu'à [fichier(s)]."
 
 ---
