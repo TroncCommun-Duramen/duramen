@@ -1536,15 +1536,15 @@ function captureGPS() {
     nouvGPS.lat = +pos.coords.latitude.toFixed(6);
     nouvGPS.lon = +pos.coords.longitude.toFixed(6);
     var c = document.getElementById('saisie-gps-chip');
-    if (c) c.textContent = nouvGPS.lat + '° / ' + nouvGPS.lon + '°';
+    if (c) c.textContent = 'GPS · actif';
   }, function (err) {
     navigator.geolocation.clearWatch(wid);
     var c = document.getElementById('saisie-gps-chip');
     if (!c) return;
     if (err.code === 1) {
-      c.textContent = 'GPS · permission refusée';
+      c.textContent = 'GPS · refusé';
     } else {
-      c.textContent = 'GPS · signal faible — retaper';
+      c.textContent = 'GPS · inactif';
     }
   }, { enableHighAccuracy: false, maximumAge: 60000 });
 }
