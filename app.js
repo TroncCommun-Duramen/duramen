@@ -1531,22 +1531,22 @@ function captureGPS() {
     if (chip) chip.textContent = 'GPS non supporté';
     return;
   }
-  navigator.geolocation.getCurrentPosition(function (pos) {
+  var wid = navigator.geolocation.watchPosition(function (pos) {
+    navigator.geolocation.clearWatch(wid);
     nouvGPS.lat = +pos.coords.latitude.toFixed(6);
     nouvGPS.lon = +pos.coords.longitude.toFixed(6);
     var c = document.getElementById('saisie-gps-chip');
     if (c) c.textContent = nouvGPS.lat + '° / ' + nouvGPS.lon + '°';
   }, function (err) {
+    navigator.geolocation.clearWatch(wid);
     var c = document.getElementById('saisie-gps-chip');
     if (!c) return;
     if (err.code === 1) {
       c.textContent = 'GPS · permission refusée';
-    } else if (err.code === 3) {
-      c.textContent = 'GPS · délai dépassé — retaper';
     } else {
       c.textContent = 'GPS · signal faible — retaper';
     }
-  }, { timeout: 10000, enableHighAccuracy: false, maximumAge: 300000 });
+  }, { enableHighAccuracy: false, maximumAge: 60000 });
 }
 
 // ─── Helper createElement ─────────────────────────────────────────────────
