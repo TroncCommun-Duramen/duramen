@@ -821,7 +821,7 @@ async function confirmerExtractionDest() {
 
   for (var i = 0; i < essences.length; i++) {
     var valid = DuramenCore.validerSortie({
-      essence: essences[i], volume: parEssence[essences[i]],
+      essence: essences[i], volume: Math.round(parEssence[essences[i]] * 10000) / 10000,
       usage: extDraft.usage, destination: extDraft.destination
     });
     if (!valid.ok) { showError(valid.erreur); return; }
