@@ -37,7 +37,7 @@ body {
   gap: 14px;
 }
 
-.b-login-logo svg { width: 56px; height: 56px; color: var(--sumi); }
+.b-login-logo svg { width: 88px; height: 88px; color: var(--sumi); }
 
 .b-login-title {
   font-size: 26px;
@@ -318,7 +318,7 @@ body {
 
 .b-commune-layout {
   display: grid;
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: 60% 40%;
   align-items: start;
   min-height: calc(100vh - 93px); /* sous les onglets */
 }
@@ -549,6 +549,36 @@ body {
   transition: all 0.12s;
 }
 .b-type-btn.active { background: var(--olive); color: var(--washi); }
+
+/* Description du mode actif */
+.b-type-desc {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--neige);
+  border-radius: var(--border-radius-inner);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--cendre);
+  line-height: 1.5;
+}
+.b-type-desc-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.b-type-desc-txt strong {
+  display: block;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--sumi);
+  margin-bottom: 2px;
+}
+
+/* Label dynamique mode brute dans barre volumes */
+.b-vol-barre.mode-brute .b-vol-lbl-ext::after { content: ' brut'; }
+.b-vol-barre.mode-brute .b-bloc-utile,
+.b-vol-barre.mode-brute .b-bloc-dechet { display: none; }
 
 /* Sliders */
 .b-sliders-zone {
@@ -1176,8 +1206,25 @@ body {
   font-weight: 700;
 }
 
-.b-grume-info { flex: 1; font-size: 13px; }
-.b-grume-vol { font-size: 13px; font-weight: var(--font-weight-medium); color: var(--indigo); }
+.b-grume-info {
+  flex: 1;
+  font-size: 13px;
+  color: var(--sumi);
+  line-height: 1.4;
+}
+.b-grume-info .b-grume-metrics {
+  display: block;
+  font-size: 11px;
+  color: var(--cendre);
+  font-weight: var(--font-weight-regular);
+  margin-top: 1px;
+}
+.b-grume-vol {
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--indigo);
+  white-space: nowrap;
+}
 
 .b-grumes-sheet-foot {
   padding: 14px 22px;

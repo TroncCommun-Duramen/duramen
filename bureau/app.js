@@ -581,13 +581,17 @@ function bSelChipExt(btn, ess) {
   });
 }
 
-/* Construire le label d'une grume */
+/* Construire le label principal d'une grume (lot + numéro) */
 function bLabelGrume(g) {
+  return 'Grume n°' + g.index;
+}
+
+/* Construire les métriques d'une grume (L, Ø) */
+function bMetriquesGrume(g) {
   var parts = [];
   if (g.longueur) parts.push('L ' + parseFloat(g.longueur).toFixed(2) + ' m');
   if (g.diametre) parts.push('Ø ' + g.diametre + ' cm');
-  parts.push('n°' + g.index);
-  return parts.join(' · ');
+  return parts.length ? parts.join(' · ') : 'dimensions non renseignées';
 }
 
 /* ── Sélection des grumes (feuille latérale) ── */
@@ -618,7 +622,10 @@ function bOuvrirGrumes() {
       row.className = 'b-grume-row' + (selIds.indexOf(key) !== -1 ? ' checked' : '');
       row.innerHTML =
         '<div class="b-grume-check"></div>' +
-        '<div class="b-grume-info">' + bLabelGrume(g) + '</div>' +
+        '<div class="b-grume-info">' +
+          bLabelGrume(g) +
+          '<span class="b-grume-metrics">' + bMetriquesGrume(g) + '</span>' +
+        '</div>' +
         '<div class="b-grume-vol">' + g.volume.toFixed(3) + ' m³</div>';
       row.onclick = function() {
         row.classList.toggle('checked');
@@ -667,6 +674,20 @@ function bSetTypeExt(type) {
   sz.style.display = type === 'planches' ? '' : 'none';
   document.getElementById('b-bloc-utile').style.display  = type === 'planches' ? '' : 'none';
   document.getElementById('b-bloc-dechet').style.display = type === 'planches' ? '' : 'none';
+
+  // Description du mode
+  var titre = document.getElementById('b-type-desc-titre');
+  var body  = document.getElementById('b-type-desc-body');
+  var icon  = document.querySelector('#b-type-desc .b-type-desc-icon');
+  if (type === 'brute') {
+    if (titre) titre.textContent = 'Grume brute';
+    if (body)  body.textContent  = 'Volume brut cédé ou vendu tel quel, sans transformation. Le m³ enregistré correspond au volume mesuré des grumes sélectionnées.';
+    if (icon)  icon.textContent  = '🌳';
+  } else {
+    if (titre) titre.textContent = 'Débit en planches';
+    if (body)  body.textContent  = 'Calcul du volume utile et du déchet selon l\'épaisseur de planche, le trait de scie et le rendement géométrique.';
+    if (icon)  icon.textContent  = '🪚';
+  }
   bMajVolumes();
 }
 
