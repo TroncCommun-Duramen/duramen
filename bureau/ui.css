@@ -1483,4 +1483,48 @@ body {
   font-size: 14px;
 }
 
+/* ── Responsive : bureau sur écran étroit (< 900px) ─────────────────────── */
+@media (max-width: 900px) {
+  .b-commune-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .b-col-ext {
+    position: static;
+    height: auto;
+    border-left: none;
+    border-top: 2px solid var(--indigo);
+    max-height: none;
+    overflow: visible;
+  }
+
+  .b-ext-repos {
+    padding: 20px 16px;
+    gap: 14px;
+  }
+
+  .b-cercle {
+    width: 110px;
+    height: 110px;
+  }
+
+  .b-ext-panel {
+    max-height: none;
+  }
+
+  .b-ext-panel-body {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .b-commune-gauche { padding: 16px; }
+
+  .b-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+}
+
 .b-empty { padding: 32px; text-align: center; color: var(--cendre); font-size: 13px; }
