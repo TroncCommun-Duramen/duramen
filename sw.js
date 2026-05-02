@@ -1,9 +1,12 @@
-const CACHE_NAME = 'duramen-v19';
+const CACHE_NAME = 'duramen-v20';
 
 const FICHIERS = [
   './',
   './index.html',
+  './theme.css',
   './ui.css',
+  './core.js',
+  './app.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -33,8 +36,11 @@ self.addEventListener('activate', function(e) {
 
 self.addEventListener('fetch', function(e) {
   e.respondWith(
-    fetch(e.request).catch(function() {
-      return caches.match(e.request);
+    caches.match(e.request).then(function(cached) {
+      if (cached) return cached;
+      return fetch(e.request).catch(function() {
+        return new Response('Hors ligne', { status: 503 });
+      });
     })
   );
 });
