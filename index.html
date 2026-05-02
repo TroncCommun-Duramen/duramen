@@ -155,6 +155,17 @@
         </span>
         <span class="btn-home-arrow">›</span>
       </button>
+      <div class="accueil-actions-sep"></div>
+      <button class="btn-home btn-home-feedback" onclick="switchTab('feedback',this)" data-panel="feedback">
+        <span class="btn-home-icon-box">
+          <svg class="btn-home-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </span>
+        <span class="btn-home-text">
+          <span class="btn-home-label">Ticket retour</span>
+          <span class="btn-home-sub">Donner mon avis — phase de test</span>
+        </span>
+        <span class="btn-home-arrow">›</span>
+      </button>
     </div>
   </div>
 
@@ -417,6 +428,29 @@
       Seuls les lots dont les communes ont activé le partage sont visibles ici. Chaque commune reste libre de partager ou non ses données.
     </div>
     <div id="territoire-container"></div>
+  </div>
+
+  <!-- ═══ PANEL : TICKET RETOUR ═══ -->
+  <div class="panel" id="panel-feedback">
+    <div class="feedback-header">
+      <button class="feedback-retour-btn" onclick="retourAccueil()">← Accueil</button>
+      <div class="feedback-titre">Ticket retour — phase de test</div>
+    </div>
+    <div class="feedback-card">
+      <div class="feedback-section-label">Type de retour</div>
+      <div class="feedback-types">
+        <button class="feedback-type-btn" onclick="selFeedbackType(this,'usage-design')">Usage / Design</button>
+        <button class="feedback-type-btn" onclick="selFeedbackType(this,'amelioration')">Amélioration</button>
+        <button class="feedback-type-btn" onclick="selFeedbackType(this,'bug')">Bug</button>
+        <button class="feedback-type-btn" onclick="selFeedbackType(this,'message-libre')">Message libre</button>
+      </div>
+      <div class="feedback-section-label">Votre message</div>
+      <textarea class="feedback-textarea" id="feedback-message" placeholder="Décrivez votre retour en détail..."></textarea>
+      <div class="feedback-actions">
+        <button class="feedback-btn-envoyer" onclick="envoyerTicket()">Envoyer le ticket</button>
+        <button class="feedback-btn-effacer" onclick="effacerTicket()">Effacer</button>
+      </div>
+    </div>
   </div>
 
   <!-- ═══ GRUME SHEET ═══ -->

@@ -2219,6 +2219,50 @@ function initialiserPanelSaisie() {
   nouvRestaurerBrouillon();
 }
 
+// ═══════════ TICKET RETOUR ═══════════
+var feedbackTypeSelectionne = null;
+
+function selFeedbackType(btn, type) {
+  document.querySelectorAll('.feedback-type-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  feedbackTypeSelectionne = type;
+}
+
+function effacerTicket() {
+  document.querySelectorAll('.feedback-type-btn').forEach(function(b) { b.classList.remove('active'); });
+  feedbackTypeSelectionne = null;
+  var msg = document.getElementById('feedback-message');
+  if (msg) msg.value = '';
+}
+
+async function envoyerTicket() {
+  var msg = document.getElementById('feedback-message');
+  if (!feedbackTypeSelectionne) { showError('Choisissez un type de retour.'); return; }
+  if (!msg || !msg.value.trim()) { showError('Le message ne peut pas être vide.'); return; }
+  try {
+    showLoading(true);
+    await sbInsert('feedbacks', {
+      id: crypto.randomUUID(),
+      commune_code: communeConnectee.code,
+      commune: communeConnectee.nom,
+      type: feedbackTypeSelectionne,
+      message: msg.value.trim()
+    });
+    showLoading(false);
+    effacerTicket();
+    showToastSucces('Ticket envoyé. Merci pour votre retour !');
+    retourAccueil();
+  } catch(e) {
+    showLoading(false);
+    showError('Erreur lors de l\'envoi : ' + e.message);
+  }
+}
+
+function retourAccueil() {
+  var btn = document.querySelector('[data-panel="accueil"]');
+  if (btn) switchTab('accueil', btn);
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────
 function switchTab(panel, btn) {
   document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });

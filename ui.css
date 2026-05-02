@@ -1121,6 +1121,127 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .btn-home-secondary:hover,
 .btn-home-secondary:active { background: var(--neige); }
 
+.accueil-actions-sep {
+  height: 1px;
+  background: var(--brume);
+  margin: 4px 16px 0;
+}
+
+.btn-home-feedback {
+  background: var(--washi);
+  color: var(--sumi);
+  border: 1px solid rgba(211, 84, 0, 0.35);
+}
+.btn-home-feedback:hover,
+.btn-home-feedback:active { background: var(--neige); }
+
+.btn-home-feedback .btn-home-icon-box {
+  background: var(--orange);
+  color: var(--washi);
+}
+
+/* ── Panel feedback ── */
+.feedback-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 8px;
+}
+.feedback-retour-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--cendre);
+  cursor: pointer;
+  padding: 4px 0;
+}
+.feedback-titre {
+  font-size: 17px;
+  font-weight: var(--font-weight-medium);
+  color: var(--sumi);
+}
+.feedback-card {
+  margin: 8px 16px 32px;
+  background: var(--neige);
+  border-radius: var(--border-radius-card);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.feedback-section-label {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.1em;
+  color: var(--cendre);
+  text-transform: uppercase;
+}
+.feedback-types {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.feedback-type-btn {
+  background: var(--washi);
+  border: 1px solid var(--pierre);
+  border-radius: var(--border-radius-card);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: var(--font-weight-regular);
+  color: var(--sumi);
+  padding: 14px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.feedback-type-btn.active {
+  border-color: var(--orange);
+  background: var(--washi);
+  color: var(--orange);
+  font-weight: var(--font-weight-medium);
+}
+.feedback-textarea {
+  width: 100%;
+  min-height: 130px;
+  background: var(--sumi);
+  color: var(--washi);
+  border: none;
+  border-radius: var(--border-radius-inner);
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.feedback-textarea::placeholder { color: var(--pierre); }
+.feedback-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+.feedback-btn-envoyer {
+  background: var(--orange);
+  color: var(--washi);
+  border: none;
+  border-radius: var(--border-radius-card);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: var(--font-weight-medium);
+  padding: 16px 20px;
+  cursor: pointer;
+}
+.feedback-btn-effacer {
+  background: none;
+  border: 1px solid var(--pierre);
+  border-radius: var(--border-radius-card);
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--sumi);
+  padding: 16px 20px;
+  cursor: pointer;
+}
+
 /* ═══════════════════════════════════════
    SAISIE — Formulaire "Ajouter au stock"
 ═══════════════════════════════════════ */

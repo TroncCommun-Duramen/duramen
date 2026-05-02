@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DURAMEN Bureau — Tronc Commun</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+
+<!-- ─── CONNEXION ─── -->
+<div id="b-connexion">
+  <div class="b-login-card">
+    <div class="b-login-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+        <g transform="translate(100,100)">
+          <circle cx="0" cy="0" r="88" stroke="currentColor" stroke-width="5"/>
+          <rect x="-96" y="-14" width="20" height="8" rx="2" fill="currentColor"/>
+          <rect x="76"  y="-14" width="20" height="8" rx="2" fill="currentColor"/>
+          <rect x="-14" y="-96" width="8" height="20" rx="2" fill="currentColor"/>
+          <rect x="-14" y="76"  width="8" height="20" rx="2" fill="currentColor"/>
+          <circle cx="0" cy="0" r="64" stroke="currentColor" stroke-width="3.5"/>
+          <circle cx="0" cy="0" r="38" stroke="currentColor" stroke-width="3"/>
+          <circle cx="0" cy="0" r="12" stroke="currentColor" stroke-width="3"/>
+          <circle cx="0" cy="0" r="4" fill="currentColor"/>
+          <line x1="-88" y1="0" x2="-12" y2="0" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="12"  y1="0" x2="88"  y2="0" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="0"   y1="-88" x2="0"   y2="-12" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="0"   y1="88"  x2="0"   y2="12"  stroke="currentColor" stroke-width="2.5"/>
+        </g>
+      </svg>
+    </div>
+    <div class="b-login-title">DURAMEN</div>
+    <div class="b-login-sub">Interface bureau — Responsables &amp; Ateliers</div>
+    <label class="b-login-label" for="b-login-code">CODE D'ACCÈS</label>
+    <input class="b-login-input" type="text" id="b-login-code"
+      placeholder="ex : DURAMEN-01"
+      autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+      onkeydown="if(event.key==='Enter') bTentativeConnexion()">
+    <button class="b-login-btn" onclick="bTentativeConnexion()">ACCÉDER</button>
+    <div class="b-login-erreur" id="b-login-erreur"></div>
+  </div>
+</div>
+
+<!-- ─── APPLICATION ─── -->
+<div id="b-app" class="hidden">
+
+  <!-- HEADER -->
+  <header class="b-header">
+    <div class="b-stat-block b-stat-commune">
+      <div class="b-stat-lbl">STOCK COMMUNE</div>
+      <div class="b-stat-val b-stat-val-blue" id="b-stat-stock">—</div>
+      <div class="b-stat-sub b-stat-sub-green" id="b-stat-delta">—</div>
+    </div>
+    <div class="b-stat-block">
+      <div class="b-stat-lbl">LOTS ACTIFS</div>
+      <div class="b-stat-val" id="b-stat-lots">—</div>
+      <div class="b-stat-sub" id="b-stat-essences">—</div>
+    </div>
+    <div class="b-stat-block">
+      <div class="b-stat-lbl" id="b-stat-ext-lbl">EXTRACTIONS MOIS</div>
+      <div class="b-stat-val" id="b-stat-ext-vol">—</div>
+      <div class="b-stat-sub" id="b-stat-ext-ops">—</div>
+    </div>
+    <div class="b-stat-block b-stat-last">
+      <div class="b-stat-lbl">STOCK MÉTROPOLE</div>
+      <div class="b-stat-val b-stat-val-blue" id="b-stat-metro">—</div>
+      <div class="b-stat-sub" id="b-stat-metro-detail">—</div>
+    </div>
+    <button class="b-deconnexion-btn" onclick="bDeconnecter()">Déconnexion</button>
+  </header>
+
+  <!-- TABS -->
+  <nav class="b-tabs">
+    <button class="b-tab active" id="b-tab-commune"   onclick="bSwitchTab('commune')">Commune — <span id="b-tab-commune-nom">—</span></button>
+    <button class="b-tab"        id="b-tab-metropole" onclick="bSwitchTab('metropole')">Nantes Métropole</button>
+    <button class="b-tab"        id="b-tab-export"    onclick="bSwitchTab('export')">Export</button>
+    <button class="b-tab b-tab-feedback" id="b-tab-feedback" onclick="bSwitchTab('feedback')">📋 Ticket retour</button>
+  </nav>
+
+  <!-- CONTENU -->
+  <main class="b-main">
+
+    <!-- ══ COMMUNE ══ -->
+    <div class="b-panel active" id="b-panel-commune">
+      <div class="b-commune-filtres">
+        <button class="b-filtre-btn active" id="b-filtre-essence-btn" onclick="bToggleFiltreEssence(this)">Toutes essences</button>
+        <button class="b-filtre-btn" id="b-filtre-statut-btn">Tous statuts</button>
+      </div>
+      <div class="b-commune-layout">
+        <!-- colonne gauche -->
+        <div class="b-commune-gauche">
+          <div class="b-section-lbl">STOCK DISPONIBLE PAR ESSENCE</div>
+          <div class="b-essences-grid" id="b-essences-grid"></div>
+          <div class="b-section-lbl" style="margin-top:24px">DERNIERS LOTS ENREGISTRÉS</div>
+          <div class="b-table-wrap">
+            <table class="b-table" id="b-lots-table">
+              <thead>
+                <tr><th></th><th>Nom du lot</th><th>Essence</th><th>Volume</th><th>Provenance</th><th>Date</th></tr>
+              </thead>
+              <tbody id="b-lots-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- colonne droite -->
+        <div class="b-commune-droite">
+          <div class="b-section-lbl">SAISIR UNE EXTRACTION</div>
+          <div class="b-ext-form">
+            <div class="b-field">
+              <div class="b-field-lbl">ESSENCE</div>
+              <select class="b-select b-select-indigo" id="b-ext-essence" onchange="bExtEssenceChange()">
+                <option value="">— Choisir —</option>
+              </select>
+            </div>
+            <div class="b-field">
+              <div class="b-field-lbl">COMMUNE</div>
+              <select class="b-select b-select-dark" id="b-ext-commune">
+                <option id="b-ext-commune-opt">—</option>
+              </select>
+            </div>
+            <div class="b-field">
+              <div class="b-field-lbl">USAGE</div>
+              <div class="b-usage-toggle">
+                <button class="b-usage-btn active" id="b-usage-int" onclick="bSetUsage('Intérieur')">Intérieur</button>
+                <button class="b-usage-btn" id="b-usage-ext" onclick="bSetUsage('Extérieur')">Extérieur</button>
+              </div>
+            </div>
+            <div class="b-field">
+              <div class="b-field-lbl">NOM DU PROJET <span class="b-field-opt">(OPTIONNEL)</span></div>
+              <input class="b-input-dark" type="text" id="b-ext-projet" placeholder="Ex : rénovation école...">
+            </div>
+            <div class="b-field">
+              <div class="b-field-lbl">VOLUME</div>
+              <input class="b-input-dark b-input-vol" type="number" id="b-ext-volume" min="0.001" step="0.001" placeholder="0,00" oninput="bExtVolChange()">
+            </div>
+            <div class="b-ext-dispo" id="b-ext-dispo"></div>
+            <button class="b-btn-confirmer" onclick="bConfirmerExtraction()">Confirmer l'extraction</button>
+            <div class="b-section-lbl" style="margin-top:20px">AUTRES ACTIONS</div>
+            <button class="b-btn-action" onclick="window.open('../','_blank')">+ Nouveau lot</button>
+            <button class="b-btn-action" onclick="bExportLotsCommune()">↓ Exporter CSV commune</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ NANTES MÉTROPOLE ══ -->
+    <div class="b-panel" id="b-panel-metropole">
+      <div class="b-metro-topbar">
+        <span class="b-metro-lecture">Lecture seule — aucune extraction ni ajout depuis cette vue</span>
+        <div class="b-metro-filtres">
+          <select class="b-select-sm" id="b-metro-filtre-commune" onchange="bAfficherMetropole()">
+            <option value="">Toutes communes</option>
+          </select>
+          <select class="b-select-sm" id="b-metro-filtre-essence" onchange="bAfficherMetropole()">
+            <option value="">Toutes essences</option>
+          </select>
+        </div>
+      </div>
+      <div class="b-breadcrumb"><span class="b-bc-badge">A1</span> Stocks partagés — Nantes Métropole · mise à jour automatique</div>
+      <div class="b-metro-layout">
+        <div class="b-metro-gauche">
+          <div class="b-section-lbl">VOLUMES DISPONIBLES PAR COMMUNE</div>
+          <div class="b-table-wrap">
+            <table class="b-table" id="b-metro-table">
+              <thead>
+                <tr><th></th><th>Commune</th><th>Essences</th><th>Volume</th><th>Lots</th><th>Répartition</th></tr>
+              </thead>
+              <tbody id="b-metro-tbody"></tbody>
+            </table>
+          </div>
+          <div class="b-section-lbl" style="margin-top:28px">RÉPARTITION PAR ESSENCE — ENSEMBLE MÉTROPOLE</div>
+          <div class="b-donut-section">
+            <div class="b-donut-wrap">
+              <svg class="b-donut-svg" viewBox="0 0 160 160" id="b-donut-svg"></svg>
+              <div class="b-donut-center" id="b-donut-center"></div>
+            </div>
+            <div class="b-donut-legende" id="b-donut-legende"></div>
+          </div>
+        </div>
+        <div class="b-metro-droite">
+          <div class="b-lecture-seule-card">
+            <div class="b-lecture-seule-titre">VUE LECTURE SEULE</div>
+            <p>Cette fenêtre affiche uniquement les lots que les autres communes ont choisi de partager.</p>
+            <p>Aucune extraction ni ajout de grume n'est possible depuis cette vue.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ EXPORT ══ -->
+    <div class="b-panel" id="b-panel-export">
+      <div class="b-export-topbar">
+        <button class="b-btn-export-primary" onclick="bExportSelection()">↓ Exporter la sélection</button>
+        <button class="b-btn-export-outline" onclick="bExportTout()">↓ Tout exporter</button>
+      </div>
+      <div class="b-breadcrumb"><span class="b-bc-badge">—</span> Paramétrez vos filtres puis exportez en CSV</div>
+      <div class="b-export-filtres">
+        <div class="b-filtre-card">
+          <div class="b-filtre-card-titre">PÉRIMÈTRE</div>
+          <div class="b-field">
+            <div class="b-field-lbl">SOURCE</div>
+            <select class="b-select-filtre" id="b-exp-source">
+              <option value="commune">Ma commune uniquement</option>
+              <option value="metropole">Nantes Métropole (partagés)</option>
+            </select>
+          </div>
+          <div class="b-field">
+            <div class="b-field-lbl">COMMUNE</div>
+            <select class="b-select-filtre" id="b-exp-commune">
+              <option value="">Toutes les communes</option>
+            </select>
+          </div>
+        </div>
+        <div class="b-filtre-card">
+          <div class="b-filtre-card-titre">FILTRES BOIS</div>
+          <div class="b-field">
+            <div class="b-field-lbl">ESSENCE</div>
+            <select class="b-select-filtre" id="b-exp-essence">
+              <option value="">Toutes essences</option>
+            </select>
+          </div>
+          <div class="b-field">
+            <div class="b-field-lbl">ANNÉE DE COUPE</div>
+            <select class="b-select-filtre" id="b-exp-annee">
+              <option value="">Toutes années</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="b-export-actions">
+        <button class="b-btn-export-primary" onclick="bExportSelection()">↓ Exporter la sélection</button>
+        <button class="b-btn-export-outline" onclick="bExportTout()">↓ Tout exporter</button>
+      </div>
+    </div>
+
+    <!-- ══ TICKET RETOUR ══ -->
+    <div class="b-panel" id="b-panel-feedback">
+      <div class="b-feedback-titre">📋 Ticket retour — phase de test</div>
+      <div class="b-feedback-card">
+        <div class="b-section-lbl">TYPE DE RETOUR</div>
+        <div class="b-feedback-types">
+          <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'usage-design')">Usage / Design</button>
+          <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'amelioration')">Amélioration</button>
+          <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'bug')">🐛 Bug</button>
+          <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'message-libre')">Message libre</button>
+        </div>
+        <div class="b-section-lbl">VOTRE MESSAGE</div>
+        <textarea class="b-feedback-textarea" id="b-feedback-message" placeholder="Décrivez votre retour en détail..."></textarea>
+        <div class="b-feedback-actions">
+          <button class="b-feedback-btn-envoyer" onclick="bEnvoyerTicket()">📋 Envoyer le ticket</button>
+          <button class="b-feedback-btn-effacer" onclick="bEffacerTicket()">Effacer</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER FIXE -->
+  <footer class="b-footer">
+    <span id="b-footer-gauche">Feuille 1 sur 4 · —</span>
+    <span id="b-footer-droite">Stock : — m³ · Métropole : — m³</span>
+  </footer>
+
+</div>
+
+<div id="b-toast" class="b-toast hidden"></div>
+<div id="b-loading" class="b-loading hidden"><div class="b-loading-box">Chargement...</div></div>
+
+<script src="../core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
