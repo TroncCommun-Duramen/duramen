@@ -30,12 +30,14 @@ var lots          = [];
 var extractions   = [];
 var bCommune      = null;
 var bLotsMetro    = [];
-var bUsage        = 'Intérieur';
 var bOnglet       = 'commune';
 var bFeedbackType = null;
-// Modale extraction
-var bModalEssence = null;
-var bModalUsage   = 'Intérieur';
+// Extraction complète
+var bExtEssence   = null;
+var bExtGrumes    = [];    // grumes disponibles pour l'essence choisie
+var bExtGrumesSel = [];    // grumes sélectionnées (objets)
+var bExtType      = 'planches'; // 'brute' | 'planches'
+var bExtUsageDest = 'Intérieur';
 
 // ═══════════ UI ═══════════
 function bShowLoading(on) {
@@ -179,6 +181,7 @@ function bAfficherOnglet() {
 function bAfficherCommune() {
   bAfficherEssences();
   bAfficherTableLots();
+  bInitStockPills();
 }
 
 function bAfficherEssences() {
@@ -260,68 +263,6 @@ function bAfficherTableLots() {
   tbody.appendChild(trT);
 }
 
-function bInitFormulaireExtraction() {
-  var sel  = document.getElementById('b-ext-essence');
-  var stock = DuramenCore.getStock();
-  var essences = Object.keys(stock).filter(function(k) { return stock[k].dispo > 0; });
-  sel.innerHTML = '<option value="">— Choisir —</option>';
-  essences.forEach(function(e) {
-    var opt = document.createElement('option');
-    opt.value = e; opt.textContent = e;
-    sel.appendChild(opt);
-  });
-  bExtEssenceChange();
-}
-
-function bExtEssenceChange() {
-  var essence = document.getElementById('b-ext-essence').value;
-  var dispo   = document.getElementById('b-ext-dispo');
-  if (!essence) { dispo.innerHTML = ''; return; }
-  var stock = DuramenCore.getStock();
-  var vol   = stock[essence] ? stock[essence].dispo : 0;
-  dispo.innerHTML = '<span>Stock ' + essence + ' dispo.</span><span class="b-ext-dispo-val">' + vol.toFixed(1) + ' m³</span>';
-}
-
-function bSetUsage(usage) {
-  bUsage = usage;
-  document.getElementById('b-usage-int').classList.toggle('active', usage === 'Intérieur');
-  document.getElementById('b-usage-ext').classList.toggle('active', usage === 'Extérieur');
-}
-
-async function bConfirmerExtraction() {
-  var essence = document.getElementById('b-ext-essence').value;
-  var volume  = parseFloat(document.getElementById('b-ext-volume').value);
-  var projet  = document.getElementById('b-ext-projet').value.trim();
-
-  if (!essence)      { bShowToast('Choisissez une essence.', true); return; }
-  if (!volume || volume <= 0) { bShowToast('Saisissez un volume valide.', true); return; }
-
-  var valid = DuramenCore.validerSortie({ essence: essence, volume: volume, usage: bUsage, destination: projet || bCommune.nom });
-  if (!valid.ok) { bShowToast(valid.erreur, true); return; }
-
-  bShowLoading(true);
-  try {
-    var ext = {
-      id:           crypto.randomUUID(),
-      commune_code: bCommune.code,
-      commune:      bCommune.nom,
-      essence:      essence,
-      volume:       volume,
-      usage:        bUsage,
-      destination:  projet || '—',
-      date:         new Date().toLocaleDateString('fr-FR'),
-      date_iso:     new Date().toISOString()
-    };
-    await bSbInsert('extractions', ext);
-    bShowLoading(false);
-    document.getElementById('b-ext-essence').value = '';
-    document.getElementById('b-ext-volume').value  = '';
-    document.getElementById('b-ext-projet').value  = '';
-    document.getElementById('b-ext-dispo').innerHTML = '';
-    bShowToast('Extraction enregistrée.');
-    await bChargerDonnees();
-  } catch(e) { bShowLoading(false); bShowToast('Erreur : ' + e.message, true); }
-}
 
 // ═══════════ ONGLET MÉTROPOLE ═══════════
 function bAfficherMetropole() {
@@ -532,92 +473,293 @@ function bCsvTelecharger(nom, data) {
   URL.revokeObjectURL(url);
 }
 
-// ═══════════ MODALE EXTRACTION ═══════════
-function bOuvrirModalExtraction() {
-  bModalEssence = null;
-  bModalUsage   = 'Intérieur';
-  document.getElementById('b-modal-volume').value  = '';
-  document.getElementById('b-modal-projet').value  = '';
-  document.getElementById('b-modal-dispo').innerHTML = '';
-  document.getElementById('b-modal-usage-int').classList.add('active');
-  document.getElementById('b-modal-usage-ext').classList.remove('active');
-  bInitChipsEssences();
-  document.getElementById('b-modal-extraction').classList.remove('hidden');
+// ═══════════ EXTRACTION — COLONNE DROITE ═══════════
+
+/* Initialise les pills de stock dans l'état repos */
+function bInitStockPills() {
+  var stock  = DuramenCore.getStock();
+  var pills  = document.getElementById('b-stock-pills');
+  if (!pills) return;
+  pills.innerHTML = '';
+  Object.keys(stock).filter(function(k) { return stock[k].dispo > 0; }).forEach(function(ess) {
+    var el = document.createElement('span');
+    el.className = 'b-stock-pill';
+    el.textContent = ess + ' · ' + stock[ess].dispo.toFixed(1) + ' m³';
+    pills.appendChild(el);
+  });
 }
 
-function bFermerModalExtraction() {
-  document.getElementById('b-modal-extraction').classList.add('hidden');
+/* Ouvrir le panel extraction */
+function bOuvrirExtraction() {
+  bExtEssence   = null;
+  bExtGrumes    = [];
+  bExtGrumesSel = [];
+  bExtType      = 'planches';
+  bExtUsageDest = 'Intérieur';
+  // Reset UI
+  document.getElementById('b-ext-repos').classList.add('hidden');
+  document.getElementById('b-ext-panel').classList.remove('hidden');
+  document.getElementById('b-grumes-resume').classList.add('hidden');
+  document.getElementById('b-btn-valider-ext').disabled = true;
+  document.getElementById('b-type-brute').classList.remove('active');
+  document.getElementById('b-type-planches').classList.add('active');
+  document.getElementById('b-sliders-zone').style.display = '';
+  document.getElementById('b-bloc-utile').style.display = '';
+  document.getElementById('b-bloc-dechet').style.display = '';
+  document.getElementById('b-v-ext').textContent  = '—';
+  document.getElementById('b-v-util').textContent = '—';
+  document.getElementById('b-v-dec').textContent  = '—';
+  document.getElementById('b-val-lin').textContent = '—';
+  // Reset sliders
+  document.getElementById('b-sl-ep').value = 27;
+  document.getElementById('b-sl-ts').value = 3;
+  document.getElementById('b-sl-rg').value = 50;
+  document.getElementById('b-val-ep').textContent = '27 mm';
+  document.getElementById('b-val-ts').textContent = '3 mm';
+  document.getElementById('b-val-rg').textContent = '50 %';
+  bInitChipsExt();
 }
 
-function bInitChipsEssences() {
+/* Fermer le panel extraction */
+function bFermerExtraction() {
+  document.getElementById('b-ext-repos').classList.remove('hidden');
+  document.getElementById('b-ext-panel').classList.add('hidden');
+}
+
+/* Initialise les chips essences disponibles */
+function bInitChipsExt() {
   var stock    = DuramenCore.getStock();
   var essences = Object.keys(stock).filter(function(k) { return stock[k].dispo > 0; });
-  var container = document.getElementById('b-chips-essences');
+  var container = document.getElementById('b-chips-ess');
   container.innerHTML = '';
+  var btnSel = document.getElementById('b-btn-sel-grumes');
   if (!essences.length) {
     container.innerHTML = '<span style="font-size:13px;color:var(--cendre)">Aucun stock disponible</span>';
+    btnSel.disabled = true;
     return;
   }
+  btnSel.disabled = true;
   essences.forEach(function(ess) {
     var vol  = stock[ess].dispo;
     var chip = document.createElement('button');
-    chip.className = 'b-chip-essence';
-    chip.innerHTML = ess + '<span class="b-chip-essence-vol">' + vol.toFixed(1) + ' m³</span>';
-    chip.onclick = function() { bSelectChipEssence(this, ess); };
+    chip.className = 'b-chip';
+    chip.innerHTML = ess + '<span class="b-chip-vol">' + vol.toFixed(1) + ' m³</span>';
+    chip.onclick   = function() { bSelChipExt(this, ess); };
     container.appendChild(chip);
   });
 }
 
-function bSelectChipEssence(btn, ess) {
-  document.querySelectorAll('.b-chip-essence').forEach(function(c) { c.classList.remove('active'); });
+/* Sélectionner une essence dans le panel */
+function bSelChipExt(btn, ess) {
+  document.querySelectorAll('#b-chips-ess .b-chip').forEach(function(c) { c.classList.remove('active'); });
   btn.classList.add('active');
-  bModalEssence = ess;
-  bModalVolChange();
+  bExtEssence = ess;
+  bExtGrumesSel = [];
+  document.getElementById('b-grumes-resume').classList.add('hidden');
+  document.getElementById('b-btn-valider-ext').disabled = true;
+  document.getElementById('b-btn-sel-grumes').disabled = false;
+  document.getElementById('b-v-ext').textContent  = '—';
+  document.getElementById('b-v-util').textContent = '—';
+  document.getElementById('b-v-dec').textContent  = '—';
+  document.getElementById('b-val-lin').textContent = '—';
+  // Préparer la liste des grumes pour cette essence
+  bExtGrumes = [];
+  lots.filter(function(l) { return l.essence === bExtEssence; }).forEach(function(lot) {
+    var nb  = Math.max(1, parseInt(lot.nb_grumes) || 1);
+    var vol = (lot.vol_brut || 0) / nb;
+    for (var i = 0; i < nb; i++) {
+      bExtGrumes.push({
+        lotId:   lot.id,
+        lotNom:  lot.nom || '—',
+        essence: lot.essence,
+        index:   i + 1,
+        longueur: lot.longueur_grume || null,
+        diametre: lot.diametre_grume || null,
+        volume:  vol
+      });
+    }
+  });
 }
 
-function bModalVolChange() {
-  var dispo = document.getElementById('b-modal-dispo');
-  if (!bModalEssence) { dispo.innerHTML = ''; return; }
-  var stock = DuramenCore.getStock();
-  var vol   = stock[bModalEssence] ? stock[bModalEssence].dispo : 0;
-  dispo.innerHTML =
-    '<span>Stock ' + bModalEssence + ' disponible</span>' +
-    '<span class="b-ext-dispo-val">' + vol.toFixed(1) + ' m³</span>';
+/* Construire le label d'une grume */
+function bLabelGrume(g) {
+  var parts = [];
+  if (g.longueur) parts.push('L ' + parseFloat(g.longueur).toFixed(2) + ' m');
+  if (g.diametre) parts.push('Ø ' + g.diametre + ' cm');
+  parts.push('n°' + g.index);
+  return parts.join(' · ');
 }
 
-function bModalSetUsage(usage) {
-  bModalUsage = usage;
-  document.getElementById('b-modal-usage-int').classList.toggle('active', usage === 'Intérieur');
-  document.getElementById('b-modal-usage-ext').classList.toggle('active', usage === 'Extérieur');
+/* ── Sélection des grumes (feuille latérale) ── */
+function bOuvrirGrumes() {
+  if (!bExtEssence) { bShowToast('Choisissez une essence.', true); return; }
+  var body = document.getElementById('b-grumes-sheet-body');
+  body.innerHTML = '';
+
+  // Grouper par lot
+  var parLot = {};
+  bExtGrumes.forEach(function(g) {
+    if (!parLot[g.lotId]) parLot[g.lotId] = { nom: g.lotNom, essence: g.essence, grumes: [] };
+    parLot[g.lotId].grumes.push(g);
+  });
+
+  var selIds = bExtGrumesSel.map(function(g) { return g.lotId + '-' + g.index; });
+
+  Object.keys(parLot).forEach(function(lotId) {
+    var lot = parLot[lotId];
+    var head = document.createElement('div');
+    head.className = 'b-grumes-lot-head';
+    head.innerHTML = lot.nom + '<span class="b-grumes-lot-badge">' + lot.essence + '</span>';
+    body.appendChild(head);
+
+    lot.grumes.forEach(function(g) {
+      var key = g.lotId + '-' + g.index;
+      var row = document.createElement('div');
+      row.className = 'b-grume-row' + (selIds.indexOf(key) !== -1 ? ' checked' : '');
+      row.innerHTML =
+        '<div class="b-grume-check"></div>' +
+        '<div class="b-grume-info">' + bLabelGrume(g) + '</div>' +
+        '<div class="b-grume-vol">' + g.volume.toFixed(3) + ' m³</div>';
+      row.onclick = function() {
+        row.classList.toggle('checked');
+        var isChecked = row.classList.contains('checked');
+        if (isChecked) {
+          bExtGrumesSel.push(g);
+        } else {
+          bExtGrumesSel = bExtGrumesSel.filter(function(x) {
+            return !(x.lotId === g.lotId && x.index === g.index);
+          });
+        }
+      };
+      body.appendChild(row);
+    });
+  });
+
+  document.getElementById('b-grumes-overlay').classList.remove('hidden');
 }
 
-async function bConfirmerModalExtraction() {
-  var volume = parseFloat(document.getElementById('b-modal-volume').value);
-  var projet = document.getElementById('b-modal-projet').value.trim();
+function bFermerGrumes() {
+  document.getElementById('b-grumes-overlay').classList.add('hidden');
+}
 
-  if (!bModalEssence)          { bShowToast('Choisissez une essence.', true); return; }
-  if (!volume || volume <= 0)  { bShowToast('Saisissez un volume valide.', true); return; }
+function bConfirmerGrumes() {
+  bFermerGrumes();
+  var nb  = bExtGrumesSel.length;
+  var vol = bExtGrumesSel.reduce(function(s, g) { return s + g.volume; }, 0);
+  if (nb > 0) {
+    document.getElementById('b-grumes-resume').classList.remove('hidden');
+    document.getElementById('b-grumes-resume-txt').textContent =
+      nb + ' grume' + (nb > 1 ? 's' : '') + ' — ' + vol.toFixed(3) + ' m³';
+    bMajVolumes();
+    document.getElementById('b-btn-valider-ext').disabled = false;
+  } else {
+    document.getElementById('b-grumes-resume').classList.add('hidden');
+    document.getElementById('b-btn-valider-ext').disabled = true;
+  }
+}
 
-  var valid = DuramenCore.validerSortie({ essence: bModalEssence, volume: volume, usage: bModalUsage, destination: projet || bCommune.nom });
+/* ── Type brute / planches ── */
+function bSetTypeExt(type) {
+  bExtType = type;
+  document.getElementById('b-type-brute').classList.toggle('active',   type === 'brute');
+  document.getElementById('b-type-planches').classList.toggle('active', type === 'planches');
+  var sz = document.getElementById('b-sliders-zone');
+  sz.style.display = type === 'planches' ? '' : 'none';
+  document.getElementById('b-bloc-utile').style.display  = type === 'planches' ? '' : 'none';
+  document.getElementById('b-bloc-dechet').style.display = type === 'planches' ? '' : 'none';
+  bMajVolumes();
+}
+
+/* ── Sliders & volumes ── */
+function bMajSlider(id, val, unit) {
+  document.getElementById(id).textContent = val + unit;
+}
+
+function bMajVolumes() {
+  var volBrut = bExtGrumesSel.reduce(function(s, g) { return s + g.volume; }, 0);
+  if (volBrut === 0) return;
+
+  document.getElementById('b-v-ext').textContent = volBrut.toFixed(3);
+
+  if (bExtType === 'brute') {
+    document.getElementById('b-v-util').textContent = '—';
+    document.getElementById('b-v-dec').textContent  = '—';
+    document.getElementById('b-val-lin').textContent = '—';
+    return;
+  }
+
+  var ep  = parseInt(document.getElementById('b-sl-ep').value);
+  var ts  = parseInt(document.getElementById('b-sl-ts').value);
+  var rg  = parseInt(document.getElementById('b-sl-rg').value) / 100;
+  var util = volBrut * rg;
+  var dec  = volBrut - util;
+  var lin  = util * 1000 / (ep + ts); // mètres
+
+  document.getElementById('b-v-util').textContent = util.toFixed(3);
+  document.getElementById('b-v-dec').textContent  = dec.toFixed(3);
+  document.getElementById('b-val-lin').textContent = lin.toFixed(1) + ' m';
+}
+
+/* ── Destination ── */
+function bOuvrirDestination() {
+  document.getElementById('b-dest-projet').value       = '';
+  document.getElementById('b-dest-commune-inst').value = '';
+  document.getElementById('b-dest-lieu').value         = '';
+  bExtUsageDest = 'Intérieur';
+  document.getElementById('b-dest-usage-int').classList.add('active');
+  document.getElementById('b-dest-usage-ext').classList.remove('active');
+  document.getElementById('b-dest-overlay').classList.remove('hidden');
+}
+
+function bFermerDestination() {
+  document.getElementById('b-dest-overlay').classList.add('hidden');
+}
+
+function bSetUsageDest(usage) {
+  bExtUsageDest = usage;
+  document.getElementById('b-dest-usage-int').classList.toggle('active', usage === 'Intérieur');
+  document.getElementById('b-dest-usage-ext').classList.toggle('active', usage === 'Extérieur');
+}
+
+async function bConfirmerExtraction() {
+  var volBrut = bExtGrumesSel.reduce(function(s, g) { return s + g.volume; }, 0);
+  var projet  = document.getElementById('b-dest-projet').value.trim();
+  var lieu    = document.getElementById('b-dest-lieu').value.trim();
+  var comm    = document.getElementById('b-dest-commune-inst').value.trim();
+
+  var ep  = parseInt(document.getElementById('b-sl-ep').value);
+  var ts  = parseInt(document.getElementById('b-sl-ts').value);
+  var rg  = parseInt(document.getElementById('b-sl-rg').value) / 100;
+  var volUtil  = bExtType === 'planches' ? volBrut * rg : volBrut;
+  var lineaire = bExtType === 'planches' ? volUtil * 1000 / (ep + ts) : 0;
+
+  var dest = [projet, comm, lieu].filter(Boolean).join(' · ') || '—';
+  var valid = DuramenCore.validerSortie({ essence: bExtEssence, volume: volUtil, usage: bExtUsageDest, destination: dest });
   if (!valid.ok) { bShowToast(valid.erreur, true); return; }
 
   bShowLoading(true);
   try {
     var ext = {
-      id:           crypto.randomUUID(),
-      commune_code: bCommune.code,
-      commune:      bCommune.nom,
-      essence:      bModalEssence,
-      volume:       volume,
-      usage:        bModalUsage,
-      destination:  projet || '—',
-      date:         new Date().toLocaleDateString('fr-FR'),
-      date_iso:     new Date().toISOString()
+      id:              crypto.randomUUID(),
+      commune_code:    bCommune.code,
+      commune:         bCommune.nom,
+      essence:         bExtEssence,
+      volume:          volUtil,
+      vol_brut_extrait: volBrut,
+      type_valorisation: bExtType,
+      lineaire:        lineaire > 0 ? Math.round(lineaire * 10) / 10 : null,
+      usage:           bExtUsageDest,
+      destination:     dest,
+      projet:          projet || null,
+      commune_installation: comm || null,
+      date:            new Date().toLocaleDateString('fr-FR'),
+      date_iso:        new Date().toISOString()
     };
     await bSbInsert('extractions', ext);
     bShowLoading(false);
-    bFermerModalExtraction();
-    bShowToast('Extraction enregistrée.');
+    bFermerDestination();
+    bFermerExtraction();
+    bShowToast('Extraction enregistrée — ' + volUtil.toFixed(3) + ' m³ ' + bExtEssence);
     await bChargerDonnees();
   } catch(e) { bShowLoading(false); bShowToast('Erreur : ' + e.message, true); }
 }
