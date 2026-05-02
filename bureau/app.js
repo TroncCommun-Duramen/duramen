@@ -26,13 +26,16 @@ async function bSbInsert(table, data) {
 
 // ═══════════ ÉTAT ═══════════
 // `lots` et `extractions` : noms imposés par DuramenCore.getStock()
-var lots        = [];
-var extractions = [];
-var bCommune    = null;
-var bLotsMetro  = [];
-var bUsage      = 'Intérieur';
-var bOnglet     = 'commune';
+var lots          = [];
+var extractions   = [];
+var bCommune      = null;
+var bLotsMetro    = [];
+var bUsage        = 'Intérieur';
+var bOnglet       = 'commune';
 var bFeedbackType = null;
+// Modale extraction
+var bModalEssence = null;
+var bModalUsage   = 'Intérieur';
 
 // ═══════════ UI ═══════════
 function bShowLoading(on) {
@@ -176,7 +179,6 @@ function bAfficherOnglet() {
 function bAfficherCommune() {
   bAfficherEssences();
   bAfficherTableLots();
-  bInitFormulaireExtraction();
 }
 
 function bAfficherEssences() {
@@ -426,8 +428,9 @@ function bDrawDonut(data) {
   var segments = top4.map(function(k) { return { nom: k, vol: parEssence[k] }; });
   if (autres > 0) segments.push({ nom: 'Autres', vol: autres });
 
-  var couleurs = ['#2B3F8C', '#4a5fa0', '#7080b8', '#9aaad0', '#CECEC8'];
-  var r = 56, cx = 80, cy = 80, stroke = 18;
+  // Palette bois : du plus sombre (noyer) au plus clair (frêne/épicéa)
+  var couleurs = ['#3D2B1F', '#6B4226', '#9C6B3C', '#C4965A', '#DFC09A'];
+  var r = 72, cx = 100, cy = 100, stroke = 22;
   var circonf = 2 * Math.PI * r;
   var svg = document.getElementById('b-donut-svg');
   svg.innerHTML = '';
@@ -527,6 +530,96 @@ function bCsvTelecharger(nom, data) {
   var a    = document.createElement('a');
   a.href = url; a.download = nom; a.click();
   URL.revokeObjectURL(url);
+}
+
+// ═══════════ MODALE EXTRACTION ═══════════
+function bOuvrirModalExtraction() {
+  bModalEssence = null;
+  bModalUsage   = 'Intérieur';
+  document.getElementById('b-modal-volume').value  = '';
+  document.getElementById('b-modal-projet').value  = '';
+  document.getElementById('b-modal-dispo').innerHTML = '';
+  document.getElementById('b-modal-usage-int').classList.add('active');
+  document.getElementById('b-modal-usage-ext').classList.remove('active');
+  bInitChipsEssences();
+  document.getElementById('b-modal-extraction').classList.remove('hidden');
+}
+
+function bFermerModalExtraction() {
+  document.getElementById('b-modal-extraction').classList.add('hidden');
+}
+
+function bInitChipsEssences() {
+  var stock    = DuramenCore.getStock();
+  var essences = Object.keys(stock).filter(function(k) { return stock[k].dispo > 0; });
+  var container = document.getElementById('b-chips-essences');
+  container.innerHTML = '';
+  if (!essences.length) {
+    container.innerHTML = '<span style="font-size:13px;color:var(--cendre)">Aucun stock disponible</span>';
+    return;
+  }
+  essences.forEach(function(ess) {
+    var vol  = stock[ess].dispo;
+    var chip = document.createElement('button');
+    chip.className = 'b-chip-essence';
+    chip.innerHTML = ess + '<span class="b-chip-essence-vol">' + vol.toFixed(1) + ' m³</span>';
+    chip.onclick = function() { bSelectChipEssence(this, ess); };
+    container.appendChild(chip);
+  });
+}
+
+function bSelectChipEssence(btn, ess) {
+  document.querySelectorAll('.b-chip-essence').forEach(function(c) { c.classList.remove('active'); });
+  btn.classList.add('active');
+  bModalEssence = ess;
+  bModalVolChange();
+}
+
+function bModalVolChange() {
+  var dispo = document.getElementById('b-modal-dispo');
+  if (!bModalEssence) { dispo.innerHTML = ''; return; }
+  var stock = DuramenCore.getStock();
+  var vol   = stock[bModalEssence] ? stock[bModalEssence].dispo : 0;
+  dispo.innerHTML =
+    '<span>Stock ' + bModalEssence + ' disponible</span>' +
+    '<span class="b-ext-dispo-val">' + vol.toFixed(1) + ' m³</span>';
+}
+
+function bModalSetUsage(usage) {
+  bModalUsage = usage;
+  document.getElementById('b-modal-usage-int').classList.toggle('active', usage === 'Intérieur');
+  document.getElementById('b-modal-usage-ext').classList.toggle('active', usage === 'Extérieur');
+}
+
+async function bConfirmerModalExtraction() {
+  var volume = parseFloat(document.getElementById('b-modal-volume').value);
+  var projet = document.getElementById('b-modal-projet').value.trim();
+
+  if (!bModalEssence)          { bShowToast('Choisissez une essence.', true); return; }
+  if (!volume || volume <= 0)  { bShowToast('Saisissez un volume valide.', true); return; }
+
+  var valid = DuramenCore.validerSortie({ essence: bModalEssence, volume: volume, usage: bModalUsage, destination: projet || bCommune.nom });
+  if (!valid.ok) { bShowToast(valid.erreur, true); return; }
+
+  bShowLoading(true);
+  try {
+    var ext = {
+      id:           crypto.randomUUID(),
+      commune_code: bCommune.code,
+      commune:      bCommune.nom,
+      essence:      bModalEssence,
+      volume:       volume,
+      usage:        bModalUsage,
+      destination:  projet || '—',
+      date:         new Date().toLocaleDateString('fr-FR'),
+      date_iso:     new Date().toISOString()
+    };
+    await bSbInsert('extractions', ext);
+    bShowLoading(false);
+    bFermerModalExtraction();
+    bShowToast('Extraction enregistrée.');
+    await bChargerDonnees();
+  } catch(e) { bShowLoading(false); bShowToast('Erreur : ' + e.message, true); }
 }
 
 // ═══════════ TICKET RETOUR ═══════════
