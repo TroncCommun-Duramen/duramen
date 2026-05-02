@@ -6,6 +6,17 @@
 
 ---
 
+## Session 2 mai 2026 — Correction mode hors ligne (zone blanche)
+
+### Bug corrigé — Application inouvrable sans réseau (sw.js) ✅
+- `theme.css`, `core.js` et `app.js` étaient absents de la liste `FICHIERS` dans `sw.js`. L'app chargeait `index.html` depuis le cache mais pas ses dépendances → page blanche ou erreur JS.
+- Stratégie de fetch corrigée : passage de "réseau d'abord" à **"cache d'abord"** (`caches.match` avant `fetch`). Avant : l'app attendait une connexion inexistante avant de regarder le cache.
+- Cache passé de **duramen-v19** à **duramen-v20**.
+- Commit : `fix(sw): corriger le mode hors ligne en zone blanche`
+- **Condition de déclenchement du fix** : chaque appareil doit ouvrir l'app une fois avec du réseau pour télécharger le cache v20.
+
+---
+
 ## État du projet
 
 - **Phase 0 ✅ entièrement terminée** — architecture 5 fichiers en place :
@@ -152,7 +163,7 @@ Problèmes identifiés :
 - 3 boutons `.btn-home` : `width: calc(100% - 32px)`, `border-radius: 12px`, hauteur min 56px
 
 ### Service Worker
-- Cache actuel : **duramen-v12**
+- Cache actuel : **duramen-v20**
 
 ---
 
@@ -216,7 +227,7 @@ theme.css      ← variables de design (couleurs, typo) — ✅
 ui.css         ← composants visuels (.card, .btn…) — ✅
 core.js        ← noyau métier : DuramenCore (161 lignes, signatures figées) — ✅
 app.js         ← logique UI, navigation, Supabase (2164 lignes) — ✅
-sw.js          ← Service Worker (offline, cache duramen-v12) — ✅
+sw.js          ← Service Worker (offline, cache duramen-v20) — ✅
 ```
 
 ---
