@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>MAQUETTE — Extraction bureau</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --washi: #FAFAF9; --neige: #F2F2EE; --brume: #EEEEE9;
+  --sumi: #0F0F0E; --cendre: #B0B0AA; --pierre: #CECEC8;
+  --indigo: #2B3F8C; --indigo-clair: #EEF0FA; --indigo-border: #C5CCE8;
+  --rouge: #c0392b; --orange: #d35400; --vert: #2d7a4f;
+  --olive: #5a6e3a;
+  --font: 'Outfit', sans-serif;
+}
+body { font-family: var(--font); background: var(--neige); color: var(--sumi); min-height: 100vh; }
+
+/* ── SHELL ── */
+.shell { display: flex; flex-direction: column; height: 100vh; }
+
+/* ── HEADER (simulé) ── */
+.hdr {
+  background: var(--washi); border-bottom: 1px solid var(--brume);
+  display: flex; align-items: stretch; flex-shrink: 0;
+}
+.hdr-block {
+  flex: 1; padding: 12px 20px; border-right: 1px solid var(--brume);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.hdr-block:last-child { border-right: none; }
+.hdr-lbl { font-size: 10px; font-weight: 600; letter-spacing: .1em; color: var(--cendre); text-transform: uppercase; }
+.hdr-val { font-size: 24px; font-weight: 200; color: var(--indigo); line-height: 1; }
+.hdr-sub { font-size: 12px; color: var(--cendre); }
+.hdr-btn { align-self: center; margin: 0 16px; padding: 6px 14px; border: 1px solid var(--pierre); border-radius: 8px; background: none; font-family: var(--font); font-size: 12px; color: var(--cendre); cursor: pointer; flex-shrink: 0; }
+
+/* ── TABS (sticky) ── */
+.tabs {
+  display: flex; background: var(--brume);
+  border-bottom: 1px solid var(--pierre);
+  position: sticky; top: 0; z-index: 100;  /* ← sticky ! */
+}
+.tab {
+  background: var(--brume); border: none; border-right: 1px solid var(--pierre);
+  font-family: var(--font); font-size: 13px; font-weight: 500; color: var(--sumi);
+  padding: 13px 22px; cursor: pointer; opacity: .5; transition: all .12s; white-space: nowrap;
+}
+.tab:hover { opacity: .85; background: var(--neige); }
+.tab.active { background: var(--washi); color: var(--indigo); font-weight: 600; opacity: 1; border-bottom: 2px solid var(--indigo); }
+.tab-feedback { margin-left: auto; border-left: 1px solid var(--pierre); border-right: none; background: var(--neige); color: var(--orange); opacity: 1 !important; }
+.tab-feedback.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
+
+/* ── MAIN ── */
+.main { flex: 1; overflow-y: auto; }
+
+/* ── COMMUNE LAYOUT ── */
+.commune-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  min-height: calc(100vh - 110px);
+}
+
+/* ── COLONNE GAUCHE ── */
+.col-gauche {
+  padding: 24px;
+  border-right: 1px solid var(--brume);
+  overflow-y: auto;
+}
+.section-lbl {
+  font-size: 11px; font-weight: 600; letter-spacing: .1em;
+  color: var(--cendre); text-transform: uppercase; margin-bottom: 12px;
+}
+
+/* Cards essences */
+.essences-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.ess-card { background: var(--washi); border: 1px solid var(--brume); border-radius: 8px; padding: 14px 16px; }
+.ess-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.ess-nom { font-size: 14px; font-weight: 500; }
+.ess-vol { font-size: 16px; font-weight: 500; color: var(--indigo); }
+.ess-vol span { font-size: 12px; color: var(--cendre); }
+.barre-piste { height: 3px; background: var(--brume); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+.barre-fill { height: 100%; background: var(--indigo); border-radius: 2px; }
+.ess-foot { display: flex; justify-content: space-between; align-items: center; }
+.ess-meta { font-size: 11px; color: var(--cendre); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; background: var(--indigo-clair); color: var(--indigo); }
+
+/* Table lots */
+.table-wrap { border: 1px solid var(--brume); border-radius: 8px; overflow: hidden; background: var(--washi); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--neige); text-align: left; padding: 9px 12px; font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--cendre); border-bottom: 1px solid var(--brume); }
+td { padding: 9px 12px; border-bottom: 1px solid var(--brume); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) { background: var(--neige); }
+.vol-cell { color: var(--indigo); font-weight: 500; }
+.gris { color: var(--cendre); }
+
+/* ── COLONNE DROITE ── */
+.col-droite {
+  background: var(--washi);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  gap: 20px;
+  position: sticky;
+  top: 48px;          /* colle sous les onglets */
+  height: calc(100vh - 110px);
+}
+
+/* Bouton cercle */
+.cercle-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; cursor: pointer; }
+.cercle {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: var(--indigo);
+  color: #fff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px;
+  box-shadow: 0 8px 32px rgba(43,63,140,0.28);
+  transition: all .15s;
+  user-select: none;
+}
+.cercle:hover { transform: scale(1.04); box-shadow: 0 12px 40px rgba(43,63,140,0.36); }
+.cercle-icon { font-size: 28px; line-height: 1; }
+.cercle-label { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.cercle-sub { font-size: 11px; opacity: .65; }
+.col-droite-hint { font-size: 12px; color: var(--cendre); text-align: center; max-width: 200px; line-height: 1.5; }
+.stock-pills { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: 280px; }
+.pill { padding: 5px 12px; background: var(--indigo-clair); color: var(--indigo); border-radius: 20px; font-size: 12px; font-weight: 500; }
+
+/* ═══════════ FLUX EXTRACTION ═══════════ */
+/* Remplace le col-droite quand actif */
+.extraction-panel {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+}
+.extraction-panel.visible { display: flex; }
+.col-droite.active { align-items: stretch; justify-content: flex-start; padding: 0; overflow: hidden; }
+
+/* Étape */
+.etape { padding: 20px 22px; flex: 1; overflow-y: auto; }
+.etape-titre { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.etape-numero { width: 24px; height: 24px; background: var(--indigo); color: #fff; border-radius: 50%; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* Chips essences */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.chip {
+  padding: 8px 14px; background: var(--neige); border: 1px solid var(--pierre);
+  border-radius: 20px; font-family: var(--font); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all .12s;
+}
+.chip:hover { border-color: var(--indigo); color: var(--indigo); }
+.chip.active { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+.chip-vol { font-size: 11px; opacity: .65; margin-left: 3px; }
+
+/* Btn "Sélectionner les grumes" */
+.btn-sel-grumes {
+  width: 100%; padding: 14px; background: var(--indigo-clair); color: var(--indigo);
+  border: 1.5px solid var(--indigo-border); border-radius: 10px;
+  font-family: var(--font); font-size: 14px; font-weight: 500;
+  cursor: pointer; text-align: center; transition: all .12s; margin-bottom: 12px;
+}
+.btn-sel-grumes:hover { background: var(--indigo); color: #fff; }
+
+/* Résumé grumes sélectionnées */
+.grumes-resume {
+  display: none; padding: 12px 16px; background: var(--neige); border: 1px solid var(--brume);
+  border-radius: 8px; font-size: 13px; margin-bottom: 12px;
+  justify-content: space-between; align-items: center;
+}
+.grumes-resume.visible { display: flex; }
+.resume-modifier { font-size: 12px; color: var(--indigo); cursor: pointer; font-weight: 500; }
+
+/* Toggle Brute / Planches */
+.type-toggle { display: grid; grid-template-columns: 1fr 1fr; border-radius: 10px; overflow: hidden; border: 1px solid var(--pierre); margin-bottom: 16px; }
+.type-btn {
+  padding: 12px; font-family: var(--font); font-size: 13px; font-weight: 500;
+  border: none; cursor: pointer; transition: all .12s; background: var(--neige); color: var(--sumi);
+}
+.type-btn.active { background: var(--olive); color: #fff; }
+
+/* Sliders zone */
+.sliders-zone { display: none; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+.sliders-zone.visible { display: flex; }
+.slider-row { display: flex; flex-direction: column; gap: 6px; }
+.slider-head { display: flex; justify-content: space-between; align-items: center; }
+.slider-lbl { font-size: 10px; font-weight: 600; letter-spacing: .1em; color: var(--cendre); text-transform: uppercase; }
+.slider-val { font-size: 13px; font-weight: 500; color: var(--indigo); }
+input[type=range] {
+  width: 100%; height: 3px; accent-color: var(--indigo);
+  cursor: pointer; background: var(--brume); border-radius: 2px;
+  -webkit-appearance: none; appearance: none;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  background: var(--indigo); border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(43,63,140,0.3);
+}
+
+/* Lien formule */
+.voir-formule { font-size: 12px; color: var(--indigo); text-decoration: underline; cursor: pointer; margin-bottom: 12px; display: inline-block; }
+
+/* Linéaire chip */
+.lineaire-chip {
+  display: inline-flex; flex-direction: column; align-items: flex-end;
+  background: var(--indigo); color: #fff; border-radius: 8px;
+  padding: 6px 12px; font-size: 10px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; float: right; margin-bottom: 8px;
+}
+.lineaire-val { font-size: 18px; font-weight: 300; }
+
+/* Barre résumé volumes */
+.vol-barre { display: grid; grid-template-columns: 1fr 1fr 1fr; border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+.vol-bloc { padding: 12px; text-align: center; }
+.vol-bloc-extrait { background: var(--sumi); }
+.vol-bloc-utile { background: var(--olive); }
+.vol-bloc-dechet { background: var(--orange); }
+.vol-num { font-size: 18px; font-weight: 300; color: #fff; display: block; }
+.vol-lbl { font-size: 9px; font-weight: 600; letter-spacing: .08em; color: rgba(255,255,255,.65); text-transform: uppercase; display: block; margin-top: 2px; }
+
+/* Footer du panel */
+.extraction-footer { padding: 14px 22px; border-top: 1px solid var(--brume); display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+.btn-valider {
+  width: 100%; padding: 14px; background: var(--indigo); color: #fff;
+  border: none; border-radius: 10px; font-family: var(--font); font-size: 14px;
+  font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity .12s;
+}
+.btn-valider:hover { opacity: .88; }
+.btn-valider:disabled { opacity: .4; cursor: default; }
+.btn-annuler-ext {
+  width: 100%; padding: 10px; background: none; border: 1px solid var(--pierre);
+  border-radius: 10px; font-family: var(--font); font-size: 13px; color: var(--cendre);
+  cursor: pointer;
+}
+.btn-annuler-ext:hover { border-color: var(--sumi); color: var(--sumi); }
+
+/* Séparateur étapes */
+.etape-sep { height: 1px; background: var(--brume); margin: 4px 0 16px; }
+
+/* ══ BOTTOM SHEET grumes ══ */
+.grumes-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(15,15,14,.45);
+  z-index: 300; align-items: flex-end; justify-content: flex-end;
+}
+.grumes-overlay.visible { display: flex; }
+.grumes-sheet {
+  width: 400px; height: 80vh; background: var(--washi);
+  border-radius: 16px 0 0 16px; display: flex; flex-direction: column;
+  box-shadow: -8px 0 40px rgba(15,15,14,.15);
+}
+.grumes-sheet-head { padding: 18px 20px 14px; border-bottom: 1px solid var(--brume); display: flex; justify-content: space-between; align-items: center; }
+.grumes-sheet-titre { font-size: 15px; font-weight: 600; }
+.grumes-sheet-fermer { background: none; border: none; font-size: 18px; color: var(--cendre); cursor: pointer; padding: 4px; }
+.grumes-sheet-body { flex: 1; overflow-y: auto; padding: 8px 0; }
+.lot-header { padding: 10px 20px 6px; font-size: 13px; font-weight: 600; color: var(--sumi); }
+.lot-badge { display: inline-block; padding: 2px 8px; background: var(--indigo-clair); color: var(--indigo); border-radius: 20px; font-size: 11px; font-weight: 500; margin-left: 8px; }
+.grume-row {
+  display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+  border-bottom: 1px solid var(--brume); cursor: pointer; transition: background .1s;
+}
+.grume-row:hover { background: var(--neige); }
+.grume-row:last-child { border-bottom: none; }
+.grume-check {
+  width: 18px; height: 18px; border: 1.5px solid var(--pierre); border-radius: 4px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+}
+.grume-row.checked .grume-check { background: var(--indigo); border-color: var(--indigo); }
+.grume-row.checked .grume-check::after { content: '✓'; color: #fff; font-size: 12px; font-weight: 700; }
+.grume-info { flex: 1; font-size: 13px; }
+.grume-vol { font-size: 13px; font-weight: 500; color: var(--indigo); }
+.grumes-sheet-foot { padding: 14px 20px; border-top: 1px solid var(--brume); }
+.btn-confirm-sel {
+  width: 100%; padding: 13px; background: var(--indigo); color: #fff;
+  border: none; border-radius: 10px; font-family: var(--font); font-size: 14px;
+  font-weight: 500; cursor: pointer;
+}
+.btn-confirm-sel:hover { opacity: .88; }
+
+/* ══ MODALE DESTINATION ══ */
+.dest-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(15,15,14,.45);
+  z-index: 400; align-items: center; justify-content: center;
+}
+.dest-overlay.visible { display: flex; }
+.dest-card { background: var(--washi); border-radius: 16px; width: 520px; padding: 32px; box-shadow: 0 16px 48px rgba(15,15,14,.18); }
+.dest-titre { font-size: 22px; font-weight: 300; margin-bottom: 6px; }
+.dest-sous { font-size: 15px; color: var(--cendre); margin-bottom: 28px; }
+.dest-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+.dest-lbl { font-size: 10px; font-weight: 600; letter-spacing: .1em; color: var(--cendre); text-transform: uppercase; }
+.dest-input {
+  background: none; border: none; border-bottom: 1.5px solid var(--brume);
+  padding: 10px 0; font-family: var(--font); font-size: 16px; color: var(--sumi);
+  transition: border-color .12s;
+}
+.dest-input:focus { outline: none; border-color: var(--indigo); }
+.dest-input::placeholder { color: var(--pierre); }
+.dest-select {
+  background: none; border: none; border-bottom: 1.5px solid var(--brume);
+  padding: 10px 0; font-family: var(--font); font-size: 16px; color: var(--sumi);
+  appearance: none; cursor: pointer;
+}
+.dest-footer { display: flex; justify-content: flex-end; align-items: center; gap: 24px; margin-top: 32px; }
+.dest-retour { background: none; border: none; font-family: var(--font); font-size: 13px; color: var(--cendre); cursor: pointer; display: flex; align-items: center; gap: 6px; letter-spacing: .06em; text-transform: uppercase; }
+.dest-retour:hover { color: var(--sumi); }
+.dest-confirmer {
+  padding: 14px 28px; background: var(--sumi); color: #fff;
+  border: none; border-radius: 10px; font-family: var(--font); font-size: 14px;
+  font-weight: 600; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+}
+.dest-confirmer:hover { opacity: .85; }
+
+/* ── Toast ── */
+.toast { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--sumi); color: #fff; padding: 12px 22px; border-radius: 20px; font-size: 13px; z-index: 999; }
+.toast.visible { display: block; }
+
+/* ── NOTE MAQUETTE ── */
+.note-maquette { position: fixed; top: 8px; right: 8px; background: var(--orange); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; letter-spacing: .06em; z-index: 999; }
+</style>
+</head>
+<body>
+
+<div class="note-maquette">MAQUETTE INTERACTIVE</div>
+
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-block">
+      <div class="hdr-lbl">Stock commune</div>
+      <div class="hdr-val">12.4 m³</div>
+      <div class="hdr-sub" style="color:var(--vert)">+1.2 m³ ce mois</div>
+    </div>
+    <div class="hdr-block">
+      <div class="hdr-lbl">Lots actifs</div>
+      <div class="hdr-val" style="color:var(--sumi)">8</div>
+      <div class="hdr-sub">4 essences</div>
+    </div>
+    <div class="hdr-block">
+      <div class="hdr-lbl">Extractions mois</div>
+      <div class="hdr-val" style="color:var(--sumi)">2.1 m³</div>
+      <div class="hdr-sub">3 opérations</div>
+    </div>
+    <div class="hdr-block" style="border-right:none">
+      <div class="hdr-lbl">Stock Métropole</div>
+      <div class="hdr-val">48.7 m³</div>
+      <div class="hdr-sub">6 communes · 22 lots</div>
+    </div>
+    <button class="hdr-btn">Déconnexion</button>
+  </div>
+
+  <!-- TABS (sticky) -->
+  <div class="tabs">
+    <button class="tab active">Commune — Rezé</button>
+    <button class="tab">Nantes Métropole</button>
+    <button class="tab">Export</button>
+    <button class="tab tab-feedback">📋 Ticket retour</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="commune-layout">
+
+      <!-- ── COLONNE GAUCHE ── -->
+      <div class="col-gauche">
+        <div class="section-lbl">Stock disponible par essence</div>
+        <div class="essences-grid">
+          <div class="ess-card">
+            <div class="ess-head"><span class="ess-nom">Hêtre</span><span class="ess-vol">4.2 <span>m³</span></span></div>
+            <div class="barre-piste"><div class="barre-fill" style="width:100%"></div></div>
+            <div class="ess-foot"><span class="ess-meta">3 lots · 2023</span><span class="badge">Disponible</span></div>
+          </div>
+          <div class="ess-card">
+            <div class="ess-head"><span class="ess-nom">Chêne</span><span class="ess-vol">3.8 <span>m³</span></span></div>
+            <div class="barre-piste"><div class="barre-fill" style="width:90%"></div></div>
+            <div class="ess-foot"><span class="ess-meta">2 lots · 2024</span><span class="badge">Disponible</span></div>
+          </div>
+          <div class="ess-card">
+            <div class="ess-head"><span class="ess-nom">Châtaignier</span><span class="ess-vol">2.9 <span>m³</span></span></div>
+            <div class="barre-piste"><div class="barre-fill" style="width:69%"></div></div>
+            <div class="ess-foot"><span class="ess-meta">2 lots · 2023</span><span class="badge">Disponible</span></div>
+          </div>
+          <div class="ess-card">
+            <div class="ess-head"><span class="ess-nom">Frêne</span><span class="ess-vol">1.5 <span>m³</span></span></div>
+            <div class="barre-piste"><div class="barre-fill" style="width:36%"></div></div>
+            <div class="ess-foot"><span class="ess-meta">1 lot · 2024</span><span class="badge">Disponible</span></div>
+          </div>
+        </div>
+
+        <div class="section-lbl">Derniers lots enregistrés</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th></th><th>Nom du lot</th><th>Essence</th><th>Volume</th><th>Provenance</th><th>Date</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>2</td><td>New test1</td><td><b>Hêtre</b></td><td class="vol-cell">0.709 m³</td><td class="gris">Parc Mandela</td><td class="gris">01/05/26</td></tr>
+              <tr><td>3</td><td>Rezé Boulevard</td><td><b>Chêne</b></td><td class="vol-cell">1.240 m³</td><td class="gris">Bd Bineta Diop</td><td class="gris">28/04/26</td></tr>
+              <tr><td>4</td><td>Haie bocagère</td><td><b>Châtaignier</b></td><td class="vol-cell">0.850 m³</td><td class="gris">Route de Nantes</td><td class="gris">22/04/26</td></tr>
+              <tr><td>5</td><td>Alignement rue du Port</td><td><b>Frêne</b></td><td class="vol-cell">0.420 m³</td><td class="gris">Rue du Port</td><td class="gris">15/04/26</td></tr>
+              <tr><td>6</td><td>Parc Léon Blum</td><td><b>Hêtre</b></td><td class="vol-cell">1.100 m³</td><td class="gris">Parc Léon Blum</td><td class="gris">10/04/26</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── COLONNE DROITE ── -->
+      <div class="col-droite" id="col-droite">
+
+        <!-- État REPOS -->
+        <div id="etat-repos">
+          <div class="cercle-wrap" onclick="lancerExtraction()">
+            <div class="cercle">
+              <div class="cercle-icon">⬡</div>
+              <div class="cercle-label">Extraction</div>
+              <div class="cercle-sub">Nouvelle sortie</div>
+            </div>
+          </div>
+          <div class="col-droite-hint">Sélectionnez une essence et des grumes pour enregistrer une extraction.</div>
+          <div class="stock-pills" id="stock-pills">
+            <span class="pill">Hêtre · 4.2 m³</span>
+            <span class="pill">Chêne · 3.8 m³</span>
+            <span class="pill">Châtaignier · 2.9 m³</span>
+            <span class="pill">Frêne · 1.5 m³</span>
+          </div>
+        </div>
+
+        <!-- État EXTRACTION -->
+        <div class="extraction-panel" id="extraction-panel">
+
+          <!-- Étape 1 : essence + grumes -->
+          <div class="etape">
+            <div class="etape-titre">
+              <div class="etape-numero">1</div>
+              Grumes à extraire
+            </div>
+
+            <div class="chips" id="chips-essences">
+              <button class="chip" onclick="selEss(this,'Châtaignier','2.9')">Châtaignier<span class="chip-vol">2.9 m³</span></button>
+              <button class="chip" onclick="selEss(this,'Chêne','3.8')">Chêne<span class="chip-vol">3.8 m³</span></button>
+              <button class="chip active" onclick="selEss(this,'Hêtre','4.2')">Hêtre<span class="chip-vol">4.2 m³</span></button>
+              <button class="chip" onclick="selEss(this,'Frêne','1.5')">Frêne<span class="chip-vol">1.5 m³</span></button>
+            </div>
+
+            <button class="btn-sel-grumes" onclick="ouvrirGrumes()">Sélectionner les grumes</button>
+
+            <div class="grumes-resume" id="grumes-resume">
+              <span id="grumes-resume-txt">1 grume — 0.185 m³</span>
+              <span class="resume-modifier" onclick="ouvrirGrumes()">Modifier</span>
+            </div>
+
+            <div class="etape-sep"></div>
+            <div class="etape-titre" style="margin-bottom:12px">
+              <div class="etape-numero">2</div>
+              Type de valorisation
+            </div>
+
+            <div class="type-toggle">
+              <button class="type-btn" id="btn-brute" onclick="setType('brute')">Grume brute</button>
+              <button class="type-btn active" id="btn-planches" onclick="setType('planches')">Débit en planches</button>
+            </div>
+
+            <!-- Sliders (mode planches) -->
+            <div class="sliders-zone visible" id="sliders-zone">
+              <div class="slider-row">
+                <div class="slider-head">
+                  <div class="slider-lbl">Épaisseur planche</div>
+                  <div class="slider-val" id="val-ep">27 mm</div>
+                </div>
+                <input type="range" min="15" max="60" value="27" oninput="majSlider('val-ep',this.value,'mm');majVolumes()">
+              </div>
+              <div class="slider-row">
+                <div class="slider-head">
+                  <div class="slider-lbl">Trait de scie</div>
+                  <div class="slider-val" id="val-ts">3 mm</div>
+                </div>
+                <input type="range" min="2" max="8" value="3" oninput="majSlider('val-ts',this.value,'mm');majVolumes()">
+              </div>
+              <div class="slider-row">
+                <div class="slider-head">
+                  <div class="slider-lbl">Rendement géom.</div>
+                  <div class="slider-val" id="val-rg">50 %</div>
+                </div>
+                <input type="range" min="30" max="80" value="50" oninput="majSlider('val-rg',this.value,' %');majVolumes()">
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-end">
+                <span class="voir-formule">Voir la formule</span>
+                <div class="lineaire-chip">
+                  <span style="font-size:10px;opacity:.7;font-weight:600">LINÉAIRE INDICATIF</span>
+                  <span class="lineaire-val" id="val-lin">15.4 m</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- fin étape -->
+
+          <!-- Barre volumes -->
+          <div class="vol-barre" id="vol-barre">
+            <div class="vol-bloc vol-bloc-extrait"><span class="vol-num" id="v-ext">0.185</span><span class="vol-lbl">m³ extrait</span></div>
+            <div class="vol-bloc vol-bloc-utile" id="bloc-utile"><span class="vol-num" id="v-util">0.083</span><span class="vol-lbl">m³ utile</span></div>
+            <div class="vol-bloc vol-bloc-dechet" id="bloc-dechet"><span class="vol-num" id="v-dec">0.102</span><span class="vol-lbl">m³ déchet</span></div>
+          </div>
+
+          <!-- Footer -->
+          <div class="extraction-footer">
+            <button class="btn-valider" id="btn-valider" onclick="ouvrirDestination()">
+              Valider l'extraction →
+            </button>
+            <button class="btn-annuler-ext" onclick="annulerExtraction()">Annuler</button>
+          </div>
+
+        </div><!-- fin extraction-panel -->
+      </div><!-- fin col-droite -->
+
+    </div>
+  </div><!-- fin main -->
+</div><!-- fin shell -->
+
+<!-- ══ BOTTOM SHEET GRUMES ══ -->
+<div class="grumes-overlay" id="grumes-overlay" onclick="if(event.target===this)fermerGrumes()">
+  <div class="grumes-sheet">
+    <div class="grumes-sheet-head">
+      <span class="grumes-sheet-titre">Choisir les grumes</span>
+      <button class="grumes-sheet-fermer" onclick="fermerGrumes()">✕</button>
+    </div>
+    <div class="grumes-sheet-body">
+      <div class="lot-header">New test1 <span class="lot-badge">Hêtre</span></div>
+      <div class="grume-row" onclick="toggleGrume(this)">
+        <div class="grume-check"></div>
+        <div class="grume-info">L 3.00 m · Ø 28 cm · n°1</div>
+        <div class="grume-vol">0.185 m³</div>
+      </div>
+      <div class="grume-row" onclick="toggleGrume(this)">
+        <div class="grume-check"></div>
+        <div class="grume-info">L 3.00 m · Ø 28 cm · n°2</div>
+        <div class="grume-vol">0.185 m³</div>
+      </div>
+      <div class="grume-row" onclick="toggleGrume(this)">
+        <div class="grume-check"></div>
+        <div class="grume-info">L 3.00 m · Ø 28 cm · n°3</div>
+        <div class="grume-vol">0.185 m³</div>
+      </div>
+      <div class="grume-row" onclick="toggleGrume(this)">
+        <div class="grume-check"></div>
+        <div class="grume-info">L 2.90 m · Ø 26 cm · n°4</div>
+        <div class="grume-vol">0.154 m³</div>
+      </div>
+    </div>
+    <div class="grumes-sheet-foot">
+      <button class="btn-confirm-sel" onclick="confirmerGrumes()">Confirmer la sélection</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALE DESTINATION ══ -->
+<div class="dest-overlay" id="dest-overlay" onclick="if(event.target===this)fermerDestination()">
+  <div class="dest-card">
+    <div class="dest-titre">Destination</div>
+    <div class="dest-sous">À qui vont ces grumes ?</div>
+
+    <div class="dest-field">
+      <div class="dest-lbl">Nom du projet</div>
+      <input class="dest-input" type="text" placeholder="Ex. : Mairie de Rezé, bancs publics…">
+    </div>
+    <div class="dest-field">
+      <div class="dest-lbl">Commune d'installation</div>
+      <select class="dest-select">
+        <option>— Choisir —</option>
+        <option>Rezé</option><option>Nantes</option><option>Saint-Herblain</option>
+        <option>Orvault</option><option>Saint-Sébastien-sur-Loire</option>
+      </select>
+    </div>
+    <div class="dest-field">
+      <div class="dest-lbl">Usage</div>
+      <select class="dest-select">
+        <option>— Choisir —</option>
+        <option>Intérieur</option><option>Extérieur</option>
+      </select>
+    </div>
+    <div class="dest-field">
+      <div class="dest-lbl">Lieu (optionnel)</div>
+      <input class="dest-input" type="text" placeholder="Ex. : salle des fêtes, école…">
+    </div>
+
+    <div class="dest-footer">
+      <button class="dest-retour" onclick="fermerDestination()">← Retour</button>
+      <button class="dest-confirmer" onclick="confirmerExtraction()">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">✓ Extraction enregistrée avec succès</div>
+
+<script>
+// ── État ──
+var essenceActive = 'Hêtre';
+var typeActif = 'planches';
+var grumesSel = 0;
+var volGrumes = 0;
+
+function lancerExtraction() {
+  document.getElementById('etat-repos').style.display = 'none';
+  document.getElementById('extraction-panel').classList.add('visible');
+  document.getElementById('col-droite').classList.add('active');
+}
+
+function annulerExtraction() {
+  document.getElementById('etat-repos').style.display = '';
+  document.getElementById('extraction-panel').classList.remove('visible');
+  document.getElementById('col-droite').classList.remove('active');
+  // Reset grumes
+  grumesSel = 0; volGrumes = 0;
+  document.getElementById('grumes-resume').classList.remove('visible');
+  document.querySelectorAll('.grume-row').forEach(r => r.classList.remove('checked'));
+}
+
+function selEss(btn, ess, vol) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  essenceActive = ess;
+}
+
+function setType(t) {
+  typeActif = t;
+  document.getElementById('btn-brute').classList.toggle('active', t === 'brute');
+  document.getElementById('btn-planches').classList.toggle('active', t === 'planches');
+  var sz = document.getElementById('sliders-zone');
+  sz.classList.toggle('visible', t === 'planches');
+  var bu = document.getElementById('bloc-utile');
+  var bd = document.getElementById('bloc-dechet');
+  bu.style.display = t === 'brute' ? 'none' : '';
+  bd.style.display = t === 'brute' ? 'none' : '';
+  if (t === 'brute') {
+    document.getElementById('v-ext').textContent = volGrumes > 0 ? volGrumes.toFixed(3) : '0.185';
+  } else {
+    majVolumes();
+  }
+}
+
+function majSlider(id, val, unit) {
+  document.getElementById(id).textContent = val + unit;
+}
+
+function majVolumes() {
+  var ext = volGrumes > 0 ? volGrumes : 0.185;
+  var rg  = parseInt(document.getElementById('val-rg').textContent) / 100;
+  var util = ext * rg;
+  var dec  = ext - util;
+  var ep   = parseInt(document.getElementById('val-ep').textContent);
+  var ts   = parseInt(document.getElementById('val-ts').textContent);
+  var lin  = volGrumes > 0 ? (util * 1000 / (ep + ts)).toFixed(1) : '15.4';
+
+  document.getElementById('v-ext').textContent  = ext.toFixed(3);
+  document.getElementById('v-util').textContent = util.toFixed(3);
+  document.getElementById('v-dec').textContent  = dec.toFixed(3);
+  document.getElementById('val-lin').textContent = lin + ' m';
+}
+
+// ── Grumes ──
+function ouvrirGrumes() {
+  document.getElementById('grumes-overlay').classList.add('visible');
+}
+function fermerGrumes() {
+  document.getElementById('grumes-overlay').classList.remove('visible');
+}
+function toggleGrume(row) {
+  row.classList.toggle('checked');
+  var sel = document.querySelectorAll('.grume-row.checked');
+  grumesSel = sel.length;
+  volGrumes = 0;
+  sel.forEach(function(r) {
+    volGrumes += parseFloat(r.querySelector('.grume-vol').textContent);
+  });
+}
+function confirmerGrumes() {
+  fermerGrumes();
+  if (grumesSel > 0) {
+    document.getElementById('grumes-resume').classList.add('visible');
+    document.getElementById('grumes-resume-txt').textContent = grumesSel + ' grume' + (grumesSel > 1 ? 's' : '') + ' — ' + volGrumes.toFixed(3) + ' m³';
+    majVolumes();
+  } else {
+    document.getElementById('grumes-resume').classList.remove('visible');
+  }
+}
+
+// ── Destination ──
+function ouvrirDestination() {
+  document.getElementById('dest-overlay').classList.add('visible');
+}
+function fermerDestination() {
+  document.getElementById('dest-overlay').classList.remove('visible');
+}
+function confirmerExtraction() {
+  fermerDestination();
+  annulerExtraction();
+  var t = document.getElementById('toast');
+  t.classList.add('visible');
+  setTimeout(function() { t.classList.remove('visible'); }, 3000);
+}
+</script>
+
+</body>
+</html>
