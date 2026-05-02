@@ -72,7 +72,7 @@
     <button class="b-deconnexion-btn" onclick="bDeconnecter()">Déconnexion</button>
   </header>
 
-  <!-- TABS -->
+  <!-- TABS (sticky) -->
   <nav class="b-tabs">
     <button class="b-tab active" id="b-tab-commune"   onclick="bSwitchTab('commune')">Commune — <span id="b-tab-commune-nom">—</span></button>
     <button class="b-tab"        id="b-tab-metropole" onclick="bSwitchTab('metropole')">Nantes Métropole</button>
@@ -86,17 +86,16 @@
     <!-- ══ COMMUNE ══ -->
     <div class="b-panel active" id="b-panel-commune">
       <div class="b-commune-filtres">
-        <button class="b-filtre-btn active" id="b-filtre-essence-btn" onclick="bToggleFiltreEssence(this)">Toutes essences</button>
+        <button class="b-filtre-btn active" id="b-filtre-essence-btn">Toutes essences</button>
         <button class="b-filtre-btn" id="b-filtre-statut-btn">Tous statuts</button>
       </div>
       <div class="b-commune-layout">
+
+        <!-- COLONNE GAUCHE — lecture -->
         <div class="b-commune-gauche">
           <div class="b-section-lbl">STOCK DISPONIBLE PAR ESSENCE</div>
           <div class="b-essences-grid" id="b-essences-grid"></div>
-          <div class="b-extraction-actions">
-            <button class="b-btn-extraction" onclick="bOuvrirModalExtraction()">+ Nouvelle extraction</button>
-          </div>
-          <div class="b-section-lbl">DERNIERS LOTS ENREGISTRÉS</div>
+          <div class="b-section-lbl b-section-lbl-mt">DERNIERS LOTS ENREGISTRÉS</div>
           <div class="b-table-wrap">
             <table class="b-table" id="b-lots-table">
               <thead>
@@ -105,13 +104,123 @@
               <tbody id="b-lots-tbody"></tbody>
             </table>
           </div>
-          <div class="b-autres-actions">
-            <button class="b-btn-action" onclick="window.open('../','_blank')">+ Nouveau lot</button>
-            <button class="b-btn-action" onclick="bExportLotsCommune()">↓ Exporter CSV commune</button>
-          </div>
         </div>
-      </div>
-    </div>
+
+        <!-- COLONNE DROITE — extraction -->
+        <div class="b-col-ext" id="b-col-ext">
+
+          <!-- ── État repos ── -->
+          <div class="b-ext-repos" id="b-ext-repos">
+            <div class="b-cercle-wrap" onclick="bOuvrirExtraction()">
+              <div class="b-cercle">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/>
+                  <circle cx="24" cy="24" r="12" stroke="currentColor" stroke-width="1.5"/>
+                  <circle cx="24" cy="24" r="3"  fill="currentColor"/>
+                  <line x1="24" y1="4"  x2="24" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <line x1="24" y1="36" x2="24" y2="44" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <line x1="4"  y1="24" x2="12" y2="24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <line x1="36" y1="24" x2="44" y2="24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <div class="b-cercle-label">Extraction</div>
+              </div>
+            </div>
+            <div class="b-ext-hint">Nouvelle sortie de stock</div>
+            <div class="b-stock-pills" id="b-stock-pills"></div>
+          </div>
+
+          <!-- ── Panel extraction ── -->
+          <div class="b-ext-panel hidden" id="b-ext-panel">
+            <div class="b-ext-panel-head">
+              <div class="b-ext-panel-titre">Nouvelle extraction</div>
+              <button class="b-ext-panel-fermer" onclick="bFermerExtraction()">✕</button>
+            </div>
+            <div class="b-ext-panel-body">
+
+              <!-- Étape 1 : Essence + Grumes -->
+              <div class="b-ext-etape-row">
+                <div class="b-ext-etape-num">1</div>
+                <div class="b-ext-etape-lbl">Grumes à extraire</div>
+              </div>
+              <div class="b-chips" id="b-chips-ess"></div>
+              <button class="b-btn-sel-grumes" id="b-btn-sel-grumes" onclick="bOuvrirGrumes()">Sélectionner les grumes</button>
+              <div class="b-grumes-resume hidden" id="b-grumes-resume">
+                <span id="b-grumes-resume-txt">—</span>
+                <span class="b-grumes-resume-modifier" onclick="bOuvrirGrumes()">Modifier</span>
+              </div>
+
+              <!-- Étape 2 : Type -->
+              <div class="b-ext-etape-row b-ext-etape-mt">
+                <div class="b-ext-etape-num">2</div>
+                <div class="b-ext-etape-lbl">Type de valorisation</div>
+              </div>
+              <div class="b-type-toggle">
+                <button class="b-type-btn" id="b-type-brute" onclick="bSetTypeExt('brute')">Grume brute</button>
+                <button class="b-type-btn active" id="b-type-planches" onclick="bSetTypeExt('planches')">Débit en planches</button>
+              </div>
+
+              <!-- Sliders (mode planches) -->
+              <div class="b-sliders-zone" id="b-sliders-zone">
+                <div class="b-slider-row">
+                  <div class="b-slider-head">
+                    <div class="b-slider-lbl">ÉPAISSEUR PLANCHE</div>
+                    <div class="b-slider-val" id="b-val-ep">27 mm</div>
+                  </div>
+                  <input type="range" class="b-slider" min="15" max="60" value="27" id="b-sl-ep"
+                    oninput="bMajSlider('b-val-ep',this.value,'mm');bMajVolumes()">
+                </div>
+                <div class="b-slider-row">
+                  <div class="b-slider-head">
+                    <div class="b-slider-lbl">TRAIT DE SCIE</div>
+                    <div class="b-slider-val" id="b-val-ts">3 mm</div>
+                  </div>
+                  <input type="range" class="b-slider" min="2" max="8" value="3" id="b-sl-ts"
+                    oninput="bMajSlider('b-val-ts',this.value,'mm');bMajVolumes()">
+                </div>
+                <div class="b-slider-row">
+                  <div class="b-slider-head">
+                    <div class="b-slider-lbl">RENDEMENT GÉOM.</div>
+                    <div class="b-slider-val" id="b-val-rg">50 %</div>
+                  </div>
+                  <input type="range" class="b-slider" min="30" max="80" value="50" id="b-sl-rg"
+                    oninput="bMajSlider('b-val-rg',this.value,' %');bMajVolumes()">
+                </div>
+                <div class="b-formule-lin">
+                  <span class="b-voir-formule">Voir la formule</span>
+                  <div class="b-lin-chip">
+                    <div class="b-lin-lbl">LINÉAIRE INDICATIF</div>
+                    <div class="b-lin-val" id="b-val-lin">—</div>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- fin panel-body -->
+
+            <!-- Barre volumes -->
+            <div class="b-vol-barre">
+              <div class="b-vol-bloc b-vol-extrait">
+                <span class="b-vol-num" id="b-v-ext">—</span>
+                <span class="b-vol-lbl">m³ extrait</span>
+              </div>
+              <div class="b-vol-bloc b-vol-utile" id="b-bloc-utile">
+                <span class="b-vol-num" id="b-v-util">—</span>
+                <span class="b-vol-lbl">m³ utile</span>
+              </div>
+              <div class="b-vol-bloc b-vol-dechet" id="b-bloc-dechet">
+                <span class="b-vol-num" id="b-v-dec">—</span>
+                <span class="b-vol-lbl">m³ déchet</span>
+              </div>
+            </div>
+
+            <div class="b-ext-panel-footer">
+              <button class="b-btn-valider-ext" id="b-btn-valider-ext" onclick="bOuvrirDestination()">Valider l'extraction →</button>
+              <button class="b-btn-annuler-ext" onclick="bFermerExtraction()">Annuler</button>
+            </div>
+          </div><!-- fin ext-panel -->
+
+        </div><!-- fin col-ext -->
+      </div><!-- fin commune-layout -->
+    </div><!-- fin panel-commune -->
 
     <!-- ══ NANTES MÉTROPOLE ══ -->
     <div class="b-panel" id="b-panel-metropole">
@@ -137,7 +246,7 @@
               <tbody id="b-metro-tbody"></tbody>
             </table>
           </div>
-          <div class="b-section-lbl" style="margin-top:28px">RÉPARTITION PAR ESSENCE — ENSEMBLE MÉTROPOLE</div>
+          <div class="b-section-lbl b-section-lbl-mt">RÉPARTITION PAR ESSENCE — ENSEMBLE MÉTROPOLE</div>
           <div class="b-donut-section">
             <div class="b-donut-wrap">
               <svg class="b-donut-svg" viewBox="0 0 200 200" id="b-donut-svg"></svg>
@@ -230,38 +339,49 @@
     <span id="b-footer-droite">Stock : — m³ · Métropole : — m³</span>
   </footer>
 
+</div><!-- fin b-app -->
+
+<!-- ─── SÉLECTION DES GRUMES (feuille latérale) ─── -->
+<div id="b-grumes-overlay" class="b-grumes-overlay hidden" onclick="if(event.target===this)bFermerGrumes()">
+  <div class="b-grumes-sheet">
+    <div class="b-grumes-sheet-head">
+      <div class="b-grumes-sheet-titre">Choisir les grumes</div>
+      <button class="b-grumes-sheet-fermer" onclick="bFermerGrumes()">✕</button>
+    </div>
+    <div class="b-grumes-sheet-body" id="b-grumes-sheet-body"></div>
+    <div class="b-grumes-sheet-foot">
+      <button class="b-btn-confirm-sel" onclick="bConfirmerGrumes()">Confirmer la sélection</button>
+    </div>
+  </div>
 </div>
 
-<!-- ─── MODALE EXTRACTION ─── -->
-<div id="b-modal-extraction" class="b-modal-overlay hidden">
-  <div class="b-modal-card">
-    <div class="b-modal-header">
-      <div class="b-modal-titre">Nouvelle extraction</div>
-      <button class="b-modal-fermer" onclick="bFermerModalExtraction()">✕</button>
+<!-- ─── MODALE DESTINATION ─── -->
+<div id="b-dest-overlay" class="b-dest-overlay hidden" onclick="if(event.target===this)bFermerDestination()">
+  <div class="b-dest-card">
+    <div class="b-dest-titre">Destination</div>
+    <div class="b-dest-sous">À qui vont ces grumes ?</div>
+    <div class="b-dest-field">
+      <div class="b-dest-lbl">NOM DU PROJET</div>
+      <input class="b-dest-input" type="text" id="b-dest-projet" placeholder="Ex. : Mairie de Rezé, bancs publics…">
     </div>
-    <div class="b-modal-body">
-      <div class="b-section-lbl">ESSENCE</div>
-      <div class="b-chips-essences" id="b-chips-essences"></div>
-      <div class="b-modal-dispo" id="b-modal-dispo"></div>
-      <div class="b-field">
-        <div class="b-field-lbl">VOLUME (m³)</div>
-        <input class="b-input-dark b-input-vol" type="number" id="b-modal-volume" min="0.001" step="0.001" placeholder="0,00" oninput="bModalVolChange()">
-      </div>
-      <div class="b-field">
-        <div class="b-field-lbl">USAGE</div>
-        <div class="b-usage-toggle">
-          <button class="b-usage-btn active" id="b-modal-usage-int" onclick="bModalSetUsage('Intérieur')">Intérieur</button>
-          <button class="b-usage-btn" id="b-modal-usage-ext" onclick="bModalSetUsage('Extérieur')">Extérieur</button>
-        </div>
-      </div>
-      <div class="b-field">
-        <div class="b-field-lbl">NOM DU PROJET <span class="b-field-opt">(OPTIONNEL)</span></div>
-        <input class="b-input-dark" type="text" id="b-modal-projet" placeholder="Ex : rénovation école...">
+    <div class="b-dest-field">
+      <div class="b-dest-lbl">COMMUNE D'INSTALLATION</div>
+      <input class="b-dest-input" type="text" id="b-dest-commune-inst" placeholder="Commune destinataire…">
+    </div>
+    <div class="b-dest-field">
+      <div class="b-dest-lbl">USAGE</div>
+      <div class="b-usage-toggle b-usage-toggle-dest">
+        <button class="b-usage-btn active" id="b-dest-usage-int" onclick="bSetUsageDest('Intérieur')">Intérieur</button>
+        <button class="b-usage-btn" id="b-dest-usage-ext" onclick="bSetUsageDest('Extérieur')">Extérieur</button>
       </div>
     </div>
-    <div class="b-modal-footer">
-      <button class="b-btn-confirmer" onclick="bConfirmerModalExtraction()">Confirmer l'extraction</button>
-      <button class="b-btn-action" onclick="bFermerModalExtraction()">Annuler</button>
+    <div class="b-dest-field">
+      <div class="b-dest-lbl">LIEU <span class="b-field-opt">(OPTIONNEL)</span></div>
+      <input class="b-dest-input" type="text" id="b-dest-lieu" placeholder="Ex. : salle des fêtes, école…">
+    </div>
+    <div class="b-dest-footer">
+      <button class="b-dest-retour" onclick="bFermerDestination()">← Retour</button>
+      <button class="b-dest-confirmer" onclick="bConfirmerExtraction()">CONFIRMER</button>
     </div>
   </div>
 </div>
