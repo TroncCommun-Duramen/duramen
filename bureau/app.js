@@ -371,11 +371,12 @@ function bAfficherMetropole() {
     var estMoi = bCommune && (comm === bCommune.nom || comm === bCommune.code);
     var tr = document.createElement('tr');
     if (estMoi) tr.className = 'b-tr-moi';
+    var essAff = filtreEssence ? filtreEssence : info.essences.join(', ');
 
     [
       { html: idx + 2, cls: '' },
       { html: estMoi ? '<strong>' + comm + '</strong>' : comm, cls: '' },
-      { html: '<span style="color:var(--cendre)">' + info.essences.join(', ') + '</span>', cls: '' },
+      { html: '<span style="color:var(--cendre)">' + essAff + '</span>', cls: '' },
       { html: '<span class="b-vol">' + info.vol.toFixed(1) + ' m³</span>', cls: '' },
       { html: info.lots, cls: '' },
       {
