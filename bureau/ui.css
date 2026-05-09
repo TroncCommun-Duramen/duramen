@@ -1587,7 +1587,7 @@ body {
 }
 .b-mext-nav .b-btn-valider-ext { width: auto; padding: 12px 24px; }
 
-.b-cercle-logo { width: 56px; height: 56px; object-fit: contain; filter: invert(1); }
+.b-cercle-logo { width: 56px; height: 56px; object-fit: contain; }
 
 /* ── Footer fixe ─────────────────────────────────────────────────────────── */
 .b-footer {
