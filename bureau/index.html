@@ -101,7 +101,7 @@
 
           <!-- ── État repos ── -->
           <div class="b-ext-repos" id="b-ext-repos">
-            <div class="b-cercle-wrap" onclick="bOuvrirExtraction()">
+            <div class="b-cercle-wrap" onclick="bOuvrirModalExt()">
               <div class="b-cercle">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
                   <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/>
@@ -119,67 +119,6 @@
             <div class="b-stock-pills" id="b-stock-pills"></div>
           </div>
 
-          <!-- ── Panel extraction ── -->
-          <div class="b-ext-panel hidden" id="b-ext-panel">
-            <div class="b-ext-panel-head">
-              <div class="b-ext-panel-titre">Nouvelle extraction</div>
-              <button class="b-ext-panel-fermer" onclick="bFermerExtraction()">✕</button>
-            </div>
-            <div class="b-ext-panel-body">
-              <div class="b-ext-etape-row">
-                <div class="b-ext-etape-num">1</div>
-                <div class="b-ext-etape-lbl">Grumes à extraire</div>
-              </div>
-              <div class="b-chips" id="b-chips-ess"></div>
-              <button class="b-btn-sel-grumes" id="b-btn-sel-grumes" onclick="bOuvrirGrumes()">Sélectionner les grumes</button>
-              <div class="b-grumes-resume hidden" id="b-grumes-resume">
-                <span id="b-grumes-resume-txt">—</span>
-                <span class="b-grumes-resume-modifier" onclick="bOuvrirGrumes()">Modifier</span>
-              </div>
-              <div class="b-ext-etape-row b-ext-etape-mt">
-                <div class="b-ext-etape-num">2</div>
-                <div class="b-ext-etape-lbl">Type de valorisation</div>
-              </div>
-              <div class="b-type-toggle">
-                <button class="b-type-btn" id="b-type-brute" onclick="bSetTypeExt('brute')">Grume brute</button>
-                <button class="b-type-btn active" id="b-type-planches" onclick="bSetTypeExt('planches')">Débit en planches</button>
-              </div>
-              <div class="b-type-desc" id="b-type-desc">
-                <span class="b-type-desc-icon">🪚</span>
-                <div class="b-type-desc-txt">
-                  <strong id="b-type-desc-titre">Débit en planches</strong>
-                  <span id="b-type-desc-body">Calcul du volume utile et du déchet selon l'épaisseur de planche, le trait de scie et le rendement géométrique.</span>
-                </div>
-              </div>
-              <div class="b-sliders-zone" id="b-sliders-zone">
-                <div class="b-slider-row">
-                  <div class="b-slider-head"><div class="b-slider-lbl">ÉPAISSEUR PLANCHE</div><div class="b-slider-val" id="b-val-ep">27 mm</div></div>
-                  <input type="range" class="b-slider" min="15" max="60" value="27" id="b-sl-ep" oninput="bMajSlider('b-val-ep',this.value,'mm');bMajVolumes()">
-                </div>
-                <div class="b-slider-row">
-                  <div class="b-slider-head"><div class="b-slider-lbl">TRAIT DE SCIE</div><div class="b-slider-val" id="b-val-ts">3 mm</div></div>
-                  <input type="range" class="b-slider" min="2" max="8" value="3" id="b-sl-ts" oninput="bMajSlider('b-val-ts',this.value,'mm');bMajVolumes()">
-                </div>
-                <div class="b-slider-row">
-                  <div class="b-slider-head"><div class="b-slider-lbl">RENDEMENT GÉOM.</div><div class="b-slider-val" id="b-val-rg">50 %</div></div>
-                  <input type="range" class="b-slider" min="30" max="80" value="50" id="b-sl-rg" oninput="bMajSlider('b-val-rg',this.value,' %');bMajVolumes()">
-                </div>
-                <div class="b-formule-lin">
-                  <span class="b-voir-formule">Voir la formule</span>
-                  <div class="b-lin-chip"><div class="b-lin-lbl">LINÉAIRE INDICATIF</div><div class="b-lin-val" id="b-val-lin">—</div></div>
-                </div>
-              </div>
-            </div>
-            <div class="b-vol-barre">
-              <div class="b-vol-bloc b-vol-extrait"><span class="b-vol-num" id="b-v-ext">—</span><span class="b-vol-lbl">m³ extrait</span></div>
-              <div class="b-vol-bloc b-vol-utile" id="b-bloc-utile"><span class="b-vol-num" id="b-v-util">—</span><span class="b-vol-lbl">m³ utile</span></div>
-              <div class="b-vol-bloc b-vol-dechet" id="b-bloc-dechet"><span class="b-vol-num" id="b-v-dec">—</span><span class="b-vol-lbl">m³ déchet</span></div>
-            </div>
-            <div class="b-ext-panel-footer">
-              <button class="b-btn-valider-ext" id="b-btn-valider-ext" onclick="bOuvrirDestination()">Valider l'extraction →</button>
-              <button class="b-btn-annuler-ext" onclick="bFermerExtraction()">Annuler</button>
-            </div>
-          </div><!-- fin ext-panel -->
 
         </div><!-- fin col-ext -->
       </div><!-- fin commune-layout -->
@@ -311,7 +250,7 @@
     </div>
     <div class="b-dest-field">
       <div class="b-dest-lbl">COMMUNE D'INSTALLATION</div>
-      <input class="b-dest-input" type="text" id="b-dest-commune-inst" placeholder="Commune destinataire…">
+      <div class="b-dest-commune-readonly" id="b-dest-commune-inst">—</div>
     </div>
     <div class="b-dest-field">
       <div class="b-dest-lbl">USAGE</div>
@@ -328,6 +267,115 @@
       <button class="b-dest-retour" onclick="bFermerDestination()">← Retour</button>
       <button class="b-dest-confirmer" onclick="bConfirmerExtraction()">CONFIRMER</button>
     </div>
+  </div>
+</div>
+
+<!-- ─── MODALE EXTRACTION 3 ÉTAPES ─── -->
+<div id="b-mext-overlay" class="b-mext-overlay hidden" onclick="if(event.target===this)bFermerModalExt()">
+  <div class="b-mext-card">
+
+    <!-- En-tête + indicateur d'étapes -->
+    <div class="b-mext-head">
+      <div class="b-mext-head-top">
+        <div class="b-mext-titre">Extraction</div>
+        <button class="b-modal-fermer" onclick="bFermerModalExt()">✕</button>
+      </div>
+      <div class="b-mext-stepper">
+        <div class="b-mext-step-dot active" id="b-mext-dot-1">1</div>
+        <div class="b-mext-step-line" id="b-mext-line-1"></div>
+        <div class="b-mext-step-dot" id="b-mext-dot-2">2</div>
+        <div class="b-mext-step-line" id="b-mext-line-2"></div>
+        <div class="b-mext-step-dot" id="b-mext-dot-3">3</div>
+      </div>
+      <div class="b-mext-step-labels">
+        <span>Essence &amp; type</span>
+        <span>Grumes</span>
+        <span>Destination</span>
+      </div>
+    </div>
+
+    <!-- Étape 1 — Essence + Type -->
+    <div class="b-mext-body" id="b-mext-step1">
+      <div class="b-mext-section-lbl">Essence</div>
+      <div class="b-mext-chips" id="b-mext-chips"></div>
+      <div class="b-mext-section-lbl">Type de valorisation</div>
+      <div class="b-type-toggle">
+        <button class="b-type-btn" id="b-mext-type-brute" onclick="bMextSetType('brute')">Grume brute</button>
+        <button class="b-type-btn active" id="b-mext-type-planches" onclick="bMextSetType('planches')">Débit en planches</button>
+      </div>
+      <div class="b-type-desc" id="b-mext-type-desc">
+        <span class="b-type-desc-icon">🪚</span>
+        <div class="b-type-desc-txt">
+          <strong id="b-mext-type-desc-titre">Débit en planches</strong>
+          <span id="b-mext-type-desc-body">Calcul du volume utile et du déchet selon l'épaisseur de planche, le trait de scie et le rendement géométrique.</span>
+        </div>
+      </div>
+      <div class="b-mext-nav">
+        <span></span>
+        <button class="b-btn-valider-ext" id="b-mext-s1-next" onclick="bMextStep1Suivant()" disabled>Suivant →</button>
+      </div>
+    </div>
+
+    <!-- Étape 2 — Sélection des grumes + sliders -->
+    <div class="b-mext-body hidden" id="b-mext-step2">
+      <div class="b-mext-section-lbl" id="b-mext-grumes-lbl">Grumes disponibles</div>
+      <div class="b-mext-grumes-scroll" id="b-mext-grumes-list"></div>
+      <div class="b-sliders-zone" id="b-mext-sliders">
+        <div class="b-slider-row">
+          <div class="b-slider-head"><div class="b-slider-lbl">Épaisseur planche</div><div class="b-slider-val" id="b-mext-val-ep">27 mm</div></div>
+          <input type="range" class="b-slider" min="15" max="60" value="27" id="b-mext-sl-ep" oninput="bMextMajSlider('b-mext-val-ep',this.value,'mm');bMextMajVol()">
+        </div>
+        <div class="b-slider-row">
+          <div class="b-slider-head"><div class="b-slider-lbl">Trait de scie</div><div class="b-slider-val" id="b-mext-val-ts">3 mm</div></div>
+          <input type="range" class="b-slider" min="2" max="8" value="3" id="b-mext-sl-ts" oninput="bMextMajSlider('b-mext-val-ts',this.value,'mm');bMextMajVol()">
+        </div>
+        <div class="b-slider-row">
+          <div class="b-slider-head"><div class="b-slider-lbl">Rendement géom.</div><div class="b-slider-val" id="b-mext-val-rg">50 %</div></div>
+          <input type="range" class="b-slider" min="30" max="80" value="50" id="b-mext-sl-rg" oninput="bMextMajSlider('b-mext-val-rg',this.value,' %');bMextMajVol()">
+        </div>
+        <div class="b-formule-lin">
+          <span class="b-voir-formule">Voir la formule</span>
+          <div class="b-lin-chip"><div class="b-lin-lbl">Linéaire indicatif</div><div class="b-lin-val" id="b-mext-val-lin">—</div></div>
+        </div>
+      </div>
+      <div class="b-vol-barre">
+        <div class="b-vol-bloc b-vol-extrait"><span class="b-vol-num" id="b-mext-v-ext">—</span><span class="b-vol-lbl">m³ extrait</span></div>
+        <div class="b-vol-bloc b-vol-utile" id="b-mext-bloc-utile"><span class="b-vol-num" id="b-mext-v-util">—</span><span class="b-vol-lbl">m³ utile</span></div>
+        <div class="b-vol-bloc b-vol-dechet" id="b-mext-bloc-dechet"><span class="b-vol-num" id="b-mext-v-dec">—</span><span class="b-vol-lbl">m³ déchet</span></div>
+      </div>
+      <div class="b-mext-nav">
+        <button class="b-dest-retour" onclick="bMextGoStep(1)">← Retour</button>
+        <button class="b-btn-valider-ext" id="b-mext-s2-next" onclick="bMextStep2Suivant()" disabled>Destination →</button>
+      </div>
+    </div>
+
+    <!-- Étape 3 — Destination -->
+    <div class="b-mext-body hidden" id="b-mext-step3">
+      <div class="b-dest-field">
+        <div class="b-dest-lbl">Nom du projet</div>
+        <input class="b-dest-input" type="text" id="b-mext-projet" placeholder="Ex. : Mairie de Rezé, bancs publics…">
+      </div>
+      <div class="b-dest-field">
+        <div class="b-dest-lbl">Commune d'installation</div>
+        <div class="b-dest-commune-readonly" id="b-mext-commune">—</div>
+      </div>
+      <div class="b-dest-field">
+        <div class="b-dest-lbl">Usage</div>
+        <div class="b-usage-toggle b-usage-toggle-dest">
+          <button class="b-usage-btn active" id="b-mext-usage-int" onclick="bMextSetUsage('Intérieur')">Intérieur</button>
+          <button class="b-usage-btn" id="b-mext-usage-ext" onclick="bMextSetUsage('Extérieur')">Extérieur</button>
+        </div>
+      </div>
+      <div class="b-dest-field">
+        <div class="b-dest-lbl">Lieu <span class="b-field-opt">(optionnel)</span></div>
+        <input class="b-dest-input" type="text" id="b-mext-lieu" placeholder="Ex. : salle des fêtes, école…">
+      </div>
+      <div class="b-mext-nav">
+        <button class="b-dest-retour" onclick="bMextGoStep(2)">← Retour</button>
+        <button class="b-dest-confirmer" onclick="bMextConfirmer()">CONFIRMER</button>
+      </div>
+    </div>
+
   </div>
 </div>
 

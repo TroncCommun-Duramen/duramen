@@ -1473,6 +1473,120 @@ body {
 
 .b-chip-essence-vol { font-size: 11px; opacity: 0.65; margin-left: 4px; }
 
+/* ── Modale Extraction 3 étapes ─────────────────────────────────────────── */
+.b-mext-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,15,14,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+}
+.b-mext-overlay.hidden { display: none; }
+
+.b-mext-card {
+  background: var(--washi);
+  border-radius: var(--border-radius-card);
+  width: 560px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(15,15,14,0.22);
+  overflow: hidden;
+}
+
+.b-mext-head {
+  padding: 20px 24px 12px;
+  border-bottom: var(--border-thin);
+  flex-shrink: 0;
+}
+.b-mext-head-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.b-mext-titre {
+  font-size: 18px;
+  font-weight: var(--font-weight-medium);
+}
+
+.b-mext-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.b-mext-step-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--brume);
+  color: var(--cendre);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.b-mext-step-dot.active { background: var(--indigo); color: var(--washi); }
+.b-mext-step-dot.done   { background: var(--sumi);   color: var(--washi); }
+
+.b-mext-step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--brume);
+  transition: background 0.2s;
+}
+.b-mext-step-line.done { background: var(--sumi); }
+
+.b-mext-step-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--cendre);
+  padding-bottom: 4px;
+}
+
+.b-mext-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.b-mext-section-lbl {
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.12em;
+  color: var(--cendre);
+  text-transform: uppercase;
+}
+
+.b-mext-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.b-mext-grumes-scroll {
+  max-height: 200px;
+  overflow-y: auto;
+  border: var(--border-thin);
+  border-radius: var(--border-radius-inner);
+}
+
+.b-mext-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: var(--border-thin);
+  margin-top: 4px;
+}
+.b-mext-nav .b-btn-valider-ext { width: auto; padding: 12px 24px; }
+
 /* ── Footer fixe ─────────────────────────────────────────────────────────── */
 .b-footer {
   position: fixed;
