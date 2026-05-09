@@ -188,6 +188,17 @@ var ESSENCE_COULEURS = {
 
 var BLUES_DEGRADE = ['#1a2f6a', '#2B3F8C', '#3d55a8', '#5570c0', '#7088d4', '#8da0e0', '#aab8ec', '#c4d0f4'];
 
+function bPiePath(cx, cy, r, startAngle, endAngle) {
+  if (endAngle - startAngle >= 2 * Math.PI) endAngle = startAngle + 2 * Math.PI - 0.0001;
+  var x1 = cx + r * Math.cos(startAngle);
+  var y1 = cy + r * Math.sin(startAngle);
+  var x2 = cx + r * Math.cos(endAngle);
+  var y2 = cy + r * Math.sin(endAngle);
+  var large = (endAngle - startAngle) > Math.PI ? 1 : 0;
+  return 'M ' + cx + ' ' + cy + ' L ' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
+    ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2.toFixed(2) + ' ' + y2.toFixed(2) + ' Z';
+}
+
 function bDrawDonutCommune() {
   var stock    = DuramenCore.getStock();
   var essences = Object.keys(stock).filter(function(k) { return stock[k].dispo > 0; });
@@ -197,38 +208,52 @@ function bDrawDonutCommune() {
   var legende  = document.getElementById('b-commune-donut-legende');
   if (!svg) return;
   svg.innerHTML = ''; legende.innerHTML = '';
-  if (total === 0) {
-    center.innerHTML = '<div class="b-donut-center-lbl">Aucun stock</div>';
-    return;
-  }
-  var r = 80, cx = 100, cy = 100, stroke = 24, circonf = 2 * Math.PI * r;
-  var fond = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  fond.setAttribute('cx', cx); fond.setAttribute('cy', cy); fond.setAttribute('r', r);
-  fond.setAttribute('fill', 'none'); fond.setAttribute('stroke', 'var(--brume)'); fond.setAttribute('stroke-width', stroke);
-  svg.appendChild(fond);
+  if (center) center.innerHTML = '';
+  if (total === 0) { legende.innerHTML = '<span style="font-size:12px;color:var(--cendre)">Aucun stock</span>'; return; }
+
   essences.sort(function(a, b) { return stock[b].dispo - stock[a].dispo; });
-  var offset = 0;
+
+  var cx = 100, cy = 100, r = 92;
+  var startAngle = -Math.PI / 2;
+
   essences.forEach(function(ess, i) {
     var pct      = stock[ess].dispo / total;
     var pctRound = Math.round(pct * 100);
-    var dash     = pct * circonf;
+    var endAngle = startAngle + pct * 2 * Math.PI;
     var couleur  = BLUES_DEGRADE[i % BLUES_DEGRADE.length];
-    var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
-    c.setAttribute('fill', 'none'); c.setAttribute('stroke', couleur); c.setAttribute('stroke-width', stroke);
-    c.setAttribute('stroke-dasharray', dash.toFixed(2) + ' ' + circonf.toFixed(2));
-    c.setAttribute('stroke-dashoffset', (-offset).toFixed(2));
-    svg.appendChild(c);
-    offset += dash;
+
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', bPiePath(cx, cy, r, startAngle, endAngle));
+    path.setAttribute('fill', couleur);
+    svg.appendChild(path);
+
+    if (pct > 0.05) {
+      var midAngle = startAngle + (endAngle - startAngle) / 2;
+      var tr = r * 0.63;
+      var tx = cx + tr * Math.cos(midAngle);
+      var ty = cy + tr * Math.sin(midAngle);
+      var txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('x', tx.toFixed(1));
+      txt.setAttribute('y', ty.toFixed(1));
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('dominant-baseline', 'middle');
+      txt.setAttribute('fill', 'white');
+      txt.setAttribute('font-size', '11');
+      txt.setAttribute('font-weight', '600');
+      txt.setAttribute('font-family', 'Outfit, sans-serif');
+      txt.textContent = pctRound + '%';
+      svg.appendChild(txt);
+    }
+
+    startAngle = endAngle;
+
     var item = document.createElement('div');
     item.className = 'b-commune-donut-item';
     item.innerHTML =
       '<div class="b-commune-donut-dot" style="background:' + couleur + '"></div>' +
-      '<span><strong>' + ess + '</strong> <span class="b-donut-pct">' + pctRound + '%</span></span>' +
-      '<span style="margin-left:auto;font-size:11px;color:var(--cendre)">' + stock[ess].dispo.toFixed(1) + ' m³</span>';
+      '<span><strong>' + ess + '</strong> <span class="b-donut-pct">' + pctRound + '%</span></span>';
     legende.appendChild(item);
   });
-  center.innerHTML = '<div class="b-donut-center-val">' + total.toFixed(1) + '</div><div class="b-donut-center-lbl">m³ dispo</div>';
 }
 
 function bAfficherCommune() {
@@ -363,17 +388,16 @@ function bAfficherMetropole() {
   // Ligne header
   var trH = document.createElement('tr');
   trH.className = 'b-tr-header';
-  var tdH = document.createElement('td'); tdH.colSpan = 5;
+  var tdH = document.createElement('td'); tdH.colSpan = 4;
   tdH.textContent = 'Nantes Métropole — ' + nbComm + ' commune' + (nbComm > 1 ? 's' : '') + ' · ' + rows.length + ' ligne' + (rows.length > 1 ? 's' : '');
   trH.appendChild(tdH);
   tbody.appendChild(trH);
 
-  rows.forEach(function(row, idx) {
+  rows.forEach(function(row) {
     var estMoi = bCommune && (row.commune === bCommune.nom || row.commune === bCommune.code);
     var tr = document.createElement('tr');
     if (estMoi) tr.className = 'b-tr-moi';
     [
-      { html: idx + 2, cls: '' },
       { html: estMoi ? '<strong>' + row.commune + '</strong>' : row.commune, cls: '' },
       { html: '<span style="color:var(--cendre)">' + row.essence + '</span>', cls: '' },
       { html: '<span class="b-vol">' + row.vol.toFixed(1) + ' m³</span>', cls: '' },
@@ -387,7 +411,7 @@ function bAfficherMetropole() {
   // Ligne total
   var trT = document.createElement('tr');
   trT.className = 'b-tr-total';
-  ['', 'Total métropole', '', '<span class="b-vol">' + totalVol.toFixed(1) + ' m³</span>', ''].forEach(function(h) {
+  ['Total métropole', '', '<span class="b-vol">' + totalVol.toFixed(1) + ' m³</span>', ''].forEach(function(h) {
     var td = document.createElement('td'); td.innerHTML = h; trT.appendChild(td);
   });
   tbody.appendChild(trT);
@@ -601,13 +625,24 @@ function bMextInitChips() {
       if (next) next.disabled = false;
       bExtGrumes = [];
       lots.filter(function(l) { return l.essence === ess; }).forEach(function(lot) {
-        var nb  = Math.max(1, parseInt(lot.nb_grumes) || 1);
-        var vol = (lot.vol_brut || 0) / nb;
-        for (var i = 0; i < nb; i++) {
-          bExtGrumes.push({ lotId: lot.id, lotNom: lot.nom || '—', essence: lot.essence,
-            index: i + 1, longueur: lot.longueur_grume || null,
-            diametre: lot.diametre_grume || null,
-            circonference: lot.circonference_grume || null, volume: vol });
+        var grumesArr = Array.isArray(lot.grumes) ? lot.grumes : [];
+        if (grumesArr.length > 0) {
+          grumesArr.forEach(function(g, i) {
+            var d   = parseFloat(g.diametre) || 0;
+            var lon = parseFloat(g.longueur)  || 0;
+            var vol = d > 0 && lon > 0 ? Math.PI * Math.pow(d / 200, 2) * lon : (lot.vol_brut || 0) / grumesArr.length;
+            bExtGrumes.push({ lotId: lot.id, lotNom: lot.nom || '—', essence: lot.essence,
+              index: i + 1, longueur: lon > 0 ? lon : null,
+              diametre: d > 0 ? d : null,
+              circonference: g.circonference || null, volume: vol });
+          });
+        } else {
+          var nb  = Math.max(1, parseInt(lot.nb_grumes) || 1);
+          var vol = (lot.vol_brut || 0) / nb;
+          for (var i = 0; i < nb; i++) {
+            bExtGrumes.push({ lotId: lot.id, lotNom: lot.nom || '—', essence: lot.essence,
+              index: i + 1, longueur: null, diametre: null, circonference: null, volume: vol });
+          }
         }
       });
     };

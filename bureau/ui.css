@@ -1365,6 +1365,7 @@ body {
 .b-commune-donut-wrap .b-donut-svg {
   width: 220px;
   height: 220px;
+  transform: none;
 }
 .b-commune-donut-legende {
   flex: 1;
