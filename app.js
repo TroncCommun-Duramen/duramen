@@ -551,6 +551,7 @@ function assureModalExtractionDest() {
   modal.appendChild(cel('h2', '', 'Destination'));
   modal.appendChild(cel('p', 'modal-sub', 'À qui vont ces grumes ?'));
 
+  // Nom du projet
   var fNom = cel('div', 'field');
   var lNom = cel('label', '', 'Nom du projet');
   lNom.htmlFor = 'modal-ext-nom';
@@ -563,18 +564,16 @@ function assureModalExtractionDest() {
   fNom.appendChild(iNom);
   modal.appendChild(fNom);
 
+  // Commune d'installation — propre commune, lecture seule
   var fCom = cel('div', 'field');
-  var lCom = cel('label', '', 'Commune d\'installation');
-  lCom.htmlFor = 'modal-ext-commune';
-  var sCom = cel('select', '');
-  sCom.id = 'modal-ext-commune';
-  var optDef = cel('option', '', '— Choisir —');
-  optDef.value = '';
-  sCom.appendChild(optDef);
-  fCom.appendChild(lCom);
-  fCom.appendChild(sCom);
+  fCom.appendChild(cel('label', '', 'Commune d\'installation'));
+  var vCom = cel('div', 'commune-readonly-val',
+    communeConnectee ? communeConnectee.nom : '—');
+  vCom.id = 'modal-ext-commune-val';
+  fCom.appendChild(vCom);
   modal.appendChild(fCom);
 
+  // Usage
   var fUsa = cel('div', 'field');
   var lUsa = cel('label', '', 'Usage');
   lUsa.htmlFor = 'modal-ext-usage';
@@ -589,6 +588,29 @@ function assureModalExtractionDest() {
   fUsa.appendChild(sUsa);
   modal.appendChild(fUsa);
 
+  // Cause de l'abattage
+  var fCause = cel('div', 'field');
+  var lCause = cel('label', '', 'Cause de l\'abattage');
+  lCause.htmlFor = 'modal-ext-cause';
+  var sCause = cel('select', '');
+  sCause.id = 'modal-ext-cause';
+  [
+    ['', '— Choisir (optionnel) —'],
+    ['Coupe sanitaire', 'Coupe sanitaire'],
+    ['Intempérie', 'Intempérie (chablis, neige…)'],
+    ['Entretien', 'Entretien courant'],
+    ['Aménagement', 'Aménagement urbain'],
+    ['Plantation', 'Renouvellement plantation']
+  ].forEach(function (kv) {
+    var o = cel('option', '', kv[1]);
+    o.value = kv[0];
+    sCause.appendChild(o);
+  });
+  fCause.appendChild(lCause);
+  fCause.appendChild(sCause);
+  modal.appendChild(fCause);
+
+  // Lieu (optionnel)
   var fLieu = cel('div', 'field');
   var lLieu = cel('label', '', 'Lieu (optionnel)');
   lLieu.htmlFor = 'modal-ext-lieu';
@@ -627,7 +649,6 @@ function ouvrirModalExtractionDest() {
   if (usaEl)  usaEl.value  = extDraft.usage;
   if (lieuEl) lieuEl.value = extDraft.lieu;
   document.getElementById('modal-ext-bg').classList.add('open');
-  chargerCommunesExtraction();
   if (nomEl) nomEl.focus();
 }
 
@@ -811,15 +832,16 @@ function majDebitExtraction() {
 }
 
 async function confirmerExtractionDest() {
-  var nomEl  = document.getElementById('modal-ext-nom');
-  var comEl  = document.getElementById('modal-ext-commune');
-  var usaEl  = document.getElementById('modal-ext-usage');
-  var lieuEl = document.getElementById('modal-ext-lieu');
+  var nomEl   = document.getElementById('modal-ext-nom');
+  var usaEl   = document.getElementById('modal-ext-usage');
+  var causeEl = document.getElementById('modal-ext-cause');
+  var lieuEl  = document.getElementById('modal-ext-lieu');
 
-  var destination    = nomEl  ? nomEl.value.trim()  : '';
-  var usage          = usaEl  ? usaEl.value          : '';
-  var communeInstall = comEl  ? comEl.value          : '';
-  var lieu           = lieuEl ? lieuEl.value.trim()  : '';
+  var destination    = nomEl   ? nomEl.value.trim()  : '';
+  var usage          = usaEl   ? usaEl.value          : '';
+  var causeAbattage  = causeEl ? causeEl.value        : '';
+  var lieu           = lieuEl  ? lieuEl.value.trim()  : '';
+  var communeInstall = communeConnectee ? communeConnectee.nom : '';
 
   if (!usage) { showError('Choisissez un usage.'); return; }
 
@@ -848,17 +870,19 @@ async function confirmerExtractionDest() {
     for (var j = 0; j < essences.length; j++) {
       var ess = essences[j];
       var ext = {
-        id:           crypto.randomUUID(),
-        commune_code: communeConnectee.code,
-        essence:      ess,
-        volume:       Math.round(parEssence[ess] * 10000) / 10000,
-        usage:        extDraft.usage,
-        destination:  extDraft.destination,
-        commune:      extDraft.communeInstall || '',
-        contact:      '',
-        notes:        extDraft.lieu ? 'Lieu : ' + extDraft.lieu : '',
-        date:         now.toLocaleDateString('fr-FR'),
-        date_iso:     now.toISOString()
+        id:              crypto.randomUUID(),
+        commune_code:    communeConnectee.code,
+        essence:         ess,
+        volume:          Math.round(parEssence[ess] * 10000) / 10000,
+        usage:           extDraft.usage,
+        destination:     extDraft.destination,
+        commune:         communeInstall,
+        contact:         '',
+        notes:           extDraft.lieu ? 'Lieu : ' + extDraft.lieu : '',
+        cause_abattage:  causeAbattage,
+        type_sortie:     extDebitActif ? 'debit' : 'grume',
+        date:            now.toLocaleDateString('fr-FR'),
+        date_iso:        now.toISOString()
       };
       DuramenCore.sortie(ext);
       await sbInsert('extractions', ext);
@@ -869,8 +893,8 @@ async function confirmerExtractionDest() {
     fermerModalExtractionDest();
     afficherExtraction();
     showToastSucces('Extraction enregistrée.');
-    var btnAcc = document.querySelector('.bnav-btn[data-panel="accueil"]');
-    if (btnAcc) switchTab('accueil', btnAcc);
+    var btnHisto = document.querySelector('.tab[onclick*="historique"]');
+    if (btnHisto) switchTab('historique', btnHisto);
   } catch (err) {
     showError('Erreur : ' + err.message);
   } finally {
@@ -1051,6 +1075,43 @@ async function afficherHistoriqueCommunaute(content) {
   }
 }
 
+// ─── Couleurs des essences pour le donut ──────────────────────────────────
+var ESSENCE_COULEURS = {
+  'Aulne': '#6b8e6b', 'Châtaignier': '#9e5c2d', 'Chêne': '#8B6914',
+  'Cyprès': '#5c7060', 'Douglas': '#4a7a5c', 'Épicéa': '#3d6b4f',
+  'Frêne': '#5c7a3e', 'Hêtre': '#b5763a', 'Mélèze': '#8a7040',
+  'Merisier': '#d04060', 'Noyer': '#5c3d1e', 'Peuplier': '#7ab359',
+  'Pin maritime': '#7c9c5a', 'Pin sylvestre': '#6a8c4a', 'Platane': '#8fa87c',
+  'Robinier (Acacia)': '#c4a24d', 'Séquoia': '#a0522d', 'Tilleul': '#9ab86e',
+  'Autre': '#aaaaaa'
+};
+
+function creerDonutEssences(parEss, totalVol) {
+  var R = 50, C = 2 * Math.PI * R;
+  var offset = 0;
+  var arcs = '';
+  Object.keys(parEss)
+    .sort(function (a, b) { return parEss[b].vol - parEss[a].vol; })
+    .forEach(function (ess) {
+      var pct = totalVol > 0 ? parEss[ess].vol / totalVol : 0;
+      if (pct < 0.005) return;
+      var couleur = ESSENCE_COULEURS[ess] || '#888';
+      arcs += '<circle cx="64" cy="64" r="' + R + '" fill="none"'
+        + ' stroke="' + couleur + '" stroke-width="18"'
+        + ' stroke-dasharray="' + (pct * C).toFixed(2) + ' ' + C.toFixed(2) + '"'
+        + ' stroke-dashoffset="' + (-(offset * C)).toFixed(2) + '"'
+        + ' transform="rotate(-90 64 64)"/>';
+      offset += pct;
+    });
+  return '<svg width="128" height="128" viewBox="0 0 128 128" class="histo-donut-svg">'
+    + '<circle cx="64" cy="64" r="' + R + '" fill="none" stroke="var(--brume)" stroke-width="18"/>'
+    + arcs
+    + '<text x="64" y="59" text-anchor="middle" font-size="16" font-weight="600" fill="var(--sumi)">'
+    + totalVol.toFixed(1) + '</text>'
+    + '<text x="64" y="73" text-anchor="middle" font-size="8" fill="var(--cendre)">m³ dispo</text>'
+    + '</svg>';
+}
+
 function rendreHistoriqueContenu(container, lotsData) {
   if (!lotsData || lotsData.length === 0) {
     var es = cel('div', 'empty-state');
@@ -1060,11 +1121,19 @@ function rendreHistoriqueContenu(container, lotsData) {
     return;
   }
 
-  // ── Bloc total ──────────────────────────────────────────────────────
-  var stock     = DuramenCore.getStock();
-  var totalVol  = Object.keys(stock).reduce(function (s, e) { return s + (stock[e].dispo || 0); }, 0);
+  // ── Calcul volumes depuis lotsData (correct pour toutes communes) ────
+  var parEss = {};
+  lotsData.forEach(function (l) {
+    var e = l.essence || 'Autre';
+    if (!parEss[e]) parEss[e] = { vol: 0, lots: 0, causes: [] };
+    parEss[e].vol  += (l.vol_utile || 0);
+    parEss[e].lots += 1;
+    if (l.cause && parEss[e].causes.indexOf(l.cause) === -1) parEss[e].causes.push(l.cause);
+  });
+  var totalVol  = Object.keys(parEss).reduce(function (s, e) { return s + parEss[e].vol; }, 0);
   var totalLots = lotsData.length;
 
+  // ── Bloc total ──────────────────────────────────────────────────────
   var bloc = cel('div', 'histo-total-block');
 
   var itemVol = cel('div', '');
@@ -1081,44 +1150,84 @@ function rendreHistoriqueContenu(container, lotsData) {
 
   container.appendChild(bloc);
 
-  // ── Par essence ─────────────────────────────────────────────────────
-  container.appendChild(cel('div', 'histo-section-title', 'Par essence'));
+  // ── Donut + légende (vue Ma commune uniquement) ─────────────────────
+  if (histoVue === 'commune') {
+    container.appendChild(cel('div', 'histo-section-title', 'Stock par essence'));
+    var donutWrap = document.createElement('div');
+    donutWrap.className = 'histo-donut-wrap';
+    donutWrap.innerHTML = creerDonutEssences(parEss, totalVol);
 
-  var parEss = {};
-  lotsData.forEach(function (l) {
-    var e = l.essence || 'Autre';
-    if (!parEss[e]) parEss[e] = { vol: 0, lots: 0, causes: [] };
-    parEss[e].vol   = stock[e] ? (stock[e].dispo || 0) : 0;
-    parEss[e].lots += 1;
-    if (l.cause && parEss[e].causes.indexOf(l.cause) === -1) parEss[e].causes.push(l.cause);
-  });
+    var legend = cel('div', 'histo-donut-legend');
+    Object.keys(parEss)
+      .sort(function (a, b) { return parEss[b].vol - parEss[a].vol; })
+      .forEach(function (ess) {
+        var item = cel('div', 'histo-donut-legend-item');
+        var dot  = cel('div', 'histo-donut-dot');
+        dot.style.background = ESSENCE_COULEURS[ess] || '#888';
+        var volEl = cel('div', 'histo-donut-legend-vol', parEss[ess].vol.toFixed(2) + ' m³');
+        item.appendChild(dot);
+        item.appendChild(cel('span', '', ess));
+        item.appendChild(volEl);
+        legend.appendChild(item);
+      });
+    donutWrap.appendChild(legend);
+    container.appendChild(donutWrap);
 
-  var essList = cel('div', '');
-  Object.keys(parEss)
-    .sort(function (a, b) { return parEss[b].vol - parEss[a].vol; })
-    .forEach(function (ess) {
-      var d    = parEss[ess];
-      var pct  = totalVol > 0 ? (d.vol / totalVol * 100) : 0;
-      var item = cel('div', 'histo-essence-item');
-
-      var top = cel('div', 'histo-essence-top');
-      top.appendChild(cel('span', 'histo-essence-name', ess));
-      top.appendChild(cel('span', 'histo-essence-vol', d.vol.toFixed(3) + ' m³'));
-      item.appendChild(top);
-
-      item.appendChild(cel('div', 'histo-essence-meta',
-        d.lots + (d.lots > 1 ? ' lots' : ' lot') +
-        (d.causes.length ? ' — ' + d.causes.join(', ') : '')
-      ));
-
-      var track = cel('div', 'histo-bar-track');
-      var fill  = cel('div', 'histo-bar-fill');
-      fill.style.width = pct.toFixed(1) + '%';
-      track.appendChild(fill);
-      item.appendChild(track);
-      essList.appendChild(item);
+    // ── Extractions du mois ─────────────────────────────────────────
+    var moisCourant = new Date().toISOString().slice(0, 7);
+    var extMois = extractions.filter(function (e) {
+      return e.date_iso && e.date_iso.startsWith(moisCourant);
     });
-  container.appendChild(essList);
+    var volMois = extMois.reduce(function (s, e) { return s + (e.volume || 0); }, 0);
+
+    container.appendChild(cel('div', 'histo-section-title mt-16',
+      'Extractions ce mois — ' + volMois.toFixed(2) + ' m³'));
+
+    if (extMois.length === 0) {
+      container.appendChild(cel('div', 'histo-essence-meta', 'Aucune extraction ce mois.'));
+    } else {
+      var extList = cel('div', 'histo-ext-list');
+      extMois.slice(0, 8).forEach(function (ext) {
+        var item = cel('div', 'histo-ext-item');
+        item.appendChild(cel('div', 'histo-ext-essence', ext.essence || '—'));
+        item.appendChild(cel('div', 'histo-ext-vol', (ext.volume || 0).toFixed(3) + ' m³'));
+        var typeLabel = (ext.type_sortie === 'debit') ? 'Débit planches' : 'Grume brute';
+        item.appendChild(cel('div', 'histo-ext-type', typeLabel));
+        item.appendChild(cel('div', 'histo-ext-date', ext.date || ''));
+        extList.appendChild(item);
+      });
+      container.appendChild(extList);
+    }
+  } else {
+    // ── Vue Nantes Métropole : barres par essence ───────────────────
+    container.appendChild(cel('div', 'histo-section-title', 'Par essence'));
+    var essList = cel('div', '');
+    Object.keys(parEss)
+      .sort(function (a, b) { return parEss[b].vol - parEss[a].vol; })
+      .forEach(function (ess) {
+        var d    = parEss[ess];
+        var pct  = totalVol > 0 ? (d.vol / totalVol * 100) : 0;
+        var item = cel('div', 'histo-essence-item');
+
+        var top = cel('div', 'histo-essence-top');
+        top.appendChild(cel('span', 'histo-essence-name', ess));
+        top.appendChild(cel('span', 'histo-essence-vol', d.vol.toFixed(3) + ' m³'));
+        item.appendChild(top);
+
+        item.appendChild(cel('div', 'histo-essence-meta',
+          d.lots + (d.lots > 1 ? ' lots' : ' lot') +
+          (d.causes.length ? ' — ' + d.causes.join(', ') : '')
+        ));
+
+        var track = cel('div', 'histo-bar-track');
+        var fill  = cel('div', 'histo-bar-fill');
+        fill.style.width = pct.toFixed(1) + '%';
+        track.appendChild(fill);
+        item.appendChild(track);
+        essList.appendChild(item);
+      });
+    container.appendChild(essList);
+  }
 
   // ── Lots récents ────────────────────────────────────────────────────
   container.appendChild(cel('div', 'histo-section-title mt-16', 'Lots récents'));
