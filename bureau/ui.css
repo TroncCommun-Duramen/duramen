@@ -38,6 +38,7 @@ body {
 }
 
 .b-login-logo svg { width: 88px; height: 88px; color: var(--sumi); }
+.b-login-logo-img { width: 88px; height: 88px; object-fit: contain; }
 
 .b-login-title {
   font-size: 26px;
@@ -178,11 +179,11 @@ body {
 }
 .b-tab:hover { opacity: 0.85; background: var(--neige); }
 .b-tab.active {
-  background: var(--washi);
-  color: var(--indigo);
+  background: var(--indigo);
+  color: var(--washi);
   font-weight: var(--font-weight-semibold);
   opacity: 1;
-  border-bottom: 2px solid var(--indigo);
+  border-bottom: none;
   box-shadow: none;
 }
 
@@ -1338,6 +1339,41 @@ body {
   cursor: pointer;
 }
 .b-dest-confirmer:hover { opacity: 0.85; }
+
+/* ── Commune readonly ────────────────────────────────────────────────────── */
+.b-dest-commune-readonly {
+  padding: 10px 0;
+  border-bottom: 1.5px solid var(--brume);
+  font-size: 16px;
+  color: var(--indigo);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ── Donut commune ───────────────────────────────────────────────────────── */
+.b-commune-donut-section {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 24px;
+}
+.b-commune-donut-legende {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.b-commune-donut-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.b-commune-donut-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
 /* ── Olive (débit en planches) ───────────────────────────────────────────── */
 :root { --olive: #5a6e3a; }

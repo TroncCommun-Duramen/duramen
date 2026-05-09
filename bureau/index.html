@@ -14,23 +14,7 @@
 <div id="b-connexion">
   <div class="b-login-card">
     <div class="b-login-logo">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
-        <g transform="translate(100,100)">
-          <circle cx="0" cy="0" r="88" stroke="currentColor" stroke-width="5"/>
-          <rect x="-96" y="-14" width="20" height="8" rx="2" fill="currentColor"/>
-          <rect x="76"  y="-14" width="20" height="8" rx="2" fill="currentColor"/>
-          <rect x="-14" y="-96" width="8" height="20" rx="2" fill="currentColor"/>
-          <rect x="-14" y="76"  width="8" height="20" rx="2" fill="currentColor"/>
-          <circle cx="0" cy="0" r="64" stroke="currentColor" stroke-width="3.5"/>
-          <circle cx="0" cy="0" r="38" stroke="currentColor" stroke-width="3"/>
-          <circle cx="0" cy="0" r="12" stroke="currentColor" stroke-width="3"/>
-          <circle cx="0" cy="0" r="4" fill="currentColor"/>
-          <line x1="-88" y1="0" x2="-12" y2="0" stroke="currentColor" stroke-width="2.5"/>
-          <line x1="12"  y1="0" x2="88"  y2="0" stroke="currentColor" stroke-width="2.5"/>
-          <line x1="0"   y1="-88" x2="0"   y2="-12" stroke="currentColor" stroke-width="2.5"/>
-          <line x1="0"   y1="88"  x2="0"   y2="12"  stroke="currentColor" stroke-width="2.5"/>
-        </g>
-      </svg>
+      <img src="../icon-512.png" alt="DURAMEN" class="b-login-logo-img">
     </div>
     <div class="b-login-title">DURAMEN</div>
     <div class="b-login-sub">Interface bureau</div>
@@ -93,6 +77,14 @@
 
         <!-- COLONNE GAUCHE — lecture -->
         <div class="b-commune-gauche">
+          <div class="b-section-lbl">RÉPARTITION DU STOCK PAR ESSENCE</div>
+          <div class="b-commune-donut-section" id="b-commune-donut-section">
+            <div class="b-donut-wrap" style="width:160px;height:160px;flex-shrink:0">
+              <svg class="b-donut-svg" viewBox="0 0 200 200" id="b-commune-donut-svg" style="width:160px;height:160px"></svg>
+              <div class="b-donut-center" id="b-commune-donut-center"></div>
+            </div>
+            <div class="b-commune-donut-legende" id="b-commune-donut-legende"></div>
+          </div>
           <div class="b-section-lbl">STOCK DISPONIBLE PAR ESSENCE</div>
           <div class="b-essences-grid" id="b-essences-grid"></div>
           <div class="b-section-lbl b-section-lbl-mt">DERNIERS LOTS ENREGISTRÉS</div>
@@ -274,10 +266,6 @@
 
     <!-- ══ EXPORT ══ -->
     <div class="b-panel" id="b-panel-export">
-      <div class="b-export-topbar">
-        <button class="b-btn-export-primary" onclick="bExportSelection()">↓ Exporter la sélection</button>
-        <button class="b-btn-export-outline" onclick="bExportTout()">↓ Tout exporter</button>
-      </div>
       <div class="b-breadcrumb"><span class="b-bc-badge">—</span> Paramétrez vos filtres puis exportez en CSV</div>
       <div class="b-export-filtres">
         <div class="b-filtre-card">
