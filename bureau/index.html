@@ -126,8 +126,6 @@
               <button class="b-ext-panel-fermer" onclick="bFermerExtraction()">✕</button>
             </div>
             <div class="b-ext-panel-body">
-
-              <!-- Étape 1 : Essence + Grumes -->
               <div class="b-ext-etape-row">
                 <div class="b-ext-etape-num">1</div>
                 <div class="b-ext-etape-lbl">Grumes à extraire</div>
@@ -138,8 +136,6 @@
                 <span id="b-grumes-resume-txt">—</span>
                 <span class="b-grumes-resume-modifier" onclick="bOuvrirGrumes()">Modifier</span>
               </div>
-
-              <!-- Étape 2 : Type -->
               <div class="b-ext-etape-row b-ext-etape-mt">
                 <div class="b-ext-etape-num">2</div>
                 <div class="b-ext-etape-lbl">Type de valorisation</div>
@@ -155,60 +151,30 @@
                   <span id="b-type-desc-body">Calcul du volume utile et du déchet selon l'épaisseur de planche, le trait de scie et le rendement géométrique.</span>
                 </div>
               </div>
-
-              <!-- Sliders (mode planches) -->
               <div class="b-sliders-zone" id="b-sliders-zone">
                 <div class="b-slider-row">
-                  <div class="b-slider-head">
-                    <div class="b-slider-lbl">ÉPAISSEUR PLANCHE</div>
-                    <div class="b-slider-val" id="b-val-ep">27 mm</div>
-                  </div>
-                  <input type="range" class="b-slider" min="15" max="60" value="27" id="b-sl-ep"
-                    oninput="bMajSlider('b-val-ep',this.value,'mm');bMajVolumes()">
+                  <div class="b-slider-head"><div class="b-slider-lbl">ÉPAISSEUR PLANCHE</div><div class="b-slider-val" id="b-val-ep">27 mm</div></div>
+                  <input type="range" class="b-slider" min="15" max="60" value="27" id="b-sl-ep" oninput="bMajSlider('b-val-ep',this.value,'mm');bMajVolumes()">
                 </div>
                 <div class="b-slider-row">
-                  <div class="b-slider-head">
-                    <div class="b-slider-lbl">TRAIT DE SCIE</div>
-                    <div class="b-slider-val" id="b-val-ts">3 mm</div>
-                  </div>
-                  <input type="range" class="b-slider" min="2" max="8" value="3" id="b-sl-ts"
-                    oninput="bMajSlider('b-val-ts',this.value,'mm');bMajVolumes()">
+                  <div class="b-slider-head"><div class="b-slider-lbl">TRAIT DE SCIE</div><div class="b-slider-val" id="b-val-ts">3 mm</div></div>
+                  <input type="range" class="b-slider" min="2" max="8" value="3" id="b-sl-ts" oninput="bMajSlider('b-val-ts',this.value,'mm');bMajVolumes()">
                 </div>
                 <div class="b-slider-row">
-                  <div class="b-slider-head">
-                    <div class="b-slider-lbl">RENDEMENT GÉOM.</div>
-                    <div class="b-slider-val" id="b-val-rg">50 %</div>
-                  </div>
-                  <input type="range" class="b-slider" min="30" max="80" value="50" id="b-sl-rg"
-                    oninput="bMajSlider('b-val-rg',this.value,' %');bMajVolumes()">
+                  <div class="b-slider-head"><div class="b-slider-lbl">RENDEMENT GÉOM.</div><div class="b-slider-val" id="b-val-rg">50 %</div></div>
+                  <input type="range" class="b-slider" min="30" max="80" value="50" id="b-sl-rg" oninput="bMajSlider('b-val-rg',this.value,' %');bMajVolumes()">
                 </div>
                 <div class="b-formule-lin">
                   <span class="b-voir-formule">Voir la formule</span>
-                  <div class="b-lin-chip">
-                    <div class="b-lin-lbl">LINÉAIRE INDICATIF</div>
-                    <div class="b-lin-val" id="b-val-lin">—</div>
-                  </div>
+                  <div class="b-lin-chip"><div class="b-lin-lbl">LINÉAIRE INDICATIF</div><div class="b-lin-val" id="b-val-lin">—</div></div>
                 </div>
               </div>
-
-            </div><!-- fin panel-body -->
-
-            <!-- Barre volumes -->
-            <div class="b-vol-barre">
-              <div class="b-vol-bloc b-vol-extrait">
-                <span class="b-vol-num" id="b-v-ext">—</span>
-                <span class="b-vol-lbl">m³ extrait</span>
-              </div>
-              <div class="b-vol-bloc b-vol-utile" id="b-bloc-utile">
-                <span class="b-vol-num" id="b-v-util">—</span>
-                <span class="b-vol-lbl">m³ utile</span>
-              </div>
-              <div class="b-vol-bloc b-vol-dechet" id="b-bloc-dechet">
-                <span class="b-vol-num" id="b-v-dec">—</span>
-                <span class="b-vol-lbl">m³ déchet</span>
-              </div>
             </div>
-
+            <div class="b-vol-barre">
+              <div class="b-vol-bloc b-vol-extrait"><span class="b-vol-num" id="b-v-ext">—</span><span class="b-vol-lbl">m³ extrait</span></div>
+              <div class="b-vol-bloc b-vol-utile" id="b-bloc-utile"><span class="b-vol-num" id="b-v-util">—</span><span class="b-vol-lbl">m³ utile</span></div>
+              <div class="b-vol-bloc b-vol-dechet" id="b-bloc-dechet"><span class="b-vol-num" id="b-v-dec">—</span><span class="b-vol-lbl">m³ déchet</span></div>
+            </div>
             <div class="b-ext-panel-footer">
               <button class="b-btn-valider-ext" id="b-btn-valider-ext" onclick="bOuvrirDestination()">Valider l'extraction →</button>
               <button class="b-btn-annuler-ext" onclick="bFermerExtraction()">Annuler</button>
