@@ -876,10 +876,10 @@ body {
 
 .b-metro-layout {
   display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 0;
-  padding: 24px;
+  grid-template-columns: 280px 1fr;
   gap: 24px;
+  padding: 24px;
+  align-items: start;
 }
 
 .b-barre-repartition {
@@ -1354,15 +1354,24 @@ body {
 /* ── Donut commune ───────────────────────────────────────────────────────── */
 .b-commune-donut-section {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 28px;
   margin-bottom: 24px;
+}
+.b-commune-donut-wrap {
+  width: 220px;
+  height: 220px;
+}
+.b-commune-donut-wrap .b-donut-svg {
+  width: 220px;
+  height: 220px;
 }
 .b-commune-donut-legende {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-top: 8px;
 }
 .b-commune-donut-item {
   display: flex;
@@ -1375,6 +1384,22 @@ body {
   height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+.b-donut-pct {
+  color: var(--indigo);
+  font-weight: var(--font-weight-semibold);
+  font-size: 12px;
+}
+
+/* ── Donut métropole (colonne gauche, vertical) ──────────────────────────── */
+.b-metro-donut-section {
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+.b-metro-donut-section .b-donut-legende {
+  width: 100%;
 }
 
 /* ── Olive (débit en planches) ───────────────────────────────────────────── */

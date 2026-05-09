@@ -186,6 +186,8 @@ var ESSENCE_COULEURS = {
   'Aulne': '#6b8e6b', 'Platane': '#8fa87c', 'Tilleul': '#9ab86e'
 };
 
+var BLUES_DEGRADE = ['#1a2f6a', '#2B3F8C', '#3d55a8', '#5570c0', '#7088d4', '#8da0e0', '#aab8ec', '#c4d0f4'];
+
 function bDrawDonutCommune() {
   var stock    = DuramenCore.getStock();
   var essences = Object.keys(stock).filter(function(k) { return stock[k].dispo > 0; });
@@ -199,17 +201,18 @@ function bDrawDonutCommune() {
     center.innerHTML = '<div class="b-donut-center-lbl">Aucun stock</div>';
     return;
   }
-  var r = 72, cx = 100, cy = 100, stroke = 22, circonf = 2 * Math.PI * r;
+  var r = 80, cx = 100, cy = 100, stroke = 24, circonf = 2 * Math.PI * r;
   var fond = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   fond.setAttribute('cx', cx); fond.setAttribute('cy', cy); fond.setAttribute('r', r);
   fond.setAttribute('fill', 'none'); fond.setAttribute('stroke', 'var(--brume)'); fond.setAttribute('stroke-width', stroke);
   svg.appendChild(fond);
   essences.sort(function(a, b) { return stock[b].dispo - stock[a].dispo; });
   var offset = 0;
-  essences.forEach(function(ess) {
-    var pct = stock[ess].dispo / total;
-    var dash = pct * circonf;
-    var couleur = ESSENCE_COULEURS[ess] || '#888';
+  essences.forEach(function(ess, i) {
+    var pct      = stock[ess].dispo / total;
+    var pctRound = Math.round(pct * 100);
+    var dash     = pct * circonf;
+    var couleur  = BLUES_DEGRADE[i % BLUES_DEGRADE.length];
     var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
     c.setAttribute('fill', 'none'); c.setAttribute('stroke', couleur); c.setAttribute('stroke-width', stroke);
@@ -219,9 +222,10 @@ function bDrawDonutCommune() {
     offset += dash;
     var item = document.createElement('div');
     item.className = 'b-commune-donut-item';
-    item.innerHTML = '<div class="b-commune-donut-dot" style="background:' + couleur + '"></div>' +
-      '<span>' + ess + '</span>' +
-      '<span style="margin-left:auto;font-weight:600;font-size:12px;color:var(--sumi)">' + stock[ess].dispo.toFixed(1) + ' m³</span>';
+    item.innerHTML =
+      '<div class="b-commune-donut-dot" style="background:' + couleur + '"></div>' +
+      '<span><strong>' + ess + '</strong> <span class="b-donut-pct">' + pctRound + '%</span></span>' +
+      '<span style="margin-left:auto;font-size:11px;color:var(--cendre)">' + stock[ess].dispo.toFixed(1) + ' m³</span>';
     legende.appendChild(item);
   });
   center.innerHTML = '<div class="b-donut-center-val">' + total.toFixed(1) + '</div><div class="b-donut-center-lbl">m³ dispo</div>';
@@ -326,32 +330,32 @@ function bAfficherMetropole() {
   if (selC.options.length <= 1) commAll.forEach(function(c) { var o = document.createElement('option'); o.value = c; o.textContent = c; selC.appendChild(o); });
   if (selE.options.length <= 1) essAll.forEach(function(e)  { var o = document.createElement('option'); o.value = e; o.textContent = e; selE.appendChild(o); });
 
-  // Filtrer par commune uniquement (pas par essence) pour avoir toutes les communes
-  var lotsParCommune = bLotsMetro.filter(function(l) {
+  // Camembert : filtre par essence uniquement (montre la part de chaque commune)
+  var donutData = bLotsMetro.filter(function(l) {
+    return !filtreEssence || l.essence === filtreEssence;
+  });
+  bDrawDonut(donutData);
+
+  // Table : filtre par commune ET essence, une ligne par commune+essence
+  var tableData = bLotsMetro.filter(function(l) {
     var c = l.commune || l.commune_code;
     if (filtreCommune && c !== filtreCommune) return false;
-    return true;
-  });
-
-  // Agréger par commune — volume filtré par essence (0 si absente), métadonnées complètes
-  var parCommune = {};
-  lotsParCommune.forEach(function(l) {
-    var c = l.commune || l.commune_code;
-    if (!parCommune[c]) parCommune[c] = { vol: 0, lots: 0, essences: [] };
-    parCommune[c].lots += 1;
-    if (l.essence && parCommune[c].essences.indexOf(l.essence) === -1) parCommune[c].essences.push(l.essence);
-    if (!filtreEssence || l.essence === filtreEssence) parCommune[c].vol += (l.vol_brut || 0);
-  });
-
-  // Pour le donut : données filtrées aussi par essence
-  var data = lotsParCommune.filter(function(l) {
     if (filtreEssence && l.essence !== filtreEssence) return false;
     return true;
   });
 
-  var communes = Object.keys(parCommune);
-  var totalVol = communes.reduce(function(s, c) { return s + parCommune[c].vol; }, 0);
-  var totalLots = communes.reduce(function(s, c) { return s + parCommune[c].lots; }, 0);
+  var parCE = {};
+  tableData.forEach(function(l) {
+    var comm = l.commune || l.commune_code;
+    var key  = comm + '::' + (l.essence || '—');
+    if (!parCE[key]) parCE[key] = { commune: comm, essence: l.essence || '—', vol: 0, lots: 0 };
+    parCE[key].vol  += (l.vol_brut || 0);
+    parCE[key].lots += 1;
+  });
+
+  var rows     = Object.values(parCE).sort(function(a, b) { return b.vol - a.vol; });
+  var totalVol = rows.reduce(function(s, r) { return s + r.vol; }, 0);
+  var nbComm   = rows.map(function(r) { return r.commune; }).filter(function(v, i, a) { return a.indexOf(v) === i; }).length;
 
   var tbody = document.getElementById('b-metro-tbody');
   tbody.innerHTML = '';
@@ -359,39 +363,23 @@ function bAfficherMetropole() {
   // Ligne header
   var trH = document.createElement('tr');
   trH.className = 'b-tr-header';
-  var tdH = document.createElement('td'); tdH.colSpan = 6;
-  tdH.textContent = 'Nantes Métropole — ' + communes.length + ' commune' + (communes.length > 1 ? 's' : '') + ' · ' + totalLots + ' lots partagés';
+  var tdH = document.createElement('td'); tdH.colSpan = 5;
+  tdH.textContent = 'Nantes Métropole — ' + nbComm + ' commune' + (nbComm > 1 ? 's' : '') + ' · ' + rows.length + ' ligne' + (rows.length > 1 ? 's' : '');
   trH.appendChild(tdH);
   tbody.appendChild(trH);
 
-  communes.sort(function(a, b) { return parCommune[b].vol - parCommune[a].vol; });
-  communes.forEach(function(comm, idx) {
-    var info = parCommune[comm];
-    var pct  = totalVol > 0 ? Math.round((info.vol / totalVol) * 100) : 0;
-    var estMoi = bCommune && (comm === bCommune.nom || comm === bCommune.code);
+  rows.forEach(function(row, idx) {
+    var estMoi = bCommune && (row.commune === bCommune.nom || row.commune === bCommune.code);
     var tr = document.createElement('tr');
     if (estMoi) tr.className = 'b-tr-moi';
-    var essAff = filtreEssence ? filtreEssence : info.essences.join(', ');
-
     [
       { html: idx + 2, cls: '' },
-      { html: estMoi ? '<strong>' + comm + '</strong>' : comm, cls: '' },
-      { html: '<span style="color:var(--cendre)">' + essAff + '</span>', cls: '' },
-      { html: '<span class="b-vol">' + info.vol.toFixed(1) + ' m³</span>', cls: '' },
-      { html: info.lots, cls: '' },
-      {
-        html: '<div style="display:flex;align-items:center;gap:6px">' +
-              '<div class="b-barre-repartition"><div class="b-barre-repartition-fill" style="width:' + pct + '%"></div></div>' +
-              '<span class="b-pct">' + pct + '%</span>' +
-              (estMoi ? '<span class="b-badge b-badge-vous">vous</span>' : '') +
-              '</div>',
-        cls: ''
-      }
+      { html: estMoi ? '<strong>' + row.commune + '</strong>' : row.commune, cls: '' },
+      { html: '<span style="color:var(--cendre)">' + row.essence + '</span>', cls: '' },
+      { html: '<span class="b-vol">' + row.vol.toFixed(1) + ' m³</span>', cls: '' },
+      { html: '<span style="color:var(--cendre)">' + row.lots + ' lot' + (row.lots > 1 ? 's' : '') + '</span>', cls: '' }
     ].forEach(function(c) {
-      var td = document.createElement('td');
-      td.innerHTML = c.html;
-      if (c.cls) td.className = c.cls;
-      tr.appendChild(td);
+      var td = document.createElement('td'); td.innerHTML = c.html; if (c.cls) td.className = c.cls; tr.appendChild(td);
     });
     tbody.appendChild(tr);
   });
@@ -399,71 +387,78 @@ function bAfficherMetropole() {
   // Ligne total
   var trT = document.createElement('tr');
   trT.className = 'b-tr-total';
-  [
-    '', 'Total métropole', '', '<span class="b-vol">' + totalVol.toFixed(1) + ' m³</span>', totalLots, ''
-  ].forEach(function(h) {
+  ['', 'Total métropole', '', '<span class="b-vol">' + totalVol.toFixed(1) + ' m³</span>', ''].forEach(function(h) {
     var td = document.createElement('td'); td.innerHTML = h; trT.appendChild(td);
   });
   tbody.appendChild(trT);
-
-  bDrawDonut(data);
 }
 
 function bDrawDonut(data) {
-  var parEssence = {};
+  var parCommune = {};
   data.forEach(function(l) {
-    if (!l.essence) return;
-    parEssence[l.essence] = (parEssence[l.essence] || 0) + (l.vol_brut || 0);
+    var c = l.commune || l.commune_code;
+    if (!c) return;
+    parCommune[c] = (parCommune[c] || 0) + (l.vol_brut || 0);
   });
-  var total = Object.values(parEssence).reduce(function(s, v) { return s + v; }, 0);
-  if (total === 0) return;
+  var total = Object.values(parCommune).reduce(function(s, v) { return s + v; }, 0);
 
-  var sorted = Object.keys(parEssence).sort(function(a, b) { return parEssence[b] - parEssence[a]; });
-  var top4   = sorted.slice(0, 4);
-  var autres = sorted.slice(4).reduce(function(s, k) { return s + parEssence[k]; }, 0);
-  var segments = top4.map(function(k) { return { nom: k, vol: parEssence[k] }; });
-  if (autres > 0) segments.push({ nom: 'Autres', vol: autres });
-
-  // Palette bois : du plus sombre (noyer) au plus clair (frêne/épicéa)
-  var couleurs = ['#3D2B1F', '#6B4226', '#9C6B3C', '#C4965A', '#DFC09A'];
-  var r = 72, cx = 100, cy = 100, stroke = 22;
-  var circonf = 2 * Math.PI * r;
-  var svg = document.getElementById('b-donut-svg');
+  var svg    = document.getElementById('b-donut-svg');
+  var center = document.getElementById('b-donut-center');
+  var legende = document.getElementById('b-donut-legende');
+  if (!svg) return;
   svg.innerHTML = '';
+  if (legende) legende.innerHTML = '';
+
+  if (total === 0) {
+    if (center) center.innerHTML = '<div class="b-donut-center-lbl">Aucune donnée</div>';
+    return;
+  }
+
+  var sorted   = Object.keys(parCommune).sort(function(a, b) { return parCommune[b] - parCommune[a]; });
+  var top6     = sorted.slice(0, 6);
+  var autresVol = sorted.slice(6).reduce(function(s, k) { return s + parCommune[k]; }, 0);
+  var segments = top6.map(function(k) { return { nom: k, vol: parCommune[k] }; });
+  if (autresVol > 0) segments.push({ nom: 'Autres', vol: autresVol });
+
+  var r = 80, cx = 100, cy = 100, stroke = 24;
+  var circonf = 2 * Math.PI * r;
+
+  var fond = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  fond.setAttribute('cx', cx); fond.setAttribute('cy', cy); fond.setAttribute('r', r);
+  fond.setAttribute('fill', 'none'); fond.setAttribute('stroke', 'var(--brume)'); fond.setAttribute('stroke-width', stroke);
+  svg.appendChild(fond);
 
   var offset = 0;
   segments.forEach(function(seg, i) {
-    var pct  = seg.vol / total;
-    var dash = pct * circonf;
-    var gap  = circonf - dash;
+    var pct    = seg.vol / total;
+    var dash   = pct * circonf;
+    var couleur = BLUES_DEGRADE[i % BLUES_DEGRADE.length];
     var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('cx', cx);
-    circle.setAttribute('cy', cy);
-    circle.setAttribute('r', r);
+    circle.setAttribute('cx', cx); circle.setAttribute('cy', cy); circle.setAttribute('r', r);
     circle.setAttribute('fill', 'none');
-    circle.setAttribute('stroke', couleurs[i] || '#ccc');
+    circle.setAttribute('stroke', couleur);
     circle.setAttribute('stroke-width', stroke);
-    circle.setAttribute('stroke-dasharray', dash + ' ' + gap);
+    circle.setAttribute('stroke-dasharray', dash + ' ' + (circonf - dash));
     circle.setAttribute('stroke-dashoffset', -offset);
     svg.appendChild(circle);
     offset += dash;
   });
 
-  document.getElementById('b-donut-center').innerHTML =
+  if (center) center.innerHTML =
     '<div class="b-donut-center-val">' + total.toFixed(1) + '</div><div class="b-donut-center-lbl">m³ total</div>';
 
-  var legende = document.getElementById('b-donut-legende');
-  legende.innerHTML = '';
-  segments.forEach(function(seg, i) {
-    var pct = Math.round((seg.vol / total) * 100);
-    var item = document.createElement('div');
-    item.className = 'b-donut-legende-item';
-    item.innerHTML =
-      '<div class="b-donut-legende-dot" style="background:' + (couleurs[i] || '#ccc') + '"></div>' +
-      '<span class="b-donut-legende-nom">' + seg.nom + '</span>' +
-      '<span class="b-donut-legende-pct">' + pct + '%</span>';
-    legende.appendChild(item);
-  });
+  if (legende) {
+    segments.forEach(function(seg, i) {
+      var pct  = Math.round((seg.vol / total) * 100);
+      var item = document.createElement('div');
+      item.className = 'b-donut-legende-item';
+      item.innerHTML =
+        '<div class="b-donut-legende-dot" style="background:' + BLUES_DEGRADE[i % BLUES_DEGRADE.length] + '"></div>' +
+        '<span class="b-donut-legende-nom">' + seg.nom + '</span>' +
+        '<span class="b-donut-legende-pct">' + pct + '%</span>';
+      legende.appendChild(item);
+    });
+  }
 }
 
 // ═══════════ ONGLET EXPORT ═══════════
@@ -543,7 +538,8 @@ function bLabelGrume(g) { return 'Grume n°' + g.index; }
 function bMetriquesGrume(g) {
   var parts = [];
   if (g.longueur) parts.push('L ' + parseFloat(g.longueur).toFixed(2) + ' m');
-  if (g.diametre) parts.push('Ø ' + g.diametre + ' cm');
+  if (g.diametre) parts.push('Diamètre : ' + g.diametre + ' cm');
+  else if (g.circonference) parts.push('Circonférence : ' + g.circonference + ' cm');
   return parts.length ? parts.join(' · ') : 'dimensions non renseignées';
 }
 
@@ -610,7 +606,8 @@ function bMextInitChips() {
         for (var i = 0; i < nb; i++) {
           bExtGrumes.push({ lotId: lot.id, lotNom: lot.nom || '—', essence: lot.essence,
             index: i + 1, longueur: lot.longueur_grume || null,
-            diametre: lot.diametre_grume || null, volume: vol });
+            diametre: lot.diametre_grume || null,
+            circonference: lot.circonference_grume || null, volume: vol });
         }
       });
     };
@@ -627,7 +624,7 @@ function bMextSetType(type) {
   var icon  = document.querySelector('#b-mext-type-desc .b-type-desc-icon');
   if (type === 'brute') {
     if (titre) titre.textContent = 'Grume brute';
-    if (body)  body.textContent  = 'Volume brut cédé ou vendu tel quel, sans transformation. Le m³ enregistré correspond au volume mesuré des grumes sélectionnées.';
+    if (body)  body.textContent  = 'Volume brut sans transformation. Le m³ enregistré correspond au volume mesuré des grumes sélectionnées.';
     if (icon)  icon.textContent  = '🌳';
   } else {
     if (titre) titre.textContent = 'Débit en planches';

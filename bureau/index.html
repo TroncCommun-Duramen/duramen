@@ -79,8 +79,8 @@
         <div class="b-commune-gauche">
           <div class="b-section-lbl">RÉPARTITION DU STOCK PAR ESSENCE</div>
           <div class="b-commune-donut-section" id="b-commune-donut-section">
-            <div class="b-donut-wrap" style="width:160px;height:160px;flex-shrink:0">
-              <svg class="b-donut-svg" viewBox="0 0 200 200" id="b-commune-donut-svg" style="width:160px;height:160px"></svg>
+            <div class="b-donut-wrap b-commune-donut-wrap" style="flex-shrink:0">
+              <svg class="b-donut-svg" viewBox="0 0 200 200" id="b-commune-donut-svg"></svg>
               <div class="b-donut-center" id="b-commune-donut-center"></div>
             </div>
             <div class="b-commune-donut-legende" id="b-commune-donut-legende"></div>
@@ -131,21 +131,24 @@
       </div>
       <div class="b-metro-layout">
         <div class="b-metro-gauche">
-          <div class="b-section-lbl">VOLUMES DISPONIBLES PAR COMMUNE</div>
-          <div class="b-table-wrap">
-            <table class="b-table" id="b-metro-table">
-              <thead>
-                <tr><th></th><th>Commune</th><th>Essences</th><th>Volume</th><th>Lots</th><th>Répartition</th></tr>
-              </thead>
-              <tbody id="b-metro-tbody"></tbody>
-            </table>
+          <div class="b-section-lbl">RÉPARTITION PAR COMMUNE</div>
+          <div class="b-donut-section b-metro-donut-section">
+            <div class="b-donut-wrap">
+              <svg class="b-donut-svg" viewBox="0 0 200 200" id="b-donut-svg"></svg>
+              <div class="b-donut-center" id="b-donut-center"></div>
+            </div>
+            <div class="b-donut-legende" id="b-donut-legende"></div>
           </div>
         </div>
         <div class="b-metro-droite">
-          <div class="b-lecture-seule-card">
-            <div class="b-lecture-seule-titre">VUE LECTURE SEULE</div>
-            <p>Cette fenêtre affiche uniquement les lots que les autres communes ont choisi de partager.</p>
-            <p>Aucune extraction ni ajout de grume n'est possible depuis cette vue.</p>
+          <div class="b-section-lbl">VOLUMES DISPONIBLES</div>
+          <div class="b-table-wrap">
+            <table class="b-table" id="b-metro-table">
+              <thead>
+                <tr><th></th><th>Commune</th><th>Essence</th><th>Volume</th><th>Lots</th></tr>
+              </thead>
+              <tbody id="b-metro-tbody"></tbody>
+            </table>
           </div>
         </div>
       </div>
