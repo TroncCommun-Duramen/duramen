@@ -545,11 +545,12 @@ body {
   font-weight: var(--font-weight-medium);
   border: none;
   cursor: pointer;
-  background: var(--neige);
+  background: var(--washi);
   color: var(--sumi);
   transition: all 0.12s;
 }
-.b-type-btn.active { background: var(--olive); color: var(--washi); }
+.b-type-btn:not(.active):hover { background: var(--neige); }
+.b-type-btn.active { background: var(--indigo); color: var(--washi); font-weight: var(--font-weight-semibold); }
 
 /* Description du mode actif */
 .b-type-desc {

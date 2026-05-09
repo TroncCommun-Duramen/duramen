@@ -178,8 +178,57 @@ function bAfficherOnglet() {
 }
 
 // ═══════════ ONGLET COMMUNE ═══════════
+var ESSENCE_COULEURS = {
+  'Chêne': '#8B6914', 'Châtaignier': '#9e5c2d', 'Frêne': '#5c7a3e',
+  'Hêtre': '#b5763a', 'Douglas': '#4a7a5c', 'Épicéa': '#3d6b4f',
+  'Séquoia': '#a0522d', 'Robinier (Acacia)': '#c4a24d', 'Peuplier': '#7ab359',
+  'Noyer': '#5c3d1e', 'Merisier': '#d04060', 'Pin maritime': '#7c9c5a',
+  'Aulne': '#6b8e6b', 'Platane': '#8fa87c', 'Tilleul': '#9ab86e'
+};
+
+function bDrawDonutCommune() {
+  var stock    = DuramenCore.getStock();
+  var essences = Object.keys(stock).filter(function(k) { return stock[k].dispo > 0; });
+  var total    = essences.reduce(function(s, k) { return s + stock[k].dispo; }, 0);
+  var svg      = document.getElementById('b-commune-donut-svg');
+  var center   = document.getElementById('b-commune-donut-center');
+  var legende  = document.getElementById('b-commune-donut-legende');
+  if (!svg) return;
+  svg.innerHTML = ''; legende.innerHTML = '';
+  if (total === 0) {
+    center.innerHTML = '<div class="b-donut-center-lbl">Aucun stock</div>';
+    return;
+  }
+  var r = 72, cx = 100, cy = 100, stroke = 22, circonf = 2 * Math.PI * r;
+  var fond = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  fond.setAttribute('cx', cx); fond.setAttribute('cy', cy); fond.setAttribute('r', r);
+  fond.setAttribute('fill', 'none'); fond.setAttribute('stroke', 'var(--brume)'); fond.setAttribute('stroke-width', stroke);
+  svg.appendChild(fond);
+  essences.sort(function(a, b) { return stock[b].dispo - stock[a].dispo; });
+  var offset = 0;
+  essences.forEach(function(ess) {
+    var pct = stock[ess].dispo / total;
+    var dash = pct * circonf;
+    var couleur = ESSENCE_COULEURS[ess] || '#888';
+    var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
+    c.setAttribute('fill', 'none'); c.setAttribute('stroke', couleur); c.setAttribute('stroke-width', stroke);
+    c.setAttribute('stroke-dasharray', dash.toFixed(2) + ' ' + circonf.toFixed(2));
+    c.setAttribute('stroke-dashoffset', (-offset).toFixed(2));
+    svg.appendChild(c);
+    offset += dash;
+    var item = document.createElement('div');
+    item.className = 'b-commune-donut-item';
+    item.innerHTML = '<div class="b-commune-donut-dot" style="background:' + couleur + '"></div>' +
+      '<span>' + ess + '</span>' +
+      '<span style="margin-left:auto;font-weight:600;font-size:12px;color:var(--sumi)">' + stock[ess].dispo.toFixed(1) + ' m³</span>';
+    legende.appendChild(item);
+  });
+  center.innerHTML = '<div class="b-donut-center-val">' + total.toFixed(1) + '</div><div class="b-donut-center-lbl">m³ dispo</div>';
+}
+
 function bAfficherCommune() {
-  bAfficherEssences();
+  bDrawDonutCommune();
   bAfficherTableLots();
   bInitStockPills();
 }
@@ -277,22 +326,27 @@ function bAfficherMetropole() {
   if (selC.options.length <= 1) commAll.forEach(function(c) { var o = document.createElement('option'); o.value = c; o.textContent = c; selC.appendChild(o); });
   if (selE.options.length <= 1) essAll.forEach(function(e)  { var o = document.createElement('option'); o.value = e; o.textContent = e; selE.appendChild(o); });
 
-  // Filtrer
-  var data = bLotsMetro.filter(function(l) {
+  // Filtrer par commune uniquement (pas par essence) pour avoir toutes les communes
+  var lotsParCommune = bLotsMetro.filter(function(l) {
     var c = l.commune || l.commune_code;
     if (filtreCommune && c !== filtreCommune) return false;
-    if (filtreEssence && l.essence !== filtreEssence) return false;
     return true;
   });
 
-  // Agréger par commune
+  // Agréger par commune — volume filtré par essence (0 si absente), métadonnées complètes
   var parCommune = {};
-  data.forEach(function(l) {
+  lotsParCommune.forEach(function(l) {
     var c = l.commune || l.commune_code;
     if (!parCommune[c]) parCommune[c] = { vol: 0, lots: 0, essences: [] };
-    parCommune[c].vol  += (l.vol_brut || 0);
     parCommune[c].lots += 1;
     if (l.essence && parCommune[c].essences.indexOf(l.essence) === -1) parCommune[c].essences.push(l.essence);
+    if (!filtreEssence || l.essence === filtreEssence) parCommune[c].vol += (l.vol_brut || 0);
+  });
+
+  // Pour le donut : données filtrées aussi par essence
+  var data = lotsParCommune.filter(function(l) {
+    if (filtreEssence && l.essence !== filtreEssence) return false;
+    return true;
   });
 
   var communes = Object.keys(parCommune);
@@ -417,10 +471,6 @@ function bInitExport() {
   var selE = document.getElementById('b-exp-essence');
   var selA = document.getElementById('b-exp-annee');
 
-  if (selC.options.length <= 1) {
-    var commAll = bLotsMetro.map(function(l) { return l.commune || l.commune_code; }).filter(function(v, i, a) { return a.indexOf(v) === i; });
-    commAll.forEach(function(c) { var o = document.createElement('option'); o.value = c; o.textContent = c; selC.appendChild(o); });
-  }
   if (selE.options.length <= 1) {
     var essAll = lots.map(function(l) { return l.essence; }).filter(function(v, i, a) { return v && a.indexOf(v) === i; });
     essAll.forEach(function(e) { var o = document.createElement('option'); o.value = e; o.textContent = e; selE.appendChild(o); });
@@ -433,12 +483,10 @@ function bInitExport() {
 
 function bGetDonneesFiltrees() {
   var source  = document.getElementById('b-exp-source').value;
-  var commune = document.getElementById('b-exp-commune').value;
   var essence = document.getElementById('b-exp-essence').value;
   var annee   = document.getElementById('b-exp-annee').value;
   var base    = source === 'metropole' ? bLotsMetro : lots;
   return base.filter(function(l) {
-    if (commune && (l.commune || l.commune_code) !== commune) return false;
     if (essence && l.essence !== essence) return false;
     if (annee   && String(l.annee) !== annee) return false;
     return true;
