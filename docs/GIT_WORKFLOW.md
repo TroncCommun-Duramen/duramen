@@ -83,7 +83,7 @@ Configuré sur **nano**. Si Git ouvre un éditeur lors d'un merge :
 ## Rappel sessions Claude Code
 
 **Prompt de démarrage à copier-coller :**
-> "Lis CLAUDE.md, MEMORY.md, LESSONS.md et TASKS.md dans cet ordre.
+> "Lis [[CLAUDE_QUICK]], [[MEMORY]], [[LESSONS]] et [[TASKS]] dans cet ordre.
 > Nous travaillons uniquement sur [fichier(s)].
 > Ne touche à aucun autre fichier. Confirme la tâche avant de commencer."
 
@@ -120,3 +120,11 @@ Configuré sur **nano**. Si Git ouvre un éditeur lors d'un merge :
     ├── PROMPT_LOG.md
     └── GIT_WORKFLOW.md  ← ce fichier
 ```
+
+---
+
+## Voir aussi
+
+- [[CHANGELOG]] — historique des commits par date
+- [[TASKS]] — tâches à committer
+- [[MEMORY]] — état du projet après chaque session

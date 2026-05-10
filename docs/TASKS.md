@@ -54,3 +54,12 @@ _(aucune)_
 - Session **Design** → `theme.css`, `ui.css`, `index.html` uniquement
 - Session **Feature** → `core.js`, `app.js` uniquement
 - Jamais les deux zones dans la même session
+
+---
+
+## Voir aussi
+
+- [[MEMORY]] — contexte et décisions d'architecture
+- [[LESSONS]] — contraintes à respecter lors de l'exécution
+- [[CHANGELOG]] — journal détaillé des tâches accomplies
+- [[EVOLUTIONS]] — idées non planifiées à arbitrer

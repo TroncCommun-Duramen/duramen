@@ -10,3 +10,10 @@
 | # | Idée | Contexte d'émergence |
 |---|------|----------------------|
 | 1 | Accès détaillé commune par commune dans la vue Communauté | Refonte page Historique — avril 2026 |
+
+---
+
+## Voir aussi
+
+- [[TASKS]] — tâches planifiées et en cours
+- [[MEMORY]] — évolutions déjà décidées et en cours de réalisation

@@ -205,3 +205,12 @@ Phase 1 — États du bois (brut / débité + temps de séchage), à démarrer a
 2. Rédaction du cahier des charges technique complet
 
 Avant tout développement, répondre aux 3 questions bloquantes sur les rôles utilisateurs (voir `TASKS.md` section "Système de rôles").
+
+---
+
+## Voir aussi
+
+- [[JOURNAL_SESSION_05]] — session précédente
+- [[MEMORY]] — état cumulé du projet
+- [[DESIGN_SYSTEM]] — design system défini lors de cette session
+- [[CHANGELOG]] — modifications enregistrées

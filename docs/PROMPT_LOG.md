@@ -39,3 +39,11 @@ HH:MM — [commit: abc1234] résultat final
 — Rédaction de `CLAUDE.md`, `TASKS.md`, `MEMORY.md`,
   `LESSONS.md`, `DESIGN_SYSTEM.md`, `PROMPT_LOG.md`
 — Méthodologie : Phase 0a (design) → 0b (noyau) → 0c (bugs) → 1 (features)
+
+---
+
+## Voir aussi
+
+- [[MEMORY]] — synthèse des décisions issues des sessions
+- [[TASKS]] — avancement des tâches générées par les sessions
+- [[Journal/JOURNAL_SESSION_06]] — journal narrative de la dernière session

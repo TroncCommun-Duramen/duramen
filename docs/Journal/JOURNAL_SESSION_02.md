@@ -97,3 +97,12 @@ Démarrer avec ce prompt dans Claude Code :
 - Le JS est encore dans `duramen.html` — il sera extrait en Phase 0b
 - Des styles `style="..."` inline subsistent dans le JS — ils seront traités en tâche 0a-3
 - Lire `CLAUDE.md` et `Docs/TASKS.md` pour l'état exact d'avancement
+
+---
+
+## Voir aussi
+
+- [[JOURNAL_SESSION_01]] — session précédente
+- [[JOURNAL_SESSION_03]] — session suivante
+- [[MEMORY]] — état cumulé du projet
+- [[TASKS]] — avancement des tâches

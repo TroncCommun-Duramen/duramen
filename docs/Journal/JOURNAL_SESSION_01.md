@@ -161,3 +161,12 @@ Démarrer avec ce prompt dans Claude Code :
 - À ce stade, `duramen.html` contient encore tout le CSS et le JS — le découpage est en cours (Phase 0a).
 - Lire `CLAUDE.md` en premier, il contient toute l'architecture cible et les règles du projet.
 - Lire `Docs/TASKS.md` pour connaître l'état exact d'avancement.
+
+---
+
+## Voir aussi
+
+- [[JOURNAL_SESSION_02]] — session suivante
+- [[MEMORY]] — état cumulé du projet
+- [[TASKS]] — tâches générées par cette session
+- [[LESSONS]] — règles issues de cette session

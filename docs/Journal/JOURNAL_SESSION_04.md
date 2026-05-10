@@ -140,3 +140,12 @@ Ne touche à aucun autre fichier. Confirme ce que tu vas faire avant de commence
 - `app.js` contient toute la logique UI et les appels Supabase
 - 4 bugs restants à corriger (Phase 0c) — détaillés dans `TASKS.md`
 - Lire `MEMORY.md` pour l'état exact des phases
+
+---
+
+## Voir aussi
+
+- [[JOURNAL_SESSION_03]] — session précédente
+- [[JOURNAL_SESSION_05]] — session suivante
+- [[MEMORY]] — état cumulé du projet
+- [[TASKS]] — avancement des tâches

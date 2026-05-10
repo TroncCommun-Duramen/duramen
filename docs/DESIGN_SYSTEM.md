@@ -227,3 +227,11 @@ padding-bottom: env(safe-area-inset-bottom);
 - Tester sur iPhone SE (375px) et desktop 1280px minimum
 - Le fond `--washi` (#FAFAF9) n'est pas blanc pur — intentionnel pour réduire la fatigue visuelle terrain
 - L'indigo `--indigo` (#2B3F8C) est l'accent unique — ne pas multiplier les couleurs d'accentuation
+
+---
+
+## Voir aussi
+
+- [[BENCHMARK]] — références UX mobiles qui ont informé ces décisions
+- [[CHANGELOG]] — historique des modifications visuelles
+- [[REDACTION]] — règles rédactionnelles cohérentes avec la charte

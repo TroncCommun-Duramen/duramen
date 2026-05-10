@@ -174,3 +174,12 @@ Objectif : ajouter les états du bois (brut / débité avec temps de séchage).
 - Supabase : tables `lots` et `extractions` avec IDs en UUID
 - La clé anon Supabase est dans `app.js` — vérifier les règles RLS avant mise en production (voir `MEMORY.md` section Sécurité)
 - Prochaine évolution planifiée : états du bois brut/débité (Phase 1 dans `TASKS.md`)
+
+---
+
+## Voir aussi
+
+- [[JOURNAL_SESSION_04]] — session précédente
+- [[JOURNAL_SESSION_06]] — session suivante
+- [[MEMORY]] — état cumulé du projet
+- [[TASKS]] — avancement des tâches

@@ -38,3 +38,10 @@ La lisibilité est affectée par la taille de la police, l'espacement des lettre
 ---
 
 ## Structure cible — 3 écrans principaux
+
+---
+
+## Voir aussi
+
+- [[DESIGN_SYSTEM]] — où ces principes UX sont appliqués
+- [[MEMORY]] — décisions d'interface prises en session

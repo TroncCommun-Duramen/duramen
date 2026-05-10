@@ -54,7 +54,7 @@ Envoyer ce message à Claude Code avant de terminer une session :
 - **TOUJOURS** mettre à jour `MEMORY.md` en fin de session avec l'état des phases
   (ex : Phase 0a ✅, Phase 0b ✅, En cours : Phase 0c)
   → Raison : Claude Code repart de zéro à chaque session et déduit l'état depuis les fichiers.
-    Une `MEMORY.md` imprécise crée des confusions sur ce qui est déjà fait.
+    Un [[MEMORY]] imprécis crée des confusions sur ce qui est déjà fait.
 
 ---
 
@@ -63,3 +63,11 @@ Envoyer ce message à Claude Code avant de terminer une session :
 | Date | Contexte | Règle apprise |
 |------|----------|---------------|
 | —    | —        | —             |
+
+---
+
+## Voir aussi
+
+- [[MEMORY]] — état du projet, décisions récentes
+- [[CHANGELOG]] — source des bugs qui ont généré ces règles
+- [[CLAUDE_QUICK]] — règles absolues condensées pour le démarrage de session

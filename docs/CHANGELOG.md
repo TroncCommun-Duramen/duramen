@@ -80,3 +80,11 @@
 - Service Worker `sw.js` — offline + cache (duramen-v12).
 - Authentification par code commune via table `codes_acces` Supabase.
 - `DuramenCore` : signatures figées entree / sortie / getStock / getHistorique / validerEntree / validerSortie.
+
+---
+
+## Voir aussi
+
+- [[LESSONS]] — les bugs de ce journal ont généré des règles permanentes
+- [[TASKS]] — avancement par tâche (vue synthétique)
+- [[GIT_WORKFLOW]] — format des commits et commandes Git du quotidien

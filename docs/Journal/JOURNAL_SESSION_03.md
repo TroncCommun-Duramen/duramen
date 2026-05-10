@@ -109,3 +109,12 @@ Ne touche à aucun autre fichier. Confirme ce que tu vas faire avant de commence
 - Le JavaScript est encore dans `duramen.html` — il sera extrait en Phase 0b
 - Exception documentée : `style="width:X%"` ligne 935 conservé car valeur calculée dynamiquement
 - Lire `CLAUDE.md` et `Docs/TASKS.md` pour l'état exact d'avancement
+
+---
+
+## Voir aussi
+
+- [[JOURNAL_SESSION_02]] — session précédente
+- [[JOURNAL_SESSION_04]] — session suivante
+- [[MEMORY]] — état cumulé du projet
+- [[TASKS]] — avancement des tâches

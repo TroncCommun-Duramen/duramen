@@ -390,3 +390,11 @@ Ajouter la notion d'état : bois **brut** (utilisable immédiatement) ou bois **
 
 *Document généré le 19 avril 2026 — Tronc Commun*
 *contact.tronccommun@gmail.com — SIRET 985 323 146 00011*
+
+---
+
+## Voir aussi
+
+- [[MEMORY]] — état courant du projet (plus récent que ce document)
+- [[DESIGN_SYSTEM]] — détail de la charte visuelle
+- [[TASKS]] — avancement par rapport aux objectifs décrits ici

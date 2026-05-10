@@ -101,3 +101,11 @@ DuramenCore.validerSortie(extraction)
 |                     | `index.html`             | tous les autres        |
 
 ---
+
+---
+
+## Voir aussi
+
+- [[MEMORY]] — état actuel du projet à lire en complément
+- [[LESSONS]] — règles permanentes issues de l'expérience terrain
+- [[TASKS]] — tâches en cours et prochaines étapes

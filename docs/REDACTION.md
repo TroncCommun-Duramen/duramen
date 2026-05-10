@@ -41,3 +41,10 @@ Ne pas qualifier négativement une situation, une personne ou une tentative pass
 
 *Ces règles s'appliquent à tous les documents produits dans le cadre du projet DURAMEN.*
 *Dernière mise à jour : Avril 2026*
+
+---
+
+## Voir aussi
+
+- [[DESIGN_SYSTEM]] — cohérence visuelle et rédactionnelle
+- [[MEMORY]] — rappel : tout changement ici doit être répercuté dans CLAUDE.md §11
