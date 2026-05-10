@@ -5,7 +5,65 @@
 
 ---
 
-## État actuel du projet
+## État actuel du projet — 10 mai 2026
+
+- **Phase 0 ✅ terminée** — architecture 5 fichiers mobile en place
+- **Version bureau ✅ livrée** — dossier `bureau/` fonctionnel avec 4 onglets
+- **Prochaine session prioritaire** : Harmonisation données mobile/bureau (voir ci-dessous)
+
+---
+
+## ═══ TÂCHE PRIORITAIRE — Harmonisation données mobile / bureau ═══
+
+**Statut :** 🔴 À traiter — session dédiée requise  
+**Fichiers concernés :** `app.js` (mobile) + `bureau/app.js` + `bureau/ui.css`
+
+### Problème
+Les deux versions ne produisent pas les mêmes résultats pour les mêmes données :
+- Précision des volumes : mobile `toFixed(3)` vs bureau `toFixed(2)`
+- Colonnes CSV : mobile exporte vol_brut **et** vol_utile — bureau exporte vol_brut uniquement
+- Format des nombres : mobile entre guillemets (texte) — bureau sans guillemets (numérique)
+- TOTAL CSV bureau : additionne les floats bruts → décalage vs SUM Excel (accumulation d'arrondis)
+- Stock métropole bureau : basé sur `vol_brut` — différent du `dispo` affiché côté mobile
+
+### À décider avant de coder
+1. Quelle précision de référence : 2 ou 3 décimales ?
+2. Le CSV commun inclut-il vol_brut seul ou vol_brut + vol_utile ?
+3. Le TOTAL doit-il sommer les valeurs affichées (arrondies) ou les valeurs brutes ?
+
+### Risque
+**Moyen — touche `app.js` (mobile), fichier central, utilisé sur le terrain.** Ne pas traiter en même temps qu'une autre feature.
+
+---
+
+## ═══ VERSION BUREAU — Réalisé ═══
+
+### ✅ Interface bureau créée (mai 2026)
+- Dossier `bureau/` : `index.html` + `app.js` + `ui.css`
+- Layout 2 colonnes, responsive < 900 px
+- Hero stats : Stock commune · Lots actifs · Extractions mois · Stock métropole
+
+### ✅ Onglet Commune
+- Camembert essences (SVG), table des lots avec dimensions grumes
+- Barres par essence, total m³
+
+### ✅ Onglet Nantes Métropole
+- Table lots partagés par commune, donut par commune, métriques globales
+
+### ✅ Onglet Export (refonte 10 mai 2026)
+- Un seul bouton "Exporter la sélection" (bouton "Tout exporter" supprimé)
+- Colonnes CSV : Commune · Nom du lot · Essence · Date · Provenance · Cause · Nb grumes · Vol. brut m³ · Partage avec NM
+- Nb grumes et Vol. brut m³ en format numérique (virgule décimale, sans guillemets)
+- Ligne TOTAL en bas du CSV
+- Colonnes centrées, bouton en largeur automatique
+
+### ✅ Colonne extraction latérale
+- Popup 3 étapes : essence → grumes → destination
+- Grumes cochables par lot avec dimensions
+
+---
+
+## État initial du projet (archivé)
 
 - **Fichier de départ :** `duramen.html` (fichier unique, 2300 lignes)
 - **Objectif des phases 0a/0b/0c :** Réorganiser sans rien casser,

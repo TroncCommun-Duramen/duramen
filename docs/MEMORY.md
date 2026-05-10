@@ -6,6 +6,57 @@
 
 ---
 
+## Session 10 mai 2026 — Refonte onglet Export (bureau)
+
+### Onglet Export bureau — `bureau/app.js` + `bureau/index.html` + `bureau/ui.css` ✅
+- Bouton "Tout exporter" supprimé — un seul bouton "Exporter la sélection"
+- Colonnes CSV réordonnées : Commune · Nom du lot · Essence · Date · Provenance · Cause · Nb grumes · Vol. brut m³ · Partage avec NM
+- Nb grumes et Vol. brut m³ exportés comme **nombres** (sans guillemets, virgule décimale pour Excel FR)
+- Ligne TOTAL ajoutée en bas du CSV avec somme du volume brut
+- Colonnes PÉRIMÈTRE et FILTRES BOIS centrées (`max-width: 720px; margin: 0 auto`)
+- Bouton export : largeur automatique sur le texte (plus de `1fr 1fr` pleine largeur)
+- Commit : `feat(bureau): refonte onglet export — colonnes CSV, total, mise en page`
+
+### Point d'attention — Harmonisation mobile / bureau 🔴 Session dédiée requise
+- Les deux versions ne partagent pas le même format de données à l'affichage et à l'export :
+  - Mobile : `toFixed(3)`, colonnes vol_brut **et** vol_utile, valeurs entre guillemets (texte)
+  - Bureau : `toFixed(2)`, colonne vol_brut uniquement, valeurs numériques
+  - Le TOTAL CSV bureau additionne les floats bruts → décalage avec SUM Excel (accumulation d'arrondis)
+- **Ne pas traiter dans une session export ou feature.** Ouvrir une session dédiée : "Harmonisation données mobile/bureau".
+
+---
+
+## Sessions mai 2026 — Version bureau (desktop)
+
+### Architecture bureau — dossier `bureau/` ✅
+- Fichiers dédiés : `bureau/index.html` · `bureau/app.js` · `bureau/ui.css`
+- Partage `core.js` et `theme.css` de la racine (pas de copie)
+- Layout 2 colonnes : colonne principale (onglets) + colonne extraction latérale fixe
+- Responsive : colonne extraction masquée sous 900 px
+
+### Onglets bureau ✅
+- **Commune** : camembert essences (SVG), table des lots avec dimensions grumes, total m³, barres par essence
+- **Nantes Métropole** : table lots partagés par commune, donut par commune, métriques globales
+- **Export** : filtres source/essence/année + export CSV (voir session 10 mai)
+- **Ticket retour** : identique au mobile
+
+### Hero stats (4 tuiles) ✅
+- Stock commune · Lots actifs · Extractions mois · Stock métropole
+- **Attention** : Stock commune = `DuramenCore.getStock()` → `dispo` (vol_utile - extractions). Stock métropole = somme `vol_brut` — métrique différente, intentionnelle.
+
+### Colonne extraction latérale ✅
+- Popup 3 étapes : essence + type → sélection grumes cochables → destination
+- Affichage des grumes disponibles avec dimensions (L, Ø)
+- Pills de stock par essence
+
+### Design bureau ✅
+- Logo PNG `icon-512.png` en en-tête
+- Bandeau onglets fond `var(--indigo)`, onglet actif souligné blanc
+- Toggle Commune/Métropole en indigo, lignes alternées dans les tables
+- Boutons filtres inactifs supprimés
+
+---
+
 ## Session 2 mai 2026 — Correction mode hors ligne (zone blanche)
 
 ### Bug corrigé — Application inouvrable sans réseau (sw.js) ✅
