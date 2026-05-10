@@ -1121,19 +1121,11 @@ function rendreHistoriqueContenu(container, lotsData) {
     return;
   }
 
-  // ── Calcul volumes depuis lotsData (correct pour toutes communes) ────
-  var parEss = {};
-  lotsData.forEach(function (l) {
-    var e = l.essence || 'Autre';
-    if (!parEss[e]) parEss[e] = { vol: 0, lots: 0, causes: [] };
-    parEss[e].vol  += (l.vol_utile || 0);
-    parEss[e].lots += 1;
-    if (l.cause && parEss[e].causes.indexOf(l.cause) === -1) parEss[e].causes.push(l.cause);
-  });
-  var totalVol  = Object.keys(parEss).reduce(function (s, e) { return s + parEss[e].vol; }, 0);
+  // ── Bloc total ──────────────────────────────────────────────────────
+  var stock     = DuramenCore.getStock();
+  var totalVol  = Object.keys(stock).reduce(function (s, e) { return s + (stock[e].dispo || 0); }, 0);
   var totalLots = lotsData.length;
 
-  // ── Bloc total ──────────────────────────────────────────────────────
   var bloc = cel('div', 'histo-total-block');
 
   var itemVol = cel('div', '');
@@ -1150,84 +1142,44 @@ function rendreHistoriqueContenu(container, lotsData) {
 
   container.appendChild(bloc);
 
-  // ── Donut + légende (vue Ma commune uniquement) ─────────────────────
-  if (histoVue === 'commune') {
-    container.appendChild(cel('div', 'histo-section-title', 'Stock par essence'));
-    var donutWrap = document.createElement('div');
-    donutWrap.className = 'histo-donut-wrap';
-    donutWrap.innerHTML = creerDonutEssences(parEss, totalVol);
+  // ── Par essence ─────────────────────────────────────────────────────
+  container.appendChild(cel('div', 'histo-section-title', 'Par essence'));
 
-    var legend = cel('div', 'histo-donut-legend');
-    Object.keys(parEss)
-      .sort(function (a, b) { return parEss[b].vol - parEss[a].vol; })
-      .forEach(function (ess) {
-        var item = cel('div', 'histo-donut-legend-item');
-        var dot  = cel('div', 'histo-donut-dot');
-        dot.style.background = ESSENCE_COULEURS[ess] || '#888';
-        var volEl = cel('div', 'histo-donut-legend-vol', parEss[ess].vol.toFixed(2) + ' m³');
-        item.appendChild(dot);
-        item.appendChild(cel('span', '', ess));
-        item.appendChild(volEl);
-        legend.appendChild(item);
-      });
-    donutWrap.appendChild(legend);
-    container.appendChild(donutWrap);
+  var parEss = {};
+  lotsData.forEach(function (l) {
+    var e = l.essence || 'Autre';
+    if (!parEss[e]) parEss[e] = { vol: 0, lots: 0, causes: [] };
+    parEss[e].vol   = stock[e] ? (stock[e].dispo || 0) : 0;
+    parEss[e].lots += 1;
+    if (l.cause && parEss[e].causes.indexOf(l.cause) === -1) parEss[e].causes.push(l.cause);
+  });
 
-    // ── Extractions du mois ─────────────────────────────────────────
-    var moisCourant = new Date().toISOString().slice(0, 7);
-    var extMois = extractions.filter(function (e) {
-      return e.date_iso && e.date_iso.startsWith(moisCourant);
+  var essList = cel('div', '');
+  Object.keys(parEss)
+    .sort(function (a, b) { return parEss[b].vol - parEss[a].vol; })
+    .forEach(function (ess) {
+      var d    = parEss[ess];
+      var pct  = totalVol > 0 ? (d.vol / totalVol * 100) : 0;
+      var item = cel('div', 'histo-essence-item');
+
+      var top = cel('div', 'histo-essence-top');
+      top.appendChild(cel('span', 'histo-essence-name', ess));
+      top.appendChild(cel('span', 'histo-essence-vol', d.vol.toFixed(3) + ' m³'));
+      item.appendChild(top);
+
+      item.appendChild(cel('div', 'histo-essence-meta',
+        d.lots + (d.lots > 1 ? ' lots' : ' lot') +
+        (d.causes.length ? ' — ' + d.causes.join(', ') : '')
+      ));
+
+      var track = cel('div', 'histo-bar-track');
+      var fill  = cel('div', 'histo-bar-fill');
+      fill.style.width = pct.toFixed(1) + '%';
+      track.appendChild(fill);
+      item.appendChild(track);
+      essList.appendChild(item);
     });
-    var volMois = extMois.reduce(function (s, e) { return s + (e.volume || 0); }, 0);
-
-    container.appendChild(cel('div', 'histo-section-title mt-16',
-      'Extractions ce mois — ' + volMois.toFixed(2) + ' m³'));
-
-    if (extMois.length === 0) {
-      container.appendChild(cel('div', 'histo-essence-meta', 'Aucune extraction ce mois.'));
-    } else {
-      var extList = cel('div', 'histo-ext-list');
-      extMois.slice(0, 8).forEach(function (ext) {
-        var item = cel('div', 'histo-ext-item');
-        item.appendChild(cel('div', 'histo-ext-essence', ext.essence || '—'));
-        item.appendChild(cel('div', 'histo-ext-vol', (ext.volume || 0).toFixed(3) + ' m³'));
-        var typeLabel = (ext.type_sortie === 'debit') ? 'Débit planches' : 'Grume brute';
-        item.appendChild(cel('div', 'histo-ext-type', typeLabel));
-        item.appendChild(cel('div', 'histo-ext-date', ext.date || ''));
-        extList.appendChild(item);
-      });
-      container.appendChild(extList);
-    }
-  } else {
-    // ── Vue Nantes Métropole : barres par essence ───────────────────
-    container.appendChild(cel('div', 'histo-section-title', 'Par essence'));
-    var essList = cel('div', '');
-    Object.keys(parEss)
-      .sort(function (a, b) { return parEss[b].vol - parEss[a].vol; })
-      .forEach(function (ess) {
-        var d    = parEss[ess];
-        var pct  = totalVol > 0 ? (d.vol / totalVol * 100) : 0;
-        var item = cel('div', 'histo-essence-item');
-
-        var top = cel('div', 'histo-essence-top');
-        top.appendChild(cel('span', 'histo-essence-name', ess));
-        top.appendChild(cel('span', 'histo-essence-vol', d.vol.toFixed(3) + ' m³'));
-        item.appendChild(top);
-
-        item.appendChild(cel('div', 'histo-essence-meta',
-          d.lots + (d.lots > 1 ? ' lots' : ' lot') +
-          (d.causes.length ? ' — ' + d.causes.join(', ') : '')
-        ));
-
-        var track = cel('div', 'histo-bar-track');
-        var fill  = cel('div', 'histo-bar-fill');
-        fill.style.width = pct.toFixed(1) + '%';
-        track.appendChild(fill);
-        item.appendChild(track);
-        essList.appendChild(item);
-      });
-    container.appendChild(essList);
-  }
+  container.appendChild(essList);
 
   // ── Lots récents ────────────────────────────────────────────────────
   container.appendChild(cel('div', 'histo-section-title mt-16', 'Lots récents'));
