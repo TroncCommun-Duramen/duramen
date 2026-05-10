@@ -517,23 +517,29 @@ function bExportSelection() {
   var data = bGetDonneesFiltrees();
   bCsvTelecharger('duramen_selection.csv', data);
 }
-function bExportTout() { bCsvTelecharger('duramen_complet.csv', lots); }
-function bExportLotsCommune() { bCsvTelecharger('duramen_lots_' + bCommune.code + '.csv', lots); }
 
 function bCsvTelecharger(nom, data) {
-  var entetes = ['Commune', 'Nom', 'Essence', 'Provenance', 'Cause', 'Vol. brut m³', 'Vol. utile m³', 'Nb grumes', 'Année', 'Partage', 'Date'];
-  var lignes  = data.map(function(l) {
+  var entetes = ['Commune', 'Nom du lot', 'Essence', 'Date', 'Provenance', 'Cause', 'Nb grumes', 'Vol. brut m3', 'Partage avec NM'];
+  var lignes = data.map(function(l) {
+    var date = l.date || (l.created_at ? new Date(l.created_at).toLocaleDateString('fr-FR') : '');
     return [
-      l.commune || l.commune_code, l.nom, l.essence, l.provenance, l.cause,
-      (l.vol_brut||0).toFixed(2), (l.vol_utile||0).toFixed(2), l.nb_grumes,
-      l.annee, l.partage ? 'Oui' : 'Non',
-      l.created_at ? new Date(l.created_at).toLocaleDateString('fr-FR') : ''
+      '"' + String(l.commune || l.commune_code || '').replace(/"/g, '""') + '"',
+      '"' + String(l.nom || '').replace(/"/g, '""') + '"',
+      '"' + String(l.essence || '').replace(/"/g, '""') + '"',
+      '"' + String(date).replace(/"/g, '""') + '"',
+      '"' + String(l.provenance || '').replace(/"/g, '""') + '"',
+      '"' + String(l.cause || '').replace(/"/g, '""') + '"',
+      l.nb_grumes || 0,
+      (l.vol_brut || 0).toFixed(2).replace('.', ','),
+      '"' + (l.partage ? 'Oui' : 'Non') + '"'
     ];
   });
+  var totalVolBrut = data.reduce(function(s, l) { return s + (l.vol_brut || 0); }, 0);
+  var ligneTotal = ['"TOTAL"', '""', '""', '""', '""', '""', '', totalVolBrut.toFixed(2).replace('.', ','), '""'];
   var bom = '﻿';
-  var csv = bom + entetes.join(';') + '\n' + lignes.map(function(l) {
-    return l.map(function(c) { return '"' + String(c || '').replace(/"/g, '""') + '"'; }).join(';');
-  }).join('\n');
+  var csv = bom + entetes.join(';') + '\n'
+    + lignes.map(function(l) { return l.join(';'); }).join('\n')
+    + '\n' + ligneTotal.join(';');
   var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
