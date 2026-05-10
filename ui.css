@@ -921,6 +921,7 @@ footer {
   text-transform: uppercase;
 }
 footer span { color: var(--sumi); font-family: var(--font-display); font-weight: var(--font-weight-light); letter-spacing: 0.04em; }
+.footer-link { color: var(--cendre); text-decoration: none; letter-spacing: 0.08em; }
 
 /* ─── ESSENCE COLORS ─── */
 .ec-chene        { background: #8B6914; }

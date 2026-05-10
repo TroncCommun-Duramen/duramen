@@ -5,10 +5,11 @@
 const SUPABASE_URL = 'https://zeadibimbdztpmsesaiw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplYWRpYmltYmR6dHBtc2VzYWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4OTI2MTcsImV4cCI6MjA5MDQ2ODYxN30.xEHLNTROTu9QJ7c_vV3S54P76EXfpnx2VbhxznbQmmU';
 const sbH = {
-  'Content-Type':  'application/json',
-  'apikey':        SUPABASE_KEY,
-  'Authorization': 'Bearer ' + SUPABASE_KEY,
-  'Prefer':        'return=representation'
+  'Content-Type':   'application/json',
+  'apikey':         SUPABASE_KEY,
+  'Authorization':  'Bearer ' + SUPABASE_KEY,
+  'Prefer':         'return=representation',
+  'x-commune-code': ''
 };
 
 async function sbSelect(table, filter) {
@@ -902,137 +903,6 @@ async function confirmerExtractionDest() {
   }
 }
 
-// ─── Extractions ──────────────────────────────────────────────────────────
-function ouvrirModalExtraction() {
-  var stock = DuramenCore.getStock();
-  var sel   = document.getElementById('ext-essence');
-  sel.innerHTML = '<option value="">-- Choisir --</option>'
-    + Object.keys(stock).filter(function (e) { return stock[e].dispo > 0; })
-      .map(function (e) {
-        return '<option value="' + e + '">' + e + ' (' + stock[e].dispo.toFixed(3) + ' m3)</option>';
-      }).join('');
-  ['ext-essence', 'ext-volume', 'ext-usage', 'ext-destination', 'ext-commune', 'ext-contact', 'ext-notes']
-    .forEach(function (id) { document.getElementById(id).value = ''; });
-  document.getElementById('ext-disponible').classList.add('hidden');
-  document.getElementById('modal-extraction').classList.add('open');
-}
-function ouvrirModalExtractionEssence(essence) {
-  ouvrirModalExtraction();
-  setTimeout(function () {
-    document.getElementById('ext-essence').value = essence;
-    majDisponible();
-  }, 50);
-}
-function fermerModalExtraction() {
-  document.getElementById('modal-extraction').classList.remove('open');
-}
-function majDisponible() {
-  var essence = document.getElementById('ext-essence').value;
-  var box     = document.getElementById('ext-disponible');
-  if (!essence) { box.classList.add('hidden'); return; }
-  var stock = DuramenCore.getStock();
-  if (stock[essence]) {
-    box.innerHTML = 'Disponible <strong>' + essence + '</strong> : <strong>'
-      + stock[essence].dispo.toFixed(3) + ' m3 utiles</strong>';
-    box.classList.remove('hidden');
-  }
-}
-document.getElementById('ext-essence').addEventListener('change', majDisponible);
-
-async function enregistrerExtraction() {
-  var essence     = document.getElementById('ext-essence').value;
-  var volume      = parseFloat(document.getElementById('ext-volume').value);
-  var usage       = document.getElementById('ext-usage').value;
-  var destination = document.getElementById('ext-destination').value.trim();
-  var commune     = document.getElementById('ext-commune').value.trim();
-  var contact     = document.getElementById('ext-contact').value.trim();
-  var notes       = document.getElementById('ext-notes').value.trim();
-  if (!essence || !volume || !usage || !destination) {
-    alert('Renseigner tous les champs obligatoires.'); return;
-  }
-  var stock = DuramenCore.getStock();
-  if (volume > stock[essence].dispo) {
-    alert('Volume superieur au stock disponible (' + stock[essence].dispo.toFixed(3) + ' m3).'); return;
-  }
-  var now = new Date();
-  var ext = {
-    id:           crypto.randomUUID(),
-    commune_code: communeConnectee.code,
-    essence:      essence,
-    volume:       volume,
-    usage:        usage,
-    destination:  destination,
-    commune:      commune,
-    contact:      contact,
-    notes:        notes,
-    date:         now.toLocaleDateString('fr-FR'),
-    date_iso:     now.toISOString()
-  };
-  try {
-    showLoading(true);
-    await sbInsert('extractions', ext);
-    await chargerDonnees();
-    fermerModalExtraction();
-    alert('Extraction enregistree !\n' + volume + ' m3 de ' + essence + ' vers ' + destination);
-    afficherExtractions();
-    if (document.getElementById('panel-stock').classList.contains('active')) afficherExtraction();
-  } catch (err) {
-    showError('Erreur extraction : ' + err.message);
-  } finally {
-    showLoading(false);
-  }
-}
-
-function afficherExtractions() {
-  var container = document.getElementById('extraction-list');
-  if (extractions.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">&#x2197;</div><p>Aucune extraction enregistree.</p></div>';
-    return;
-  }
-  var tS  = extractions.reduce(function (s, e) { return s + e.volume; }, 0);
-  var nbE = extractions.length;
-  container.innerHTML =
-    '<div class="stats-row">'
-    + '<div class="card stat-card">'
-    + '<div class="stat-val">' + tS.toFixed(2) + '</div>'
-    + '<div class="stat-lbl">m3 extraits</div></div>'
-    + '<div class="card stat-card">'
-    + '<div class="stat-val">' + nbE + '</div>'
-    + '<div class="stat-lbl">extraction' + (nbE > 1 ? 's' : '') + '</div></div>'
-    + '</div>'
-    + '<div class="extraction-list">'
-    + extractions.map(function (ext, idx) {
-        return '<div class="extraction-item">'
-          + '<div class="ei-header"><div>'
-          + '<div class="ei-title">' + ext.destination + (ext.commune ? ' &mdash; ' + ext.commune : '') + '</div>'
-          + '<div class="ei-meta">' + ext.date + (ext.contact ? ' &mdash; ' + ext.contact : '') + '</div>'
-          + '</div>'
-          + '<button class="btn btn-danger btn-sm" onclick="supprimerExtraction(' + idx + ')">x</button>'
-          + '</div>'
-          + '<div class="ei-stats">'
-          + '<div class="ei-stat">Essence : <strong>' + ext.essence + '</strong></div>'
-          + '<div class="ei-stat">Volume : <strong>' + ext.volume + ' m3</strong></div>'
-          + '<div class="ei-stat">Usage : <strong>' + ext.usage + '</strong></div>'
-          + (ext.notes ? '<div class="ei-stat">' + ext.notes + '</div>' : '')
-          + '</div></div>';
-      }).join('')
-    + '</div>';
-}
-
-async function supprimerExtraction(idx) {
-  if (!confirm('Supprimer cette extraction ?')) return;
-  try {
-    showLoading(true);
-    await sbDelete('extractions', extractions[idx].id);
-    await chargerDonnees();
-    afficherExtractions();
-  } catch (err) {
-    showError('Erreur : ' + err.message);
-  } finally {
-    showLoading(false);
-  }
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // HISTORIQUE — Toggle Ma commune / Communauté
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1064,7 +934,7 @@ async function afficherHistoriqueCommunaute(content) {
   loading.appendChild(cel('p', '', 'Chargement des données du réseau…'));
   content.appendChild(loading);
   try {
-    var tousLots = await sbSelect('lots', 'order=created_at.desc');
+    var tousLots = await sbSelect('lots', 'partage=eq.true&order=created_at.desc');
     while (content.firstChild) content.removeChild(content.firstChild);
     rendreHistoriqueContenu(content, tousLots);
   } catch (err) {
@@ -1240,15 +1110,6 @@ function exporterHistoriquePDF() {
   window.print();
 }
 
-function badgeClass(usage) {
-  if (!usage) return 'badge-autre';
-  var u = usage.toLowerCase();
-  if (u.indexOf('int') !== -1) return 'badge-int';
-  if (u.indexOf('ext') !== -1) return 'badge-ext';
-  if (u.indexOf('mob') !== -1) return 'badge-mob';
-  return 'badge-autre';
-}
-
 async function supprimerLot(idx) {
   if (!confirm('Supprimer ce lot ? Action irreversible.')) return;
   try {
@@ -1260,44 +1121,6 @@ async function supprimerLot(idx) {
   } finally {
     showLoading(false);
   }
-}
-
-// ─── Exports ──────────────────────────────────────────────────────────────
-function exporterCSV() {
-  if (lots.length === 0) { alert('Aucun lot.'); return; }
-  var h = ['Nom','Essence','Commune','Cause','Provenance','Annee','Usage',
-            'Nb grumes','Vol. brut','Vol. utile','Vol. dechets','Nb planches','Lineaire','Epaisseur','Delta','Date'];
-  var r = lots.map(function (l) {
-    return [l.nom, l.essence, l.commune, l.cause, l.provenance, l.annee, l.usage,
-            l.nb_grumes || 0, (l.vol_brut || 0).toFixed(3), (l.vol_utile || 0).toFixed(3),
-            (l.vol_dechets || 0).toFixed(3), l.nb_planches || 0, (l.lineaire || 0).toFixed(2),
-            l.epaisseur, l.delta, l.date];
-  });
-  var csv = [h].concat(r).map(function (row) {
-    return row.map(function (v) { return '"' + v + '"'; }).join(';');
-  }).join('\n');
-  var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'duramen_lots_' + new Date().toISOString().slice(0, 10) + '.csv';
-  a.click();
-}
-function exporterStockCSV() {
-  var stock = DuramenCore.getStock();
-  if (!Object.keys(stock).length) { alert('Aucun stock.'); return; }
-  var h = ['Essence','m3 entres','m3 sortis','m3 disponibles','Nb lots','Nb grumes'];
-  var r = Object.keys(stock).map(function (e) {
-    return [e, stock[e].entree.toFixed(3), stock[e].sorti.toFixed(3),
-            stock[e].dispo.toFixed(3), stock[e].nbLots, stock[e].nbGrumes];
-  });
-  var csv = [h].concat(r).map(function (row) {
-    return row.map(function (v) { return '"' + v + '"'; }).join(';');
-  }).join('\n');
-  var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'duramen_stock_' + new Date().toISOString().slice(0, 10) + '.csv';
-  a.click();
 }
 
 // ─── Header stats ─────────────────────────────────────────────────────────
@@ -1403,6 +1226,7 @@ function verifierAcces() {
     try {
       communeConnectee = JSON.parse(session);
       localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
+      sbH['x-commune-code'] = communeConnectee.code;
       ouvrirApp();
       return;
     } catch (e) {}
@@ -1430,6 +1254,7 @@ async function tentativeConnexion() {
       localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
       if (!localStorage.getItem('duramen_commune'))
         localStorage.setItem('duramen_commune', communeConnectee.nom);
+      sbH['x-commune-code'] = communeConnectee.code;
       ouvrirApp();
     } else {
       erreur.textContent = 'Code invalide ou inactif. Contactez votre referent DURAMEN.';
@@ -1468,7 +1293,9 @@ function ouvrirApp() {
   var sv = document.createElement('strong'); sv.id = 'hs-vol'; sv.textContent = '--'; hr.appendChild(sv);
   hr.appendChild(document.createTextNode(' m3 - '));
   var sl = document.createElement('strong'); sl.id = 'hs-lots'; sl.textContent = '--'; hr.appendChild(sl);
-  hr.appendChild(document.createTextNode(' lots'));
+  hr.appendChild(document.createTextNode(' lots · '));
+  var se = document.createElement('strong'); se.id = 'hs-essences'; se.textContent = '--'; hr.appendChild(se);
+  hr.appendChild(document.createTextNode(' essences'));
   hr.appendChild(document.createElement('br'));
   hr.appendChild(btnD);
   var btnCommune = document.getElementById('histo-btn-commune');
@@ -1673,15 +1500,6 @@ function creerCarteGrume(idx) {
 
   card.appendChild(right);
   return card;
-}
-
-// ─── Mise à jour du volume affiché (volume total de la ligne) ─────────────
-function nouvMajVol(idx) {
-  var g  = nouvGrumes[idx];
-  if (!g) return;
-  var v  = calcVol(g.diametre, g.longueur) * g.quantite;
-  var el = document.getElementById('saisie-vol-' + idx);
-  if (el) el.textContent = v.toFixed(3) + ' m³';
 }
 
 // ─── Rendu de toute la liste (utilisé après suppression) ──────────────────
@@ -2333,7 +2151,6 @@ function switchTab(panel, btn) {
   document.querySelectorAll('[data-panel="' + panel + '"]').forEach(function (el) { el.classList.add('active'); });
   btn.classList.add('active');
   if (panel === 'stock')      afficherExtraction();
-  if (panel === 'extraction') afficherExtractions();
   if (panel === 'historique') afficherHistorique();
   if (panel === 'territoire') afficherTerritoire();
 }
@@ -2345,14 +2162,7 @@ var refreshTimer = null;
 function demarrerRafraichissement() {
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(function() {
-    if (communeConnectee) {
-      chargerDonnees();
-      // Rafraîchir aussi les onglets actifs
-      var panelStock = document.getElementById('panel-stock');
-      var panelExt   = document.getElementById('panel-extraction');
-      if (panelStock && panelStock.classList.contains('active')) afficherExtraction();
-      if (panelExt  && panelExt.classList.contains('active'))   afficherExtractions();
-    }
+    if (communeConnectee) chargerDonnees();
   }, 120000); // 120 000 ms = 2 minutes
 }
 
@@ -2379,8 +2189,6 @@ window.addEventListener('offline', mettreAJourStatutReseau);
   var grumeSheet = document.getElementById('grume-sheet');
   if (grumeSheet) ajouterSwipeDown(grumeSheet, fermerGrumeSheet);
 
-  var modalExt = document.querySelector('#modal-extraction .extract-modal');
-  if (modalExt) ajouterSwipeDown(modalExt, fermerModalExtraction);
 }());
 
 verifierAcces();

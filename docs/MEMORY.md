@@ -6,6 +6,25 @@
 
 ---
 
+## Session 10 mai 2026 — Audit Phase 1 + Phase 2
+
+### Phase 1 — Corrections critiques ✅
+- `var(--lin)` inexistante en CSS → remplacée par `.footer-link { color: var(--cendre) }` dans `ui.css`
+- RLS Supabase inactif → SQL complet généré + 3 itérations (FORCE ROW LEVEL SECURITY, plpgsql VOLATILE, DROP ALL existantes)
+- `afficherHistoriqueCommunaute()` retournait tous les lots sans filtre → `partage=eq.true&order=created_at.desc` ajouté
+- Header RLS → `sbH['x-commune-code']` alimenté au login dans `app.js` et `bureau/app.js`
+- Cache passé de **duramen-v27** à **duramen-v28**
+
+### Phase 2 — Nettoyage code mort ✅
+- Système d'extraction mort supprimé : `panel-extraction`, `modal-extraction` (index.html) + 8 fonctions JS dans app.js (`ouvrirModalExtraction`, `ouvrirModalExtractionEssence`, `fermerModalExtraction`, `majDisponible`, event listener `ext-essence`, `enregistrerExtraction`, `afficherExtractions`, `supprimerExtraction`) + branche morte dans `switchTab`
+- Double-appel corrigé dans `demarrerRafraichissement()` : le `setInterval` ne fait plus qu'appeler `chargerDonnees()` — les appels redondants `afficherExtraction`/`afficherExtractions` supprimés (déjà couverts par `chargerDonnees`)
+- `#hs-essences` reconstruit dans `ouvrirApp()` : le strong element est maintenant créé dynamiquement comme `hs-vol` et `hs-lots` → `mettreAJourHeaderStats()` peut le mettre à jour correctement
+- Fonctions mortes supprimées : `nouvMajVol`, `badgeClass`, `exporterCSV`, `exporterStockCSV`
+- `vol_brut` → `vol_utile` dans `bureau/app.js` lignes 148, 159, 379, 427 (totaux métropole et donut)
+- Cache incrémenté `duramen-v28` → `duramen-v29`
+
+---
+
 ## Session 10 mai 2026 — Refonte onglet Export (bureau)
 
 ### Onglet Export bureau — `bureau/app.js` + `bureau/index.html` + `bureau/ui.css` ✅
@@ -42,7 +61,7 @@
 
 ### Hero stats (4 tuiles) ✅
 - Stock commune · Lots actifs · Extractions mois · Stock métropole
-- **Attention** : Stock commune = `DuramenCore.getStock()` → `dispo` (vol_utile - extractions). Stock métropole = somme `vol_brut` — métrique différente, intentionnelle.
+- **Attention** : Stock commune = `DuramenCore.getStock()` → `dispo` (vol_utile - extractions). Stock métropole = somme `vol_utile` (harmonisé le 10 mai 2026).
 
 ### Colonne extraction latérale ✅
 - Popup 3 étapes : essence + type → sélection grumes cochables → destination
@@ -214,7 +233,7 @@ Problèmes identifiés :
 - 3 boutons `.btn-home` : `width: calc(100% - 32px)`, `border-radius: 12px`, hauteur min 56px
 
 ### Service Worker
-- Cache actuel : **duramen-v20**
+- Cache actuel : **duramen-v28**
 
 ---
 
@@ -246,7 +265,15 @@ Problèmes identifiés :
 - `usage` — usage de destination
 - `destination` — destinataire
 - `commune`, `contact`, `notes` — infos complémentaires
+- `cause_abattage` — cause d'abattage (écrit par `confirmerExtractionDest()`)
 - `date`, `date_iso` — date de l'extraction
+
+**Table `feedbacks`**
+- `id` — UUID
+- `commune_code` — code de la commune émettrice
+- `commune` — nom de la commune
+- `type` — type de retour (`usage-design`, `amelioration`, `bug`, `message-libre`)
+- `message` — texte libre du retour
 
 **Table `codes_acces`**
 - `code` — code d'accès commune
@@ -273,12 +300,12 @@ DuramenCore.validerSortie(ext)    // Retourne {ok, erreur}
 ## Architecture en place
 
 ```
-index.html     ← HTML pur (555 lignes), zéro JS inline — ✅
+index.html     ← HTML pur, zéro JS inline — ✅
 theme.css      ← variables de design (couleurs, typo) — ✅
 ui.css         ← composants visuels (.card, .btn…) — ✅
-core.js        ← noyau métier : DuramenCore (161 lignes, signatures figées) — ✅
-app.js         ← logique UI, navigation, Supabase (2164 lignes) — ✅
-sw.js          ← Service Worker (offline, cache duramen-v20) — ✅
+core.js        ← noyau métier : DuramenCore (signatures figées) — ✅
+app.js         ← logique UI, navigation, Supabase — ✅
+sw.js          ← Service Worker (offline, cache duramen-v28) — ✅
 ```
 
 ---
@@ -322,7 +349,7 @@ sw.js          ← Service Worker (offline, cache duramen-v20) — ✅
 | `DURAMEN_budget.md` | Version lisible du budget pour Obsidian | ✅ |
 | `DURAMEN_taches.md` | Suivi global du projet avec cases à cocher | ✅ |
 | `DURAMEN_postes.md` | Détail des tâches par poste de réalisation | ✅ |
-| `REDACTION.md` | Règles rédactionnelles avec exemples | ✅ → `Docs/` |
+| [[REDACTION]] | Règles rédactionnelles avec exemples | ✅ → `Docs/` |
 
 ### Budget — état au 22 avril 2026
 
@@ -340,4 +367,16 @@ sw.js          ← Service Worker (offline, cache duramen-v20) — ✅
 3. Construire par le positif — négatif après le positif si nécessaire
 4. Pas de jugement direct
 
-**Rappel** : tout changement dans `CLAUDE.md` section 14 doit être répercuté dans `Docs/REDACTION.md`, et inversement.
+**Rappel** : tout changement dans `CLAUDE.md` section 14 doit être répercuté dans [[REDACTION]], et inversement.
+
+---
+
+## Voir aussi
+
+- [[TASKS]] — suivi séquentiel des tâches, source de vérité
+- [[LESSONS]] — règles permanentes issues des bugs
+- [[CHANGELOG]] — historique détaillé des modifications
+- [[EVOLUTIONS]] — idées et pistes pour les prochaines versions
+- [[CLAUDE_QUICK]] — sections essentielles de CLAUDE.md à lire au démarrage
+- [[DESIGN_SYSTEM]] — référence visuelle complète
+- [[Journal/JOURNAL_SESSION_06]] — dernière session documentée

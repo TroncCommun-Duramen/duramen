@@ -395,18 +395,6 @@
     </div>
   </div>
 
-  <!-- ═══ ONGLET 3 : EXTRACTIONS ═══ -->
-  <div class="panel" id="panel-extraction">
-    <div class="flex-between" style="margin-bottom:20px">
-      <div>
-        <div class="stock-title">Extractions de lots</div>
-        <div class="stock-subtitle">Enregistrez les sorties de bois avec usage et destination</div>
-      </div>
-      <button class="btn btn-primary" onclick="ouvrirModalExtraction()">↗ Nouvelle extraction</button>
-    </div>
-    <div id="extraction-list"></div>
-  </div>
-
   <!-- ═══ ONGLET 4 : HISTORIQUE ═══ -->
   <div class="panel" id="panel-historique">
     <div class="histo-toggle-bar">
@@ -463,54 +451,6 @@
   </div>
 
 </main>
-
-<!-- ─── MODAL EXTRACTION ─── -->
-<div class="extract-modal-bg" id="modal-extraction">
-  <div class="extract-modal">
-    <button class="modal-close" onclick="fermerModalExtraction()">✕</button>
-    <h2>Nouvelle extraction</h2>
-    <p class="modal-sub">Enregistrez la sortie d'un lot ou d'un volume de bois</p>
-    <div class="form-grid" style="gap:14px">
-      <div class="field">
-        <label>Essence concernée *</label>
-        <select id="ext-essence"><option value="">— Choisir —</option></select>
-      </div>
-      <div class="field">
-        <label>Volume extrait (m³ utiles) *</label>
-        <input type="number" id="ext-volume" min="0.001" step="0.001" placeholder="Ex : 0.850">
-      </div>
-      <div class="field">
-        <label>Usage / Destination fonctionnelle *</label>
-        <select id="ext-usage">
-          <option value="">— Choisir —</option>
-          <option value="Intérieur">Intérieur</option>
-          <option value="Extérieur">Extérieur</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Lieu de destination *</label>
-        <input type="text" id="ext-destination" placeholder="Ex : Atelier municipal de Vertavien">
-      </div>
-      <div class="field">
-        <label>Commune de destination</label>
-        <input type="text" id="ext-commune" placeholder="Ex : Saint-Jean-de-Boiseau">
-      </div>
-      <div class="field">
-        <label>Responsable / Contact</label>
-        <input type="text" id="ext-contact" placeholder="Ex : Jean Dupont, menuisier">
-      </div>
-    </div>
-    <div class="field" style="margin-top:14px">
-      <label>Notes complémentaires</label>
-      <textarea id="ext-notes" placeholder="Détails sur la commande, conditions particulières…"></textarea>
-    </div>
-    <div id="ext-disponible" class="info-box ext-disponible hidden"></div>
-    <div class="flex-end" style="margin-top:20px">
-      <button class="btn btn-outline" onclick="fermerModalExtraction()">Annuler</button>
-      <button class="btn btn-primary" onclick="enregistrerExtraction()">↗ Enregistrer l'extraction</button>
-    </div>
-  </div>
-</div>
 
 <!-- ─── ÉCRAN DE CONNEXION ─── -->
 <div id="ecran-connexion" class="visible">
@@ -590,7 +530,7 @@
 
 <footer>
   <span>DURAMEN</span> · Tronc Commun · Outil expérimental de recensement du bois d'œuvre ·
-  <a href="#" onclick="afficherMentions();return false;" style="color:var(--lin);text-decoration:none;letter-spacing:0.08em">Mentions légales</a>
+  <a href="#" onclick="afficherMentions();return false;" class="footer-link">Mentions légales</a>
 </footer>
 
 <script src="core.js"></script>

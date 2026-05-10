@@ -5,10 +5,11 @@
 const SUPABASE_URL = 'https://zeadibimbdztpmsesaiw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplYWRpYmltYmR6dHBtc2VzYWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4OTI2MTcsImV4cCI6MjA5MDQ2ODYxN30.xEHLNTROTu9QJ7c_vV3S54P76EXfpnx2VbhxznbQmmU';
 const bH = {
-  'Content-Type':  'application/json',
-  'apikey':        SUPABASE_KEY,
-  'Authorization': 'Bearer ' + SUPABASE_KEY,
-  'Prefer':        'return=representation'
+  'Content-Type':   'application/json',
+  'apikey':         SUPABASE_KEY,
+  'Authorization':  'Bearer ' + SUPABASE_KEY,
+  'Prefer':         'return=representation',
+  'x-commune-code': ''
 };
 
 async function bSbSelect(table, filter) {
@@ -61,7 +62,7 @@ async function bTentativeConnexion() {
 
   var session = localStorage.getItem('duramen_bureau_session');
   if (session) {
-    try { var s = JSON.parse(session); if (s.code === code) { bCommune = s; bLancerApp(); return; } } catch(e) {}
+    try { var s = JSON.parse(session); if (s.code === code) { bCommune = s; bH['x-commune-code'] = bCommune.code; bLancerApp(); return; } } catch(e) {}
   }
 
   bShowLoading(true);
@@ -71,6 +72,7 @@ async function bTentativeConnexion() {
     if (!data || !data.length) { erreur.textContent = 'Code invalide ou inactif.'; return; }
     bCommune = { code: data[0].code, nom: data[0].commune };
     localStorage.setItem('duramen_bureau_session', JSON.stringify(bCommune));
+    bH['x-commune-code'] = bCommune.code;
     bLancerApp();
   } catch(e) { bShowLoading(false); erreur.textContent = 'Erreur : ' + e.message; }
 }
@@ -143,7 +145,7 @@ function bMettreAJourHeader() {
   document.getElementById('b-stat-ext-vol').textContent = volExt.toFixed(1) + ' m³';
   document.getElementById('b-stat-ext-ops').textContent = extsMois.length + ' opération' + (extsMois.length > 1 ? 's' : '');
 
-  var volMetro = bLotsMetro.reduce(function(s, l) { return s + (l.vol_brut || 0); }, 0);
+  var volMetro = bLotsMetro.reduce(function(s, l) { return s + (l.vol_utile || 0); }, 0);
   var commUniq = bLotsMetro.map(function(l) { return l.commune_code; }).filter(function(v, i, a) { return a.indexOf(v) === i; }).length;
   document.getElementById('b-stat-metro').textContent        = volMetro.toFixed(1) + ' m³';
   document.getElementById('b-stat-metro-detail').textContent = commUniq + ' commune' + (commUniq > 1 ? 's' : '') + ' · ' + bLotsMetro.length + ' lots';
@@ -154,7 +156,7 @@ function bMettreAJourFooter() {
   var n = onglets[bOnglet] || 1;
   var stock = DuramenCore.getStock();
   var vol   = Object.values(stock).reduce(function(s, v) { return s + v.dispo; }, 0);
-  var volM  = bLotsMetro.reduce(function(s, l) { return s + (l.vol_brut || 0); }, 0);
+  var volM  = bLotsMetro.reduce(function(s, l) { return s + (l.vol_utile || 0); }, 0);
   var labels = { commune: 'Commune — ' + (bCommune ? bCommune.nom : ''), metropole: 'Nantes Métropole', export: 'Export', feedback: 'Ticket retour' };
   document.getElementById('b-footer-gauche').textContent  = 'Feuille ' + n + ' sur 4 · ' + (labels[bOnglet] || '');
   document.getElementById('b-footer-droite').textContent  = 'Stock : ' + vol.toFixed(1) + ' m³ · Métropole : ' + volM.toFixed(1) + ' m³';
@@ -374,7 +376,7 @@ function bAfficherMetropole() {
     var comm = l.commune || l.commune_code;
     var key  = comm + '::' + (l.essence || '—');
     if (!parCE[key]) parCE[key] = { commune: comm, essence: l.essence || '—', vol: 0, lots: 0 };
-    parCE[key].vol  += (l.vol_brut || 0);
+    parCE[key].vol  += (l.vol_utile || 0);
     parCE[key].lots += 1;
   });
 
@@ -422,7 +424,7 @@ function bDrawDonut(data) {
   data.forEach(function(l) {
     var c = l.commune || l.commune_code;
     if (!c) return;
-    parCommune[c] = (parCommune[c] || 0) + (l.vol_brut || 0);
+    parCommune[c] = (parCommune[c] || 0) + (l.vol_utile || 0);
   });
   var total = Object.values(parCommune).reduce(function(s, v) { return s + v; }, 0);
 
