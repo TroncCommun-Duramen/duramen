@@ -68,8 +68,10 @@ var DuramenCore = (function () {
   // Lit les tableaux globaux `lots` et `extractions` (gérés par app.js)
   // Signature figée — ne jamais modifier
   function getStock() {
+    var lotsData = (typeof lots !== 'undefined') ? lots : [];
+    var extsData = (typeof extractions !== 'undefined') ? extractions : [];
     var stock = {};
-    lots.forEach(function (l) {
+    lotsData.forEach(function (l) {
       if (!stock[l.essence]) stock[l.essence] = {
         entree: 0, sorti: 0, dispo: 0, nbLots: 0, nbGrumes: 0,
         color: (ESSENCES_INFO[l.essence] || { color: 'ec-autre' }).color,

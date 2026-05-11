@@ -885,7 +885,6 @@ async function confirmerExtractionDest() {
         date:            now.toLocaleDateString('fr-FR'),
         date_iso:        now.toISOString()
       };
-      DuramenCore.sortie(ext);
       await sbInsert('extractions', ext);
     }
     await chargerDonnees();
@@ -1044,7 +1043,7 @@ function rendreHistoriqueContenu(container, lotsData) {
 
       var track = cel('div', 'histo-bar-track');
       var fill  = cel('div', 'histo-bar-fill');
-      fill.style.width = pct.toFixed(1) + '%';
+      fill.style.setProperty('--barre-pct', pct.toFixed(1) + '%');
       track.appendChild(fill);
       item.appendChild(track);
       essList.appendChild(item);

@@ -319,7 +319,7 @@ function bAfficherTableLots() {
       { text: idx + 2, cls: '' },
       { text: lot.nom || '—', cls: '' },
       { text: lot.essence || '—', cls: 'b-essence-nom' },
-      { text: vol.toFixed(1) + ' m³', cls: 'b-vol' },
+      { text: vol.toFixed(3) + ' m³', cls: 'b-vol' },
       { text: lot.provenance || '—', cls: 'b-provenance' },
       { text: date, cls: 'b-provenance' }
     ].forEach(function(c) {
@@ -337,7 +337,7 @@ function bAfficherTableLots() {
   ['', 'Total', '', '', '', ''].forEach(function(t, i) {
     var td = document.createElement('td');
     if (i === 1) td.textContent = t;
-    if (i === 3) { td.textContent = total.toFixed(1) + ' m³'; td.className = 'b-vol'; }
+    if (i === 3) { td.textContent = total.toFixed(3) + ' m³'; td.className = 'b-vol'; }
     trT.appendChild(td);
   });
   tbody.appendChild(trT);
@@ -402,7 +402,7 @@ function bAfficherMetropole() {
     [
       { html: estMoi ? '<strong>' + row.commune + '</strong>' : row.commune, cls: '' },
       { html: '<span style="color:var(--cendre)">' + row.essence + '</span>', cls: '' },
-      { html: '<span class="b-vol">' + row.vol.toFixed(1) + ' m³</span>', cls: '' },
+      { html: '<span class="b-vol">' + row.vol.toFixed(3) + ' m³</span>', cls: '' },
       { html: '<span style="color:var(--cendre)">' + row.lots + ' lot' + (row.lots > 1 ? 's' : '') + '</span>', cls: '' }
     ].forEach(function(c) {
       var td = document.createElement('td'); td.innerHTML = c.html; if (c.cls) td.className = c.cls; tr.appendChild(td);
@@ -413,7 +413,7 @@ function bAfficherMetropole() {
   // Ligne total
   var trT = document.createElement('tr');
   trT.className = 'b-tr-total';
-  ['Total métropole', '', '<span class="b-vol">' + totalVol.toFixed(1) + ' m³</span>', ''].forEach(function(h) {
+  ['Total métropole', '', '<span class="b-vol">' + totalVol.toFixed(3) + ' m³</span>', ''].forEach(function(h) {
     var td = document.createElement('td'); td.innerHTML = h; trT.appendChild(td);
   });
   tbody.appendChild(trT);
@@ -532,12 +532,12 @@ function bCsvTelecharger(nom, data) {
       '"' + String(l.provenance || '').replace(/"/g, '""') + '"',
       '"' + String(l.cause || '').replace(/"/g, '""') + '"',
       l.nb_grumes || 0,
-      (l.vol_brut || 0).toFixed(2).replace('.', ','),
+      (l.vol_brut || 0).toFixed(3).replace('.', ','),
       '"' + (l.partage ? 'Oui' : 'Non') + '"'
     ];
   });
   var totalVolBrut = data.reduce(function(s, l) { return s + (l.vol_brut || 0); }, 0);
-  var ligneTotal = ['"TOTAL"', '""', '""', '""', '""', '""', '', totalVolBrut.toFixed(2).replace('.', ','), '""'];
+  var ligneTotal = ['"TOTAL"', '""', '""', '""', '""', '""', '', totalVolBrut.toFixed(3).replace('.', ','), '""'];
   var bom = '﻿';
   var csv = bom + entetes.join(';') + '\n'
     + lignes.map(function(l) { return l.join(';'); }).join('\n')
@@ -759,7 +759,7 @@ function bMextMajVol() {
   var util = volBrut * rg * (ep / (ep + ts));
   document.getElementById('b-mext-v-util').textContent = util.toFixed(3);
   document.getElementById('b-mext-v-dec').textContent  = (volBrut - util).toFixed(3);
-  document.getElementById('b-mext-val-lin').textContent = (util * 1000 / (ep + ts)).toFixed(1) + ' m';
+  document.getElementById('b-mext-val-lin').textContent = (util * 5000 / ep).toFixed(1) + ' m';
 }
 
 function bMextStep2Suivant() {
@@ -789,7 +789,7 @@ async function bMextConfirmer() {
   var ts      = parseInt(document.getElementById('b-mext-sl-ts').value);
   var rg      = parseInt(document.getElementById('b-mext-sl-rg').value) / 100;
   var volUtil  = bExtType === 'planches' ? volBrut * rg * (ep / (ep + ts)) : volBrut;
-  var lineaire = bExtType === 'planches' ? volUtil * 1000 / (ep + ts) : 0;
+  var lineaire = bExtType === 'planches' ? volUtil * 5000 / ep : 0;
   var dest = [projet, comm, lieu].filter(Boolean).join(' · ') || '—';
   var valid = DuramenCore.validerSortie({ essence: bExtEssence, volume: volUtil, usage: bExtUsageDest, destination: dest });
   if (!valid.ok) { bShowToast(valid.erreur, true); return; }

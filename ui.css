@@ -1752,6 +1752,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 .histo-bar-fill {
   height: 100%;
+  width: var(--barre-pct, 0%);
   background: var(--indigo);
   border-radius: var(--border-radius-bar);
   transition: width 0.4s ease;
