@@ -1117,17 +1117,6 @@ body {
 .b-feedback-btn-effacer:hover { background: var(--brume); }
 
 /* ── Feuille grumes (side panel) ─────────────────────────────────────────── */
-.b-grumes-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15,15,14,0.45);
-  z-index: 300;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-}
-.b-grumes-overlay.hidden { display: none; }
-
 .b-grumes-sheet {
   width: 420px;
   height: 100vh;
@@ -1254,17 +1243,6 @@ body {
 .b-btn-confirm-sel:hover { opacity: 0.88; }
 
 /* ── Modale Destination ──────────────────────────────────────────────────── */
-.b-dest-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15,15,14,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 400;
-}
-.b-dest-overlay.hidden { display: none; }
-
 .b-dest-card {
   background: var(--washi);
   border-radius: var(--border-radius-card);

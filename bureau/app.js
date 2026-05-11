@@ -251,9 +251,20 @@ function bDrawDonutCommune() {
 
     var item = document.createElement('div');
     item.className = 'b-commune-donut-item';
-    item.innerHTML =
-      '<div class="b-commune-donut-dot" style="background:' + couleur + '"></div>' +
-      '<span><strong>' + ess + '</strong> <span class="b-donut-pct">' + pctRound + '%</span></span>';
+    var dot = document.createElement('div');
+    dot.className = 'b-commune-donut-dot';
+    dot.style.background = couleur;
+    item.appendChild(dot);
+    var spanEss = document.createElement('span');
+    var strongEss = document.createElement('strong');
+    strongEss.textContent = ess;
+    spanEss.appendChild(strongEss);
+    spanEss.appendChild(document.createTextNode(' '));
+    var pctSpanEss = document.createElement('span');
+    pctSpanEss.className = 'b-donut-pct';
+    pctSpanEss.textContent = pctRound + '%';
+    spanEss.appendChild(pctSpanEss);
+    item.appendChild(spanEss);
     legende.appendChild(item);
   });
 }
@@ -264,38 +275,6 @@ function bAfficherCommune() {
   bInitStockPills();
 }
 
-function bAfficherEssences() {
-  var stock    = DuramenCore.getStock();
-  var essences = Object.keys(stock).filter(function(k) { return stock[k].dispo > 0; });
-  var grille   = document.getElementById('b-essences-grid');
-  grille.innerHTML = '';
-  if (!essences.length) {
-    grille.innerHTML = '<div class="b-empty">Aucun stock disponible.</div>';
-    return;
-  }
-  var maxVol = Math.max.apply(null, essences.map(function(k) { return stock[k].dispo; }));
-  essences.forEach(function(essence) {
-    var info = stock[essence];
-    var pct  = maxVol > 0 ? Math.round((info.dispo / maxVol) * 100) : 0;
-    var anneeMax = 0;
-    lots.filter(function(l) { return l.essence === essence; }).forEach(function(l) {
-      var a = parseInt(l.annee || 0); if (a > anneeMax) anneeMax = a;
-    });
-    var card = document.createElement('div');
-    card.className = 'b-essence-card';
-    card.innerHTML =
-      '<div class="b-essence-card-header">' +
-        '<span class="b-essence-card-nom">' + essence + '</span>' +
-        '<span class="b-essence-card-vol">' + info.dispo.toFixed(1) + ' <span>m³</span></span>' +
-      '</div>' +
-      '<div class="b-barre-piste"><div class="b-barre-fill" style="width:' + pct + '%"></div></div>' +
-      '<div class="b-essence-card-footer">' +
-        '<span class="b-essence-card-meta">' + info.nbLots + ' lot' + (info.nbLots > 1 ? 's' : '') + (anneeMax ? ' · ' + anneeMax : '') + '</span>' +
-        '<span class="b-badge b-badge-dispo">Disponible</span>' +
-      '</div>';
-    grille.appendChild(card);
-  });
-}
 
 function bAfficherTableLots() {
   var tbody = document.getElementById('b-lots-tbody');
@@ -487,10 +466,18 @@ function bDrawDonut(data) {
       var pct  = Math.round((seg.vol / total) * 100);
       var item = document.createElement('div');
       item.className = 'b-donut-legende-item';
-      item.innerHTML =
-        '<div class="b-donut-legende-dot" style="background:' + BLUES_DEGRADE[i % BLUES_DEGRADE.length] + '"></div>' +
-        '<span class="b-donut-legende-nom">' + seg.nom + '</span>' +
-        '<span class="b-donut-legende-pct">' + pct + '%</span>';
+      var dotSeg = document.createElement('div');
+      dotSeg.className = 'b-donut-legende-dot';
+      dotSeg.style.background = BLUES_DEGRADE[i % BLUES_DEGRADE.length];
+      item.appendChild(dotSeg);
+      var nomSpan = document.createElement('span');
+      nomSpan.className = 'b-donut-legende-nom';
+      nomSpan.textContent = seg.nom;
+      item.appendChild(nomSpan);
+      var pctSpanSeg = document.createElement('span');
+      pctSpanSeg.className = 'b-donut-legende-pct';
+      pctSpanSeg.textContent = pct + '%';
+      item.appendChild(pctSpanSeg);
       legende.appendChild(item);
     });
   }
@@ -714,11 +701,17 @@ function bMextInitGrumes() {
       var key = g.lotId + '-' + g.index;
       var row = document.createElement('div');
       row.className = 'b-grume-row' + (selIds.indexOf(key) !== -1 ? ' checked' : '');
-      row.innerHTML =
-        '<div class="b-grume-check"></div>' +
-        '<div class="b-grume-info">' + bLabelGrume(g) +
-          '<span class="b-grume-metrics">' + bMetriquesGrume(g) + '</span></div>' +
-        '<div class="b-grume-vol">' + g.volume.toFixed(3) + ' m³</div>';
+      var chk = document.createElement('div'); chk.className = 'b-grume-check';
+      row.appendChild(chk);
+      var info = document.createElement('div'); info.className = 'b-grume-info';
+      info.appendChild(document.createTextNode(bLabelGrume(g)));
+      var metrics = document.createElement('span'); metrics.className = 'b-grume-metrics';
+      metrics.textContent = bMetriquesGrume(g);
+      info.appendChild(metrics);
+      row.appendChild(info);
+      var volDiv = document.createElement('div'); volDiv.className = 'b-grume-vol';
+      volDiv.textContent = g.volume.toFixed(3) + ' m³';
+      row.appendChild(volDiv);
       row.onclick = function() {
         row.classList.toggle('checked');
         if (row.classList.contains('checked')) {
