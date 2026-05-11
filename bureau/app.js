@@ -211,7 +211,7 @@ function bDrawDonutCommune() {
   if (!svg) return;
   svg.innerHTML = ''; legende.innerHTML = '';
   if (center) center.innerHTML = '';
-  if (total === 0) { legende.innerHTML = '<span style="font-size:12px;color:var(--cendre)">Aucun stock</span>'; return; }
+  if (total === 0) { legende.innerHTML = '<span class="b-donut-vide">Aucun stock</span>'; return; }
 
   essences.sort(function(a, b) { return stock[b].dispo - stock[a].dispo; });
 
@@ -611,7 +611,7 @@ function bMextInitChips() {
   container.innerHTML = '';
   var next = document.getElementById('b-mext-s1-next');
   if (!essences.length) {
-    container.innerHTML = '<span style="font-size:13px;color:var(--cendre)">Aucun stock disponible</span>';
+    container.innerHTML = '<span class="b-chips-vide">Aucun stock disponible</span>';
     if (next) next.disabled = true;
     return;
   }

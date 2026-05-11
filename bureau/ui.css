@@ -1691,3 +1691,5 @@ body {
 }
 
 .b-empty { padding: 32px; text-align: center; color: var(--cendre); font-size: 13px; }
+.b-donut-vide { font-size: 12px; color: var(--cendre); }
+.b-chips-vide  { font-size: 13px; color: var(--cendre); }
