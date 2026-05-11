@@ -6,6 +6,47 @@
 
 ---
 
+## Session 11 mai 2026 — Audit de sécurité et de précision — TERMINÉ ✅
+
+### Périmètre
+Audit complet des deux interfaces (mobile `app.js` + bureau `bureau/app.js`) et du noyau `core.js`. Backlog entièrement vidé. Application propre à l'issue de la session.
+
+### Corrections appliquées
+
+| Ref | Fichier | Correction |
+|-----|---------|-----------|
+| R1 | `app.js`, `index.html` | `vol_utile = vol_brut` décision métier assumée — labels corrigés en `m³ bruts` |
+| R2 | `bureau/app.js` | Formule volume corrigée : `V × rendement × (e / (e + t))` |
+| R3 | `bureau/index.html` | Overlays morts supprimés (`b-grumes-overlay`, `b-dest-overlay`) |
+| R4 | `app.js` | `afficherTerritoire()` réécrite avec `textContent` / `createTextNode` |
+| R5 / S1 | `core.js` | `getStock()` : guard `typeof` + `extsData.forEach` (plus `extractions.forEach`) |
+| R7 | `app.js` | `DuramenCore.sortie()` fantôme supprimé de `soumettreSortie()` |
+| R9 | `bureau/app.js` | Linéaire corrigé : `util × 5000 / ep` (formule dimensionnellement correcte) |
+| R10 | `bureau/app.js` | Précision volumes harmonisée à `.toFixed(3)` partout |
+| R11 | `app.js` + `ui.css` | Barres de stock : `--barre-pct` via `setProperty()` + `var()` en CSS |
+| S2 | `sw.js` | Cache incrémenté `duramen-v29` → `duramen-v30` |
+| S3 | `app.js` | 4 volumes restants harmonisés à `.toFixed(3)` |
+| S4 | `bureau/app.js` | Tableau métropole, chips essence, entêtes lot — données Supabase via DOM pur |
+| S5 | `bureau/app.js` + `bureau/ui.css` | Styles inline supprimés → classes `.b-donut-vide` (12px) et `.b-chips-vide` (13px) |
+| S6 | `bureau/app.js` | Légende donut commune (`ess`) via `textContent` |
+| S7 | `bureau/app.js` | Légende donut métropole (`seg.nom`) via `textContent` |
+| S8 | `bureau/app.js` | Lignes grume (`bLabelGrume`, `bMetriquesGrume`) via DOM pur |
+| D1 | `bureau/app.js` | `bAfficherEssences()` supprimée — code mort jamais appelé |
+| D2 | `bureau/ui.css` | Règles CSS orphelines `.b-grumes-overlay` et `.b-dest-overlay` supprimées |
+
+### État post-audit
+- **Zéro vecteur XSS distant** : toutes les données Supabase passent par `textContent` ou `createTextNode`
+- **Zéro style inline** dans `bureau/app.js`
+- **Zéro code mort** dans `bureau/app.js`
+- **Zéro règle CSS orpheline** dans `bureau/ui.css`
+- **Formules métier correctes** : volume, linéaire, rendement
+- **Cache SW à jour** : `duramen-v30`
+
+### `innerHTML` restants — tous inoffensifs
+Seuls subsistent des vidages (`= ''`), des chaînes statiques, et des nombres calculés. Aucune donnée Supabase.
+
+---
+
 ## Session 10 mai 2026 — Audit Phase 1 + Phase 2
 
 ### Phase 1 — Corrections critiques ✅
@@ -170,11 +211,11 @@ Problèmes identifiés :
 
 | Priorité | Action | Fichier | Complexité |
 |----------|--------|---------|------------|
-| ✅ Résolu | ~~Corriger le double `id="lot-nom"`~~ — déjà corrigé | `index.html` | — |
-| ✅ Résolu | ~~Linéaire indicatif non réinitialisé en mode Grume brute~~ — corrigé le 28 avril 2026 | `app.js` | — |
-| 🟡 Phase 2 | Migrer concaténations HTML → `cel()` | `app.js` | Session dédiée |
-| 🟡 Phase 2 | Afficher "volume brut" quand pas de débit | `app.js` + `ui.css` | Session dédiée |
-| 🟡 Phase 2 | Déplacer style inline footer en classe CSS | `index.html` + `ui.css` | 5 min |
+| ✅ Résolu | ~~Corriger le double `id="lot-nom"`~~ — corrigé 26 avril 2026 | `index.html` | — |
+| ✅ Résolu | ~~Linéaire indicatif non réinitialisé~~ — corrigé 28 avril 2026 | `app.js` | — |
+| ✅ Résolu | ~~Audit sécurité/précision R1-R11, S1-S5, D1-D2~~ — terminé 11 mai 2026 | tous | — |
+| 🟡 Phase 2 | Migrer concaténations HTML → `cel()` dans l'ancien formulaire mobile | `app.js` | Session dédiée |
+| 🟡 Phase 2 | Afficher "volume brut — débit non calculé" pour les lots sans épaisseur | `app.js` + `ui.css` | Session dédiée |
 | 🟠 Avant production | Vérifier RLS Supabase sur toutes les tables | Supabase dashboard | Hors code |
 
 ---
@@ -233,7 +274,7 @@ Problèmes identifiés :
 - 3 boutons `.btn-home` : `width: calc(100% - 32px)`, `border-radius: 12px`, hauteur min 56px
 
 ### Service Worker
-- Cache actuel : **duramen-v28**
+- Cache actuel : **duramen-v30**
 
 ---
 
@@ -305,7 +346,7 @@ theme.css      ← variables de design (couleurs, typo) — ✅
 ui.css         ← composants visuels (.card, .btn…) — ✅
 core.js        ← noyau métier : DuramenCore (signatures figées) — ✅
 app.js         ← logique UI, navigation, Supabase — ✅
-sw.js          ← Service Worker (offline, cache duramen-v28) — ✅
+sw.js          ← Service Worker (offline, cache duramen-v30) — ✅
 ```
 
 ---
