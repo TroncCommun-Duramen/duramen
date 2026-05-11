@@ -399,14 +399,23 @@ function bAfficherMetropole() {
     var estMoi = bCommune && (row.commune === bCommune.nom || row.commune === bCommune.code);
     var tr = document.createElement('tr');
     if (estMoi) tr.className = 'b-tr-moi';
-    [
-      { html: estMoi ? '<strong>' + row.commune + '</strong>' : row.commune, cls: '' },
-      { html: '<span style="color:var(--cendre)">' + row.essence + '</span>', cls: '' },
-      { html: '<span class="b-vol">' + row.vol.toFixed(3) + ' m³</span>', cls: '' },
-      { html: '<span style="color:var(--cendre)">' + row.lots + ' lot' + (row.lots > 1 ? 's' : '') + '</span>', cls: '' }
-    ].forEach(function(c) {
-      var td = document.createElement('td'); td.innerHTML = c.html; if (c.cls) td.className = c.cls; tr.appendChild(td);
-    });
+    // td1 — commune
+    var tdC = document.createElement('td');
+    if (estMoi) { var strong = document.createElement('strong'); strong.textContent = row.commune; tdC.appendChild(strong); }
+    else { tdC.textContent = row.commune; }
+    tr.appendChild(tdC);
+    // td2 — essence
+    var tdE = document.createElement('td');
+    var essSpan = document.createElement('span'); essSpan.style.color = 'var(--cendre)'; essSpan.textContent = row.essence; tdE.appendChild(essSpan);
+    tr.appendChild(tdE);
+    // td3 — volume
+    var tdV = document.createElement('td');
+    var volSpan = document.createElement('span'); volSpan.className = 'b-vol'; volSpan.textContent = row.vol.toFixed(3) + ' m³'; tdV.appendChild(volSpan);
+    tr.appendChild(tdV);
+    // td4 — lots
+    var tdL = document.createElement('td');
+    var lotsSpan = document.createElement('span'); lotsSpan.style.color = 'var(--cendre)'; lotsSpan.textContent = row.lots + ' lot' + (row.lots > 1 ? 's' : ''); tdL.appendChild(lotsSpan);
+    tr.appendChild(tdL);
     tbody.appendChild(tr);
   });
 
@@ -624,7 +633,9 @@ function bMextInitChips() {
     var vol  = stock[ess].dispo;
     var chip = document.createElement('button');
     chip.className = 'b-chip-essence';
-    chip.innerHTML = ess + '<span class="b-chip-essence-vol">' + vol.toFixed(1) + ' m³</span>';
+    chip.appendChild(document.createTextNode(ess));
+    var volSpan = document.createElement('span'); volSpan.className = 'b-chip-essence-vol'; volSpan.textContent = vol.toFixed(1) + ' m³';
+    chip.appendChild(volSpan);
     chip.onclick = function() {
       document.querySelectorAll('#b-mext-chips .b-chip-essence').forEach(function(c) { c.classList.remove('active'); });
       chip.classList.add('active');
@@ -695,7 +706,9 @@ function bMextInitGrumes() {
     var lot = parLot[lotId];
     var head = document.createElement('div');
     head.className = 'b-grumes-lot-head';
-    head.innerHTML = lot.nom + '<span class="b-grumes-lot-badge">' + lot.essence + '</span>';
+    head.appendChild(document.createTextNode(lot.nom));
+    var badge = document.createElement('span'); badge.className = 'b-grumes-lot-badge'; badge.textContent = lot.essence;
+    head.appendChild(badge);
     list.appendChild(head);
     lot.grumes.forEach(function(g) {
       var key = g.lotId + '-' + g.index;

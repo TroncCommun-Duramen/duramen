@@ -998,7 +998,7 @@ function rendreHistoriqueContenu(container, lotsData) {
   var bloc = cel('div', 'histo-total-block');
 
   var itemVol = cel('div', '');
-  itemVol.appendChild(cel('div', 'histo-total-vol', totalVol.toFixed(2)));
+  itemVol.appendChild(cel('div', 'histo-total-vol', totalVol.toFixed(3)));
   itemVol.appendChild(cel('div', 'histo-total-unit', 'm³ bruts'));
   bloc.appendChild(itemVol);
 
@@ -1127,7 +1127,7 @@ function mettreAJourHeaderStats() {
   var stock = DuramenCore.getStock();
   var tD  = Object.values(stock).reduce(function (s, e) { return s + e.dispo; }, 0);
   var nbE = Object.keys(stock).length;
-  ['hs-vol',  'hs-vol-m' ].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = tD.toFixed(2); });
+  ['hs-vol',  'hs-vol-m' ].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = tD.toFixed(3); });
   ['hs-lots', 'hs-lots-m'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = lots.length; });
   ['hs-essences', 'hs-essences-m'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = nbE; });
 }
@@ -1154,7 +1154,7 @@ function mettreAJourAccueil() {
   var stock = DuramenCore.getStock();
   var tD = Object.values(stock).reduce(function (s, e) { return s + e.dispo; }, 0);
   var stockEl = document.getElementById('accueil-stock-val');
-  if (stockEl) stockEl.textContent = tD.toFixed(2);
+  if (stockEl) stockEl.textContent = tD.toFixed(3);
   mettreAJourStatutReseau();
 }
 
@@ -1200,7 +1200,7 @@ async function afficherTerritoire() {
 
   var statsRow = cel('div', 'stats-row');
   [
-    { val: tV.toFixed(2), lbl: 'm³ bruts partagés' },
+    { val: tV.toFixed(3), lbl: 'm³ bruts partagés' },
     { val: String(nC),    lbl: nC > 1 ? 'communes' : 'commune' },
     { val: String(lP.length), lbl: 'lots' }
   ].forEach(function (s) {

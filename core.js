@@ -83,7 +83,7 @@ var DuramenCore = (function () {
       if (l.usage && stock[l.essence].usages.indexOf(l.usage) === -1)
         stock[l.essence].usages.push(l.usage);
     });
-    extractions.forEach(function (e) {
+    extsData.forEach(function (e) {
       if (stock[e.essence]) stock[e.essence].sorti += e.volume;
     });
     Object.keys(stock).forEach(function (k) {
