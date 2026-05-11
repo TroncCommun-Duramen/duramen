@@ -1000,7 +1000,7 @@ function rendreHistoriqueContenu(container, lotsData) {
 
   var itemVol = cel('div', '');
   itemVol.appendChild(cel('div', 'histo-total-vol', totalVol.toFixed(2)));
-  itemVol.appendChild(cel('div', 'histo-total-unit', 'm³ utiles'));
+  itemVol.appendChild(cel('div', 'histo-total-unit', 'm³ bruts'));
   bloc.appendChild(itemVol);
 
   bloc.appendChild(cel('div', 'histo-total-divider'));
@@ -1162,59 +1162,89 @@ function mettreAJourAccueil() {
 // ─── Territoire ───────────────────────────────────────────────────────────
 async function afficherTerritoire() {
   var container = document.getElementById('territoire-container');
-  container.innerHTML = '<div class="empty-state"><div class="icon">&#x23F3;</div><p>Chargement...</p></div>';
+  while (container.firstChild) container.removeChild(container.firstChild);
+
+  var charg = cel('div', 'empty-state');
+  charg.appendChild(cel('div', 'icon', '⏳'));
+  charg.appendChild(cel('p', '', 'Chargement...'));
+  container.appendChild(charg);
+
   var lP = [];
   try {
     lP = await sbSelect('lots', 'partage=eq.true&order=created_at.desc');
   } catch (err) {
-    container.innerHTML = '<div class="empty-state"><p>Erreur : ' + err.message + '</p></div>';
+    while (container.firstChild) container.removeChild(container.firstChild);
+    var errEl = cel('div', 'empty-state');
+    errEl.appendChild(cel('p', '', 'Erreur : ' + err.message));
+    container.appendChild(errEl);
     return;
   }
+
+  while (container.firstChild) container.removeChild(container.firstChild);
+
   if (lP.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">&#x1F310;</div><p>Aucun lot partage pour l instant.</p></div>';
+    var vide = cel('div', 'empty-state');
+    vide.appendChild(cel('div', 'icon', '🌐'));
+    vide.appendChild(cel('p', '', 'Aucun lot partagé pour l\'instant.'));
+    container.appendChild(vide);
     return;
   }
+
   var pC = {};
   lP.forEach(function (l) {
-    if (!pC[l.commune]) pC[l.commune] = [];
-    pC[l.commune].push(l);
+    var cl = l.commune || l.commune_code || '—';
+    if (!pC[cl]) pC[cl] = [];
+    pC[cl].push(l);
   });
-  var tV = lP.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
+  var tV = lP.reduce(function (s, l) { return s + (l.vol_brut || 0); }, 0);
   var nC = Object.keys(pC).length;
-  container.innerHTML =
-    '<div class="stats-row">'
-    + '<div class="card stat-card">'
-    + '<div class="stat-val">' + tV.toFixed(2) + '</div>'
-    + '<div class="stat-lbl">m3 partages</div></div>'
-    + '<div class="card stat-card">'
-    + '<div class="stat-val">' + nC + '</div>'
-    + '<div class="stat-lbl">commune' + (nC > 1 ? 's' : '') + '</div></div>'
-    + '<div class="card stat-card">'
-    + '<div class="stat-val">' + lP.length + '</div>'
-    + '<div class="stat-lbl">lots</div></div>'
-    + '</div>'
-    + Object.keys(pC).sort().map(function (commune) {
-        var lC  = pC[commune];
-        var vC  = lC.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
-        var ess = lC.map(function (l) { return l.essence; })
-                    .filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ');
-        return '<div class="territoire-card">'
-          + '<div class="territoire-commune-name">' + commune
-          + '<span class="chip-partage">Partage actif</span></div>'
-          + '<div class="territoire-stats">'
-          + '<div class="territoire-stat">Volume : <strong>' + vC.toFixed(3) + ' m3</strong></div>'
-          + '<div class="territoire-stat">Lots : <strong>' + lC.length + '</strong></div>'
-          + '<div class="territoire-stat">Essences : <strong>' + ess + '</strong></div>'
-          + '</div>'
-          + '<div class="mt-10">'
-          + lC.map(function (l) {
-              return '<div class="territoire-lot-row">'
-                + '<span class="territoire-lot-nom">' + l.nom + '</span>'
-                + '<span class="territoire-lot-meta">' + l.essence + ' &mdash; ' + (l.vol_utile || 0).toFixed(3) + ' m3 &mdash; ' + l.annee + '</span>'
-                + '</div>';
-            }).join('')
-          + '</div></div>';
-      }).join('');
+
+  var statsRow = cel('div', 'stats-row');
+  [
+    { val: tV.toFixed(2), lbl: 'm³ bruts partagés' },
+    { val: String(nC),    lbl: nC > 1 ? 'communes' : 'commune' },
+    { val: String(lP.length), lbl: 'lots' }
+  ].forEach(function (s) {
+    var card = cel('div', 'card stat-card');
+    card.appendChild(cel('div', 'stat-val', s.val));
+    card.appendChild(cel('div', 'stat-lbl', s.lbl));
+    statsRow.appendChild(card);
+  });
+  container.appendChild(statsRow);
+
+  Object.keys(pC).sort().forEach(function (commune) {
+    var lC  = pC[commune];
+    var vC  = lC.reduce(function (s, l) { return s + (l.vol_brut || 0); }, 0);
+    var ess = lC.map(function (l) { return l.essence; })
+                .filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+
+    var card = cel('div', 'territoire-card');
+
+    var nomRow = cel('div', 'territoire-commune-name');
+    nomRow.appendChild(document.createTextNode(commune));
+    nomRow.appendChild(cel('span', 'chip-partage', 'Partage actif'));
+    card.appendChild(nomRow);
+
+    var stats = cel('div', 'territoire-stats');
+    var sVol = cel('div', 'territoire-stat'); sVol.appendChild(document.createTextNode('Volume : ')); var sVolB = cel('strong', '', vC.toFixed(3) + ' m³'); sVol.appendChild(sVolB);
+    var sLot = cel('div', 'territoire-stat'); sLot.appendChild(document.createTextNode('Lots : ')); sLot.appendChild(cel('strong', '', String(lC.length)));
+    var sEss = cel('div', 'territoire-stat'); sEss.appendChild(document.createTextNode('Essences : ')); sEss.appendChild(cel('strong', '', ess.join(', ') || '—'));
+    stats.appendChild(sVol); stats.appendChild(sLot); stats.appendChild(sEss);
+    card.appendChild(stats);
+
+    var lotsWrap = cel('div', 'mt-10');
+    lC.forEach(function (l) {
+      var row  = cel('div', 'territoire-lot-row');
+      var nom  = cel('span', 'territoire-lot-nom', l.nom || '—');
+      var meta = cel('span', 'territoire-lot-meta',
+        (l.essence || '—') + ' — ' + (l.vol_brut || 0).toFixed(3) + ' m³ — ' + (l.annee || '—'));
+      row.appendChild(nom);
+      row.appendChild(meta);
+      lotsWrap.appendChild(row);
+    });
+    card.appendChild(lotsWrap);
+    container.appendChild(card);
+  });
 }
 
 // ─── Authentification via Supabase ────────────────────────────────────────

@@ -215,51 +215,6 @@
 
 </div><!-- fin b-app -->
 
-<!-- ─── SÉLECTION DES GRUMES (feuille latérale) ─── -->
-<div id="b-grumes-overlay" class="b-grumes-overlay hidden" onclick="if(event.target===this)bFermerGrumes()">
-  <div class="b-grumes-sheet">
-    <div class="b-grumes-sheet-head">
-      <div class="b-grumes-sheet-titre">Choisir les grumes</div>
-      <button class="b-grumes-sheet-fermer" onclick="bFermerGrumes()">✕</button>
-    </div>
-    <div class="b-grumes-sheet-body" id="b-grumes-sheet-body"></div>
-    <div class="b-grumes-sheet-foot">
-      <button class="b-btn-confirm-sel" onclick="bConfirmerGrumes()">Confirmer la sélection</button>
-    </div>
-  </div>
-</div>
-
-<!-- ─── MODALE DESTINATION ─── -->
-<div id="b-dest-overlay" class="b-dest-overlay hidden" onclick="if(event.target===this)bFermerDestination()">
-  <div class="b-dest-card">
-    <div class="b-dest-titre">Destination</div>
-    <div class="b-dest-sous">À qui vont ces grumes ?</div>
-    <div class="b-dest-field">
-      <div class="b-dest-lbl">NOM DU PROJET</div>
-      <input class="b-dest-input" type="text" id="b-dest-projet" placeholder="Ex. : Mairie de Rezé, bancs publics…">
-    </div>
-    <div class="b-dest-field">
-      <div class="b-dest-lbl">COMMUNE D'INSTALLATION</div>
-      <div class="b-dest-commune-readonly" id="b-dest-commune-inst">—</div>
-    </div>
-    <div class="b-dest-field">
-      <div class="b-dest-lbl">USAGE</div>
-      <div class="b-usage-toggle b-usage-toggle-dest">
-        <button class="b-usage-btn active" id="b-dest-usage-int" onclick="bSetUsageDest('Intérieur')">Intérieur</button>
-        <button class="b-usage-btn" id="b-dest-usage-ext" onclick="bSetUsageDest('Extérieur')">Extérieur</button>
-      </div>
-    </div>
-    <div class="b-dest-field">
-      <div class="b-dest-lbl">LIEU <span class="b-field-opt">(OPTIONNEL)</span></div>
-      <input class="b-dest-input" type="text" id="b-dest-lieu" placeholder="Ex. : salle des fêtes, école…">
-    </div>
-    <div class="b-dest-footer">
-      <button class="b-dest-retour" onclick="bFermerDestination()">← Retour</button>
-      <button class="b-dest-confirmer" onclick="bConfirmerExtraction()">CONFIRMER</button>
-    </div>
-  </div>
-</div>
-
 <!-- ─── MODALE EXTRACTION 3 ÉTAPES ─── -->
 <div id="b-mext-overlay" class="b-mext-overlay hidden" onclick="if(event.target===this)bFermerModalExt()">
   <div class="b-mext-card">

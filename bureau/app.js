@@ -756,7 +756,7 @@ function bMextMajVol() {
   var ep   = parseInt(document.getElementById('b-mext-sl-ep').value);
   var ts   = parseInt(document.getElementById('b-mext-sl-ts').value);
   var rg   = parseInt(document.getElementById('b-mext-sl-rg').value) / 100;
-  var util = volBrut * rg;
+  var util = volBrut * rg * (ep / (ep + ts));
   document.getElementById('b-mext-v-util').textContent = util.toFixed(3);
   document.getElementById('b-mext-v-dec').textContent  = (volBrut - util).toFixed(3);
   document.getElementById('b-mext-val-lin').textContent = (util * 1000 / (ep + ts)).toFixed(1) + ' m';
@@ -788,7 +788,7 @@ async function bMextConfirmer() {
   var ep      = parseInt(document.getElementById('b-mext-sl-ep').value);
   var ts      = parseInt(document.getElementById('b-mext-sl-ts').value);
   var rg      = parseInt(document.getElementById('b-mext-sl-rg').value) / 100;
-  var volUtil  = bExtType === 'planches' ? volBrut * rg : volBrut;
+  var volUtil  = bExtType === 'planches' ? volBrut * rg * (ep / (ep + ts)) : volBrut;
   var lineaire = bExtType === 'planches' ? volUtil * 1000 / (ep + ts) : 0;
   var dest = [projet, comm, lieu].filter(Boolean).join(' · ') || '—';
   var valid = DuramenCore.validerSortie({ essence: bExtEssence, volume: volUtil, usage: bExtUsageDest, destination: dest });
