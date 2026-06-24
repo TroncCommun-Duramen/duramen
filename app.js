@@ -991,8 +991,7 @@ function rendreHistoriqueContenu(container, lotsData) {
   }
 
   // ── Bloc total ──────────────────────────────────────────────────────
-  var stock     = DuramenCore.getStock();
-  var totalVol  = Object.keys(stock).reduce(function (s, e) { return s + (stock[e].dispo || 0); }, 0);
+  var totalVol  = lotsData.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
   var totalLots = lotsData.length;
 
   var bloc = cel('div', 'histo-total-block');
