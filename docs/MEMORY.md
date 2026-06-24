@@ -6,29 +6,6 @@
 
 ---
 
-## Session 24 juin 2026 — Fix volumes 0.000 m³ vue communauté — TERMINÉ ✅
-
-### Symptôme
-En vue "Nantes Métropole" (toggle communauté), le bloc "Par essence" affichait 0.000 m³ pour toutes les essences, alors que le nombre de lots (18) était correct.
-
-### Cause
-Dans `rendreHistoriqueContenu()` (`app.js` ligne ~1021), le volume par essence était lu depuis `DuramenCore.getStock()`, qui ne contient que les données de la commune connectée. En vue communauté, `lotsData` contient les lots de toutes les communes du réseau — donc `stock[e]` est `undefined` pour la plupart des essences → 0.000 m³.
-
-### Correction appliquée
-`app.js` — ligne 1021 :
-```js
-// Avant
-parEss[e].vol = stock[e] ? (stock[e].dispo || 0) : 0;
-// Après
-parEss[e].vol += l.vol_utile || 0;
-```
-Les volumes sont désormais sommés directement depuis `lotsData`, ce qui fonctionne dans les deux vues (commune et communauté).
-
-### Commit
-`be1cc64` — poussé sur `main` le 24 juin 2026.
-
----
-
 ## Session 11 mai 2026 — Audit de sécurité et de précision — TERMINÉ ✅
 
 ### Périmètre

@@ -62,7 +62,7 @@ Envoyer ce message à Claude Code avant de terminer une session :
 
 | Date | Contexte | Règle apprise |
 |------|----------|---------------|
-| 24 juin 2026 | Vue communauté (Nantes Métropole) | Ne jamais utiliser `getStock()` pour calculer des volumes dans une vue filtrée par un scope différent de la commune connectée. Toujours sommer `vol_utile` directement depuis `lotsData`. |
+| —    | —        | —             |
 
 ---
 

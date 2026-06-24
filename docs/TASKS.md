@@ -50,7 +50,6 @@
 | S8 — Lignes grume via DOM pur ✅ | `bureau/app.js` | 11 mai 2026 |
 | D1 — `bAfficherEssences()` supprimée (code mort) ✅ | `bureau/app.js` | 11 mai 2026 |
 | D2 — Règles CSS orphelines `.b-grumes-overlay` / `.b-dest-overlay` supprimées ✅ | `bureau/ui.css` | 11 mai 2026 |
-| Fix volumes 0.000 m³ en vue Nantes Métropole — `parEss[e].vol` sommé depuis `vol_utile` plutôt que `getStock()` ✅ | `app.js` | 24 juin 2026 |
 
 ---
 
