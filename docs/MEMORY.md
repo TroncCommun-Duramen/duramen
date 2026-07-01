@@ -412,6 +412,28 @@ sw.js          ← Service Worker (offline, cache duramen-v30) — ✅
 
 ---
 
+## Session 2 juillet 2026 — Audit profond de l'application
+
+### Diagnostic complet (core.js, app.js, index.html, sw.js)
+
+11 points relevés, classés par gravité. Corrigés dans cette session (commit `203ba35`, cache SW `v33`) :
+
+- **A1 (critique)** — Le rafraîchissement auto (2 min) reconstruisait l'écran Extraction et effaçait la sélection de grumes en cours. Ajout de `extractionEnCours()` dans `app.js` : la reconstruction est sautée si une sélection, un filtre essence ou une modale est active.
+- **A3 (critique)** — Fonctions mortes `chargerCommunesExtraction` / `remplirCommunesSel` supprimées : elles téléchargeaient `code + commune` de toute la table `codes_acces` (le code EST le mot de passe). Jamais appelées, mais dangereuses si rebranchées un jour.
+
+Constaté lors du push : le coffre Obsidian local était **en retard de 5 commits** sur GitHub (session du 24 juin faite ailleurs, qui avait déjà corrigé les totaux de la vue Communauté — point A4). Rebase + résolution du conflit `sw.js` (v32 distant, v31 local → v33).
+
+### Points restants (détail dans [[TASKS]] — Prochaines tâches)
+
+Le plus urgent est **A2 — RLS Supabase** : l'isolation des données entre communes repose uniquement sur le filtre `commune_code=eq.X` ajouté côté client. Si Row Level Security n'est pas activé sur les tables `lots`, `extractions` et `codes_acces`, toute commune connectée peut lire les lots privés des autres. Se corrige dans le tableau de bord Supabase, pas dans le code.
+
+### Décisions de session
+
+- Les corrections d'audit se font **point par point, une session par sujet** (règle « un bug = une session »).
+- **Toujours `git pull` en début de session** — le coffre local peut être en retard sur GitHub.
+
+---
+
 ## Voir aussi
 
 - [[TASKS]] — suivi séquentiel des tâches, source de vérité

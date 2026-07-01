@@ -50,6 +50,11 @@
 | S8 — Lignes grume via DOM pur ✅ | `bureau/app.js` | 11 mai 2026 |
 | D1 — `bAfficherEssences()` supprimée (code mort) ✅ | `bureau/app.js` | 11 mai 2026 |
 | D2 — Règles CSS orphelines `.b-grumes-overlay` / `.b-dest-overlay` supprimées ✅ | `bureau/ui.css` | 11 mai 2026 |
+| **Audit profond — session 2 juillet 2026** (commit 203ba35) | | |
+| A1 — Sélection extraction protégée du rafraîchissement auto : `extractionEnCours()` saute la reconstruction de l'écran si sélection / filtre / modale en cours ✅ | `app.js` | 2 juillet 2026 |
+| A3 — Code mort supprimé : `chargerCommunesExtraction` + `remplirCommunesSel` téléchargeaient les codes d'accès de toutes les communes (risque de fuite) ✅ | `app.js` | 2 juillet 2026 |
+| A4 — Totaux vue Communauté : déjà corrigé le 24 juin (be1cc64 + 1b0c70c), constaté lors du rebase ✅ | `app.js` | 24 juin 2026 |
+| Cache SW incrémenté `duramen-v32` → `duramen-v33` ✅ | `sw.js` | 2 juillet 2026 |
 
 ---
 
@@ -65,6 +70,14 @@ _(aucune)_
 |---|-------|---------|----------|
 | 1 | Responsive desktop : layout bureau distinct du layout mobile | Design | ✅ Fait |
 | 2 | Icône PWA : fond `--indigo` + icône blanche (coordonner avec graphiste) | Design | Basse |
+| 3 | 🔴 A2 — Vérifier RLS Supabase sur `lots`, `extractions`, `codes_acces` : l'isolation entre communes repose sur le filtre client uniquement | Supabase (hors code) | **Haute** |
+| 4 | A5 — Verrou anti sur-extraction : 2 agents simultanés peuvent sortir plus que le stock | Feature | Haute |
+| 5 | A7 — Session jamais revérifiée : un code désactivé dans Supabase reste connecté | Feature | Moyenne |
+| 6 | A8 — `supprimerLot` n'efface pas les extractions liées (volumes sortis orphelins) | Feature | Moyenne |
+| 7 | A6 — Grumes déjà extraites re-sélectionnables (stock suivi au volume/essence, pas à la grume) | Feature | Moyenne |
+| 8 | A9 — Mode circonférence : volume affiché ≠ volume enregistré (arrondi du diamètre) | Feature | Basse |
+| 9 | A10 — Supprimer l'ancien formulaire mort (étapes 1-3 de index.html + fonctions associées de app.js) | Structure puis Feature | Basse |
+| 10 | A11 — GPS sans timeout · overlay « Chargement » clignote à chaque rafraîchissement auto | Feature | Basse |
 
 ---
 

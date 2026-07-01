@@ -62,7 +62,9 @@ Envoyer ce message à Claude Code avant de terminer une session :
 
 | Date | Contexte | Règle apprise |
 |------|----------|---------------|
-| —    | —        | —             |
+| 2 juillet 2026 | Push refusé : le coffre Obsidian était en retard de 5 commits sur GitHub (session du 24 juin faite ailleurs) | **TOUJOURS** faire `git pull` en début de session, avant tout audit ou modification. Raison : travailler sur du code périmé fait re-diagnostiquer des bugs déjà corrigés et provoque des conflits au push. |
+| 2 juillet 2026 | Écran Extraction reconstruit par le rafraîchissement auto → sélection de grumes effacée | **JAMAIS** reconstruire un écran contenant une saisie en cours lors d'un rafraîchissement automatique. Raison : l'agent sur le terrain perd son travail sans prévenir. Vérifier l'état avec une garde (ex. `extractionEnCours()`) avant de re-rendre. |
+| 2 juillet 2026 | Code mort qui téléchargeait toute la table `codes_acces` (code = mot de passe) | **JAMAIS** faire un `select` qui rapporte la colonne `code` de `codes_acces`, sauf pour vérifier LE code saisi à la connexion. Raison : exposer les codes de toutes les communes permet de se connecter à leur place. |
 
 ---
 
