@@ -112,7 +112,9 @@ async function chargerDonnees() {
     mettreAJourHeaderStats();
     mettreAJourAccueil();
     afficherHistorique();
-    afficherExtraction();
+    // Ne pas reconstruire l'écran Extraction si une sélection est en cours :
+    // le rafraîchissement auto (toutes les 2 min) effacerait le travail de l'agent.
+    if (!extractionEnCours()) afficherExtraction();
     showOfflineBanner(false);
   } catch (err) {
     var cachedLots = localStorage.getItem('duramen_lots_cache');
@@ -342,9 +344,19 @@ async function sauvegarderLot() {
 // ─── État de l'écran Extraction ───────────────────────────────────────────
 var extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '' };
 var extGrumesSel = [];
-var extCommunes  = [];
 var extEssFiltre = null;
 var extDebitActif = false;
+
+// Vrai si l'agent est en train de préparer une extraction :
+// grumes sélectionnées, filtre essence actif, sheet ou modale ouverte.
+function extractionEnCours() {
+  var sheet = document.getElementById('grume-sel-sheet-wrap');
+  var modal = document.getElementById('modal-ext-bg');
+  return !!(extGrumesSel.length > 0
+    || extEssFiltre !== null
+    || (sheet && sheet.classList.contains('open'))
+    || (modal && modal.classList.contains('open')));
+}
 
 function showToastSucces(msg) {
   var el = document.getElementById('toast-ok');
@@ -511,30 +523,6 @@ function basculerDebitExtraction(activer) {
   if (btnDebit) btnDebit.classList.toggle('active', extDebitActif);
   if (sliders)  sliders.classList.toggle('hidden', !extDebitActif);
   majSyntheseExtraction();
-}
-
-async function chargerCommunesExtraction() {
-  if (extCommunes.length > 0) { remplirCommunesSel(); return; }
-  try {
-    var rows = await sbSelect('codes_acces', 'actif=eq.true&select=code,commune&order=commune.asc');
-    extCommunes = rows || [];
-    remplirCommunesSel();
-  } catch (e) { /* silent — le champ reste utilisable */ }
-}
-
-function remplirCommunesSel() {
-  var sel = document.getElementById('modal-ext-commune');
-  if (!sel) return;
-  while (sel.firstChild) sel.removeChild(sel.firstChild);
-  var optD = cel('option', '', '— Choisir —');
-  optD.value = '';
-  sel.appendChild(optD);
-  extCommunes.forEach(function (c) {
-    var o = cel('option', '', c.commune);
-    o.value = c.commune;
-    sel.appendChild(o);
-  });
-  sel.value = extDraft.communeInstall;
 }
 
 // ─── Modale Destination (extraction) ─────────────────────────────────────
