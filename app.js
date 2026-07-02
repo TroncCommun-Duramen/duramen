@@ -133,6 +133,17 @@ var extGrumesSel = [];
 var extEssFiltre = null;
 var extDebitActif = false;
 
+// Clés des grumes déjà sorties du stock, lues dans extractions.grumes_keys.
+// Une clé = id du lot + '_' + position de la grume dans le lot (ex. "abc_0").
+// Une grume extraite ne doit plus jamais être proposée à la sélection.
+function clesGrumesExtraites() {
+  var cles = {};
+  extractions.forEach(function (ex) {
+    (ex.grumes_keys || []).forEach(function (k) { cles[k] = true; });
+  });
+  return cles;
+}
+
 // Vrai si l'agent est en train de préparer une extraction :
 // grumes sélectionnées, filtre essence actif, sheet ou modale ouverte.
 function extractionEnCours() {
@@ -448,9 +459,13 @@ function construireContenuGrumeSelSheet() {
   if (!content) return;
   while (content.firstChild) content.removeChild(content.firstChild);
 
+  // Les grumes déjà extraites sortent de la liste ; un lot entièrement
+  // extrait disparaît. Le lot reste en base pour le bilan et l'historique.
+  var extraites = clesGrumesExtraites();
   var lotsFiltrés = lots.filter(function (l) {
     if (!l.grumes || l.grumes.length === 0) return false;
-    return !extEssFiltre || l.essence === extEssFiltre;
+    if (extEssFiltre && l.essence !== extEssFiltre) return false;
+    return l.grumes.some(function (g, gi) { return !extraites[l.id + '_' + gi]; });
   });
 
   var selState = {};
@@ -469,6 +484,7 @@ function construireContenuGrumeSelSheet() {
       var volMap = {};
       lot.grumes.forEach(function (g, gi) {
         var key = lot.id + '_' + gi;
+        if (extraites[key]) return;
         var d   = parseFloat(g.diametre) || 0;
         var l   = parseFloat(g.longueur) || 0;
         var qty = g.quantite || 1;
@@ -521,12 +537,13 @@ function majVolTotalSel(selState, volMap, el) {
 }
 
 function confirmerSelectionGrumes(lotsFiltrés, selState) {
+  var extraites = clesGrumesExtraites();
   extGrumesSel = [];
   lotsFiltrés.forEach(function (lot) {
     if (!lot.grumes) return;
     lot.grumes.forEach(function (g, gi) {
       var key = lot.id + '_' + gi;
-      if (!selState[key]) return;
+      if (!selState[key] || extraites[key]) return;
       var d   = parseFloat(g.diametre) || 0;
       var l   = parseFloat(g.longueur) || 0;
       var qty = g.quantite || 1;
@@ -625,9 +642,11 @@ async function confirmerExtractionDest() {
   extDraft.usage          = usage;
   extDraft.lieu           = lieu;
 
-  var parEssence = {};
+  var parEssence     = {};
+  var clesParEssence = {};
   extGrumesSel.forEach(function (g) {
     parEssence[g.essence] = (parEssence[g.essence] || 0) + g.vol;
+    (clesParEssence[g.essence] = clesParEssence[g.essence] || []).push(g.key);
   });
   var essences = Object.keys(parEssence);
 
@@ -670,12 +689,24 @@ async function confirmerExtractionDest() {
         notes:           extDraft.lieu ? 'Lieu : ' + extDraft.lieu : '',
         cause_abattage:  causeAbattage,
         type_sortie:     extDebitActif ? 'debit' : 'grume',
+        grumes_keys:     clesParEssence[ess],
         date:            now.toLocaleDateString('fr-FR'),
         date_iso:        now.toISOString()
       };
     });
     // Envoi groupé : soit toutes les essences passent, soit aucune
-    await sbInsert('extractions', nouvelles);
+    try {
+      await sbInsert('extractions', nouvelles);
+    } catch (e1) {
+      // Colonne grumes_keys pas encore créée dans Supabase :
+      // on enregistre quand même l'extraction, sans le marquage des grumes.
+      if (/grumes_keys/.test(e1.message)) {
+        nouvelles.forEach(function (n) { delete n.grumes_keys; });
+        await sbInsert('extractions', nouvelles);
+      } else {
+        throw e1;
+      }
+    }
     await chargerDonnees();
     extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '' };
     extGrumesSel = [];
@@ -720,9 +751,90 @@ function afficherHistorique() {
   while (content.firstChild) content.removeChild(content.firstChild);
   if (histoVue === 'commune') {
     rendreHistoriqueContenu(content, lots);
+    // Bilan entrées / sorties à une date choisie — juste avant les boutons export
+    var exportRow = content.querySelector('.histo-export-row');
+    var bilan     = creerBilanBloc();
+    if (exportRow) { content.insertBefore(bilan, exportRow); } else { content.appendChild(bilan); }
   } else {
     afficherHistoriqueCommunaute(content);
   }
+}
+
+// ─── Bilan du stock à une date ────────────────────────────────────────────
+// À une date T : tout ce qui est entré, tout ce qui est sorti, le solde.
+// Même stock vide, les entrées et les sorties restent visibles.
+function creerBilanBloc() {
+  var bloc = cel('div', '');
+  bloc.appendChild(cel('div', 'histo-section-title mt-16', 'Bilan du stock'));
+
+  var dateRow = cel('div', 'bilan-date-row');
+  dateRow.appendChild(cel('span', 'bilan-date-lbl', 'État au'));
+  var dateInp = document.createElement('input');
+  dateInp.type      = 'date';
+  dateInp.className = 'bilan-date-input';
+  dateInp.value     = new Date().toISOString().slice(0, 10);
+  dateRow.appendChild(dateInp);
+  bloc.appendChild(dateRow);
+
+  var stats = cel('div', 'bilan-stats');
+  var defs  = [
+    { lbl: 'm³ entrés',   cls: '' },
+    { lbl: 'm³ sortis',   cls: '' },
+    { lbl: 'm³ en stock', cls: 'bilan-stat-stock' }
+  ];
+  var vals = defs.map(function (d) {
+    var item = cel('div', 'bilan-stat ' + d.cls);
+    var val  = cel('div', 'bilan-stat-val', '—');
+    item.appendChild(val);
+    item.appendChild(cel('div', 'bilan-stat-lbl', d.lbl));
+    stats.appendChild(item);
+    return val;
+  });
+  bloc.appendChild(stats);
+
+  var sortiesTitre = cel('div', 'histo-section-title mt-16', 'Sorties');
+  var sortiesList  = cel('div', 'histo-ext-list');
+  bloc.appendChild(sortiesTitre);
+  bloc.appendChild(sortiesList);
+
+  function majBilan() {
+    var limite = dateInp.value || new Date().toISOString().slice(0, 10);
+    function avantLimite(x) {
+      var jour = (x.date_iso || '').slice(0, 10);
+      return !jour || jour <= limite;
+    }
+    var lotsT = lots.filter(avantLimite);
+    var extsT = extractions.filter(avantLimite);
+    var entres = lotsT.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
+    var sortis = extsT.reduce(function (s, e) { return s + (e.volume || 0); }, 0);
+    vals[0].textContent = entres.toFixed(3);
+    vals[1].textContent = sortis.toFixed(3);
+    vals[2].textContent = Math.max(0, entres - sortis).toFixed(3);
+
+    while (sortiesList.firstChild) sortiesList.removeChild(sortiesList.firstChild);
+    if (extsT.length === 0) {
+      sortiesList.appendChild(cel('div', 'ext-empty', 'Aucune sortie à cette date.'));
+      return;
+    }
+    extsT
+      .slice()
+      .sort(function (a, b) { return (b.date_iso || '').localeCompare(a.date_iso || ''); })
+      .slice(0, 5)
+      .forEach(function (ex) {
+        var item = cel('div', 'histo-ext-item');
+        item.appendChild(cel('span', 'histo-ext-essence', ex.essence || '—'));
+        item.appendChild(cel('span', 'histo-ext-vol', (ex.volume || 0).toFixed(3) + ' m³'));
+        item.appendChild(cel('span', 'histo-ext-type',
+          ex.type_sortie === 'debit' ? 'Débit' : 'Grume brute'));
+        item.appendChild(cel('span', 'histo-ext-date', ex.date || ''));
+        if (ex.destination) item.appendChild(cel('div', 'histo-ext-dest', '→ ' + ex.destination));
+        sortiesList.appendChild(item);
+      });
+  }
+
+  dateInp.addEventListener('change', majBilan);
+  majBilan();
+  return bloc;
 }
 
 async function afficherHistoriqueCommunaute(content) {
