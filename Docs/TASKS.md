@@ -83,9 +83,10 @@ _(aucune)_
 | 4 | ~~A5 — Verrou anti sur-extraction~~ ✅ fait le 2 juil. (trigger + re-validation client) | Supabase + Feature | ✅ Fait |
 | 5 | A7 — Session jamais revérifiée : un code désactivé dans Supabase reste connecté | Feature | Moyenne |
 | 6 | A8 — `supprimerLot` n'efface pas les extractions liées (volumes sortis orphelins) | Feature | Moyenne |
-| 7 | A6 — Grumes déjà extraites re-sélectionnables (stock suivi au volume/essence, pas à la grume) | Feature | Moyenne |
+| 7 | ~~A6 — Grumes déjà extraites re-sélectionnables~~ ✅ fait le 2 juil. — branche `feat/grumes-extraites` : chaque extraction enregistre les clés de ses grumes (`extractions.grumes_keys`), la sélection ne les propose plus, et un bloc « Bilan du stock » (entrées / sorties / solde à une date choisie) garde la trace même stock vide. Mobile + bureau. **En attente : fusion + SQL** `alter table public.extractions add column if not exists grumes_keys jsonb;` | Feature | ✅ Fait |
+| 7b | ~~Brouillon de saisie perdu au rechargement de la page~~ ✅ fait le 2 juil. — branche `fix/brouillon-saisie` : restauration silencieuse (plus de boîte « Reprendre ? » qui effaçait le brouillon sur Annuler, restauration même sans grume). En attente de fusion | Feature | ✅ Fait |
 | 8 | A9 — Mode circonférence : volume affiché ≠ volume enregistré (arrondi du diamètre) | Feature | Basse |
-| 9 | A10 — Supprimer l'ancien formulaire mort (étapes 1-3 de index.html + fonctions associées de app.js) | Structure puis Feature | Basse |
+| 9 | ~~A10 — Supprimer l'ancien formulaire mort~~ ✅ fait le 2 juil. — branche `fix/nettoyage-code-mort` : étapes 1-3 d'index.html, panneau Territoire, 16 fonctions orphelines d'app.js et blocs ui.css associés retirés (~1 440 lignes), theme-color aligné, `icon-512 copie.png` supprimée. En attente de fusion | Structure + Feature | ✅ Fait |
 | 10 | A11 — GPS sans timeout · overlay « Chargement » clignote à chaque rafraîchissement auto | Feature | Basse |
 | 11 | **Points d'entrée par profession** — Aiguillage à l'entrée selon le métier : bûcheron/élagueur → ajout de bois, scieur mobile → débit, menuisier → prélèvement. Une fois le rôle choisi, seuls les écrans de ce parcours restent visibles (les autres onglets disparaissent de la navigation). Bouton discret « Changer de rôle ». Choix mémorisé en localStorage. Stock présenté en 2 états : grume brute / grume débitée. | À définir | À définir |
 | 12 | **Géolocalisation manuelle des grumes** — Possibilité de renseigner manuellement la position d'une grume à la saisie. | À définir | À définir |
