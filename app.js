@@ -1543,14 +1543,19 @@ function effacerBrouillonSaisie() {
   localStorage.removeItem('duramen_draft_v2');
   localStorage.removeItem('duramen_draft'); // nettoyage de l'ancien format
 }
+// Restauration silencieuse : sur le terrain, un onglet rechargé par le
+// téléphone ne doit jamais faire perdre la saisie. On restaure sans question —
+// le bouton « Annuler » reste le seul moyen volontaire d'effacer le brouillon.
 function nouvRestaurerBrouillon() {
   if (saisieEnCours) return;
   var raw = localStorage.getItem('duramen_draft_v2');
   if (!raw) return;
   try {
     var d = JSON.parse(raw);
-    if (!d || !Array.isArray(d.grumes) || d.grumes.length === 0) return;
-    if (!confirm('Reprendre la saisie en cours ?')) { effacerBrouillonSaisie(); return; }
+    if (!d) return;
+    var aGrumes = Array.isArray(d.grumes) && d.grumes.length > 0;
+    var aChamps = !!(d.essence || d.provenance || d.cause);
+    if (!aGrumes && !aChamps) return;
     var essEl = document.getElementById('saisie-essence');
     var proEl = document.getElementById('saisie-provenance');
     var cauEl = document.getElementById('saisie-cause');
@@ -1562,8 +1567,10 @@ function nouvRestaurerBrouillon() {
       var valEl = document.querySelector('.saisie-annee-val');
       if (valEl) valEl.textContent = nouvAnnee;
     }
-    nouvGrumes = d.grumes;
+    nouvGrumes = aGrumes ? d.grumes : [];
     nouvRendreGrumes();
+    saisieEnCours = true;
+    showToastSucces('Saisie précédente restaurée.');
   } catch (e) {
     effacerBrouillonSaisie();
   }
