@@ -40,6 +40,16 @@ var bExtGrumesSel = [];    // grumes sélectionnées (objets)
 var bExtType      = 'planches'; // 'brute' | 'planches'
 var bExtUsageDest = 'Intérieur';
 
+// Clés des grumes déjà sorties du stock (extractions.grumes_keys).
+// Format partagé avec l'appli mobile : id du lot + '_' + position (0 = première).
+function bClesGrumesExtraites() {
+  var cles = {};
+  extractions.forEach(function(ex) {
+    (ex.grumes_keys || []).forEach(function(k) { cles[k] = true; });
+  });
+  return cles;
+}
+
 // ═══════════ UI ═══════════
 function bShowLoading(on) {
   document.getElementById('b-loading').classList.toggle('hidden', !on);
@@ -634,15 +644,17 @@ function bMextInitChips() {
       bExtGrumesSel = [];
       if (next) next.disabled = false;
       bExtGrumes = [];
+      var extraites = bClesGrumesExtraites();
       lots.filter(function(l) { return l.essence === ess; }).forEach(function(lot) {
         var grumesArr = Array.isArray(lot.grumes) ? lot.grumes : [];
         if (grumesArr.length > 0) {
           grumesArr.forEach(function(g, i) {
+            if (extraites[lot.id + '_' + i]) return; // grume déjà extraite
             var d   = parseFloat(g.diametre) || 0;
             var lon = parseFloat(g.longueur)  || 0;
             var vol = d > 0 && lon > 0 ? Math.PI * Math.pow(d / 200, 2) * lon : (lot.vol_brut || 0) / grumesArr.length;
             bExtGrumes.push({ lotId: lot.id, lotNom: lot.nom || '—', essence: lot.essence,
-              index: i + 1, longueur: lon > 0 ? lon : null,
+              index: i + 1, cle: lot.id + '_' + i, longueur: lon > 0 ? lon : null,
               diametre: d > 0 ? d : null,
               circonference: g.circonference || null, volume: vol });
           });
@@ -650,8 +662,9 @@ function bMextInitChips() {
           var nb  = Math.max(1, parseInt(lot.nb_grumes) || 1);
           var vol = (lot.vol_brut || 0) / nb;
           for (var i = 0; i < nb; i++) {
+            if (extraites[lot.id + '_' + i]) continue; // grume déjà extraite
             bExtGrumes.push({ lotId: lot.id, lotNom: lot.nom || '—', essence: lot.essence,
-              index: i + 1, longueur: null, diametre: null, circonference: null, volume: vol });
+              index: i + 1, cle: lot.id + '_' + i, longueur: null, diametre: null, circonference: null, volume: vol });
           }
         }
       });
@@ -818,10 +831,22 @@ async function bMextConfirmer() {
       destination:        dest,
       projet:             projet || null,
       commune_installation: comm || null,
+      grumes_keys:        bExtGrumesSel.map(function(g) { return g.cle; }),
       date:               new Date().toLocaleDateString('fr-FR'),
       date_iso:           new Date().toISOString()
     };
-    await bSbInsert('extractions', ext);
+    try {
+      await bSbInsert('extractions', ext);
+    } catch(e1) {
+      // Colonne grumes_keys pas encore créée dans Supabase :
+      // on enregistre quand même l'extraction, sans le marquage des grumes.
+      if (/grumes_keys/.test(e1.message)) {
+        delete ext.grumes_keys;
+        await bSbInsert('extractions', ext);
+      } else {
+        throw e1;
+      }
+    }
     bShowLoading(false);
     bFermerModalExt();
     bShowToast('Extraction enregistrée — ' + volUtil.toFixed(3) + ' m³ ' + bExtEssence);
