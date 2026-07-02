@@ -6,6 +6,33 @@
 
 ---
 
+## Session 2 juillet 2026 (après-midi) — Audit A2 : RLS Supabase — TERMINÉ ✅ (constat)
+
+### Périmètre
+Vérification de l'état réel du Row Level Security sur les tables `lots`, `extractions`, `codes_acces` (+ `feedbacks` découverte). Session de **constat uniquement** — aucune modification de la base ni du code. Test effectué avec la clé anon publique contre l'API REST.
+
+### Ce qui a été vérifié
+RLS **activé sur les 4 tables** (bouton « Disable RLS » affiché = actif). Texte des règles lu via `select … from pg_policies`. Résultats confirmés par requêtes réelles avec la clé anon :
+
+| Table | Règle lecture (`qual`) | Verdict |
+|-------|------------------------|---------|
+| `codes_acces` | `SELECT` : `actif = true` | 🔴 **FUITE** — la clé anon lit TOUS les codes de TOUTES les communes (testé : NANTES-A8CD, BOUAYE-K3FP, CARQUEFOU-L9DW… renvoyés en une requête). Le code EST le mot de passe. |
+| `extractions` | `SELECT` : `commune_code = get_commune_code()` ; INSERT/DELETE idem + `<> ''` | 🟢 OK — test sans code → `[]`. Isolation réelle côté serveur. |
+| `lots` | `SELECT` : `commune_code = get_commune_code() OR partage = true` ; INSERT/DELETE : commune propre | 🟢 OK — seuls les lots `partage = true` remontent (feature « vue communauté » voulue). |
+| `feedbacks` | INSERT seul (`with_check` sur commune) | ⚪ Hors périmètre projet — pas de lecture publique, sans risque. Table non documentée à l'origine. |
+
+### Conclusion
+Le RLS est **globalement sain** : l'isolation `lots`/`extractions` repose bien sur la fonction serveur `get_commune_code()` (lit l'en-tête `x-commune-code`), pas seulement sur le filtre client. **Le seul trou réel est `codes_acces`** — mais c'est le plus sensible.
+
+### Correctif à prévoir (SESSION DÉDIÉE, pas encore fait) 🔴
+Ne PAS fermer la lecture de `codes_acces` sans adaptation : la connexion (`app.js` ~L1263) lit cette table pour vérifier le code saisi. Solution propre : créer une **fonction RPC sécurisée** (SECURITY DEFINER) qui prend un code et renvoie seulement `{valide, commune}`, puis passer la policy `codes_acces_select` à `false` (lecture directe interdite). Modification coordonnée **Supabase + `app.js`** → session Feature dédiée.
+
+### Security Advisor — état au 2 juil. 2026
+- **0 erreur, 0 info.** ⚠️ Rappel : « 0 erreur » ne détecte PAS la fuite `codes_acces` — le linter vérifie que RLS est actif + qu'une policy existe, pas si son contenu est sûr. Toujours tester une policy avec la clé anon.
+- **1 warning** 🟠 : `Function Search Path Mutable` sur `public.get_commune_code` — c'est LA fonction qui porte l'isolation `lots`/`extractions`. `search_path` non figé = durcissement recommandé (risque réel faible ici, la fonction ne lit qu'un en-tête). Correctif 1 ligne côté Supabase : `ALTER FUNCTION public.get_commune_code() SET search_path = '';` (à valider/adapter selon corps de la fonction).
+
+---
+
 ## Session 11 mai 2026 — Audit de sécurité et de précision — TERMINÉ ✅
 
 ### Périmètre
