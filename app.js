@@ -855,10 +855,24 @@ async function confirmerExtractionDest() {
 
   try {
     showLoading(true);
+
+    // Re-vérification sur données fraîches : un autre agent a pu extraire
+    // pendant la saisie (verrou anti sur-extraction, côté client)
+    await chargerDonnees();
+    for (var k = 0; k < essences.length; k++) {
+      var valid2 = DuramenCore.validerSortie({
+        essence: essences[k], volume: Math.round(parEssence[essences[k]] * 10000) / 10000,
+        usage: extDraft.usage, destination: extDraft.destination
+      });
+      if (!valid2.ok) {
+        showError('Le stock a changé entre-temps. ' + valid2.erreur);
+        return;
+      }
+    }
+
     var now = new Date();
-    for (var j = 0; j < essences.length; j++) {
-      var ess = essences[j];
-      var ext = {
+    var nouvelles = essences.map(function (ess) {
+      return {
         id:              crypto.randomUUID(),
         commune_code:    communeConnectee.code,
         essence:         ess,
@@ -873,8 +887,9 @@ async function confirmerExtractionDest() {
         date:            now.toLocaleDateString('fr-FR'),
         date_iso:        now.toISOString()
       };
-      await sbInsert('extractions', ext);
-    }
+    });
+    // Envoi groupé : soit toutes les essences passent, soit aucune
+    await sbInsert('extractions', nouvelles);
     await chargerDonnees();
     extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '' };
     extGrumesSel = [];
@@ -884,7 +899,15 @@ async function confirmerExtractionDest() {
     var btnHisto = document.querySelector('.tab[onclick*="historique"]');
     if (btnHisto) switchTab('historique', btnHisto);
   } catch (err) {
-    showError('Erreur : ' + err.message);
+    // Refus du verrou anti sur-extraction côté base : message clair + stock à jour
+    var refus = err.message.match(/STOCK INSUFFISANT[^"]*/);
+    if (refus) {
+      showError(refus[0]);
+      await chargerDonnees();
+      afficherExtraction();
+    } else {
+      showError('Erreur : ' + err.message);
+    }
   } finally {
     showLoading(false);
   }
