@@ -56,6 +56,10 @@
 | A4 — Totaux vue Communauté : déjà corrigé le 24 juin (be1cc64 + 1b0c70c), constaté lors du rebase ✅ | `app.js` | 24 juin 2026 |
 | Cache SW incrémenté `duramen-v32` → `duramen-v33` ✅ | `sw.js` | 2 juillet 2026 |
 | A2 — Audit RLS Supabase : RLS actif sur les 4 tables ; `lots`/`extractions` bien isolées via `get_commune_code()` ; 🔴 fuite confirmée sur `codes_acces` (policy `actif = true` = lecture de tous les codes). Constat sans modification. ✅ | Supabase (hors code) | 2 juillet 2026 |
+| A2-fix — Fuite `codes_acces` bouchée : RPC `verifier_code(code_saisi)` (security definer, search_path figé), connexion mobile + bureau adaptées (commit 4a56b15), policies SELECT supprimées + `revoke select`. Vérifié : lecture directe → `permission denied`, connexion OK ✅ | Supabase + `app.js` + `bureau/app.js` | 2 juillet 2026 |
+| A5 — Verrou anti sur-extraction : trigger `trg_verifier_stock` (verrou d'exclusion par commune+essence, tolérance 0,0001) + côté client re-validation sur données fraîches, envoi groupé tout-ou-rien, message « STOCK INSUFFISANT » (commit 3b0d41d). Testé : refus stock vide, acceptation normale, refus au seuil exact ✅ | Supabase + `app.js` | 2 juillet 2026 |
+| Bug bloquant découvert et réparé : l'enregistrement d'extraction échouait (HTTP 400) depuis les refontes d'avril — le code envoyait 7 colonnes inexistantes. Colonnes créées dans `extractions` : `cause_abattage`, `type_sortie`, `vol_brut_extrait`, `type_valorisation`, `lineaire`, `projet`, `commune_installation` ✅ | Supabase (hors code) | 2 juillet 2026 |
+| Cache SW incrémenté `duramen-v33` → `duramen-v35` ✅ | `sw.js` | 2 juillet 2026 |
 
 ---
 
@@ -72,9 +76,11 @@ _(aucune)_
 | 1 | Responsive desktop : layout bureau distinct du layout mobile | Design | ✅ Fait |
 | 2 | Icône PWA : fond `--indigo` + icône blanche (coordonner avec graphiste) | Design | Basse |
 | 3 | ~~A2 — Vérifier RLS Supabase~~ ✅ audité le 2 juil. : RLS actif, `lots`/`extractions` isolées serveur, fuite trouvée sur `codes_acces` | Supabase (hors code) | ✅ Fait |
-| 3b | 🔴 A2-fix — Boucher la fuite `codes_acces` : fonction RPC sécurisée `verifier_code(code)` renvoyant `{valide, commune}`, puis policy `codes_acces_select` → `false`. Adapter la connexion dans `app.js` (~L1263). | Supabase + Feature | **Haute** |
+| 3b | ~~🔴 A2-fix — Boucher la fuite `codes_acces`~~ ✅ fait le 2 juil. (RPC `verifier_code` + policies fermées) | Supabase + Feature | ✅ Fait |
 | 3c | 🟠 A2-dur — Figer le `search_path` de `get_commune_code` (warning Security Advisor « Function Search Path Mutable »). Correctif 1 ligne côté Supabase. | Supabase (hors code) | Moyenne |
-| 4 | A5 — Verrou anti sur-extraction : 2 agents simultanés peuvent sortir plus que le stock | Feature | Haute |
+| 3d | 🔴 A12 — Les codes d'accès servent d'identifiant de commune : `lots.commune_code` expose les codes secrets via les lots partagés (`partage=eq.true`, lisibles **sans authentification**). Séparer identifiant public / code secret (touche tables, RLS, `get_commune_code`, les 2 apps), puis **régénérer tous les codes**. À coupler avec la remise à zéro des données. | Supabase + Feature | **Haute** |
+| 3e | Atelier modèle de données avec le commanditaire (avant la remise à zéro) : cheminement complet de la grume — identifiant par grume (fusion avec A6), géolocalisation à chaque étape (abattage → stockage → destination), liste définitive des champs d'extraction | Décision projet | **Haute** |
+| 4 | ~~A5 — Verrou anti sur-extraction~~ ✅ fait le 2 juil. (trigger + re-validation client) | Supabase + Feature | ✅ Fait |
 | 5 | A7 — Session jamais revérifiée : un code désactivé dans Supabase reste connecté | Feature | Moyenne |
 | 6 | A8 — `supprimerLot` n'efface pas les extractions liées (volumes sortis orphelins) | Feature | Moyenne |
 | 7 | A6 — Grumes déjà extraites re-sélectionnables (stock suivi au volume/essence, pas à la grume) | Feature | Moyenne |
