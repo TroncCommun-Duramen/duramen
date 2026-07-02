@@ -60,6 +60,8 @@
 | A5 — Verrou anti sur-extraction : trigger `trg_verifier_stock` (verrou d'exclusion par commune+essence, tolérance 0,0001) + côté client re-validation sur données fraîches, envoi groupé tout-ou-rien, message « STOCK INSUFFISANT » (commit 3b0d41d). Testé : refus stock vide, acceptation normale, refus au seuil exact ✅ | Supabase + `app.js` | 2 juillet 2026 |
 | Bug bloquant découvert et réparé : l'enregistrement d'extraction échouait (HTTP 400) depuis les refontes d'avril — le code envoyait 7 colonnes inexistantes. Colonnes créées dans `extractions` : `cause_abattage`, `type_sortie`, `vol_brut_extrait`, `type_valorisation`, `lineaire`, `projet`, `commune_installation` ✅ | Supabase (hors code) | 2 juillet 2026 |
 | Cache SW incrémenté `duramen-v33` → `duramen-v35` ✅ | `sw.js` | 2 juillet 2026 |
+| Fusion des 3 branches du soir (A10, brouillon, A6) — cache SW `duramen-v35` → `duramen-v38` ✅ | `sw.js` | 2 juillet 2026 |
+| Mise en ligne : déploiement GitHub Pages échoué (incident passager GitHub), relancé par commit vide — site vérifié en v38 ✅ | GitHub Pages (hors code) | 2 juillet 2026 |
 
 ---
 

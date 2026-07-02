@@ -6,6 +6,19 @@
 
 ---
 
+## Session 2 juillet 2026 (soir) — A6, A10 et brouillon fusionnés dans main ✅
+
+Trois branches testées en local, validées par le porteur sur téléphone, puis fusionnées le soir même (branches supprimées) :
+
+1. **A10 — nettoyage du code mort** (merge a34ab42) : ancien formulaire 3 étapes, panneau Territoire, 16 fonctions orphelines d'`app.js` et blocs `ui.css` associés supprimés (~1 440 lignes). ⚠️ `supprimerLot` faisait partie du code mort : l'interface n'offre plus aucune suppression de lot (A8 à repenser).
+2. **Brouillon de saisie** (merge a01778b) : restauration silencieuse du brouillon — plus de boîte « Reprendre ? » qui effaçait le brouillon sur Annuler.
+3. **A6 — grumes extraites** (merge 398c29a) : colonne `extractions.grumes_keys` créée dans Supabase (clé = `lotId_positionGrume`), grumes déjà extraites masquées de la sélection (mobile + bureau), bloc « Bilan du stock » à une date choisie dans l'onglet Stock.
+
+- Cache SW : `duramen-v35` → `duramen-v38` (une version par branche).
+- Mise en ligne : le déploiement GitHub Pages du commit de fusion a échoué (incident passager côté GitHub). Relancé par un commit vide (a3d392c) — site vérifié en v38 le 2 juillet au soir.
+
+---
+
 ## Session 2 juillet 2026 (après-midi) — Audit A2 : RLS Supabase — TERMINÉ ✅ (constat)
 
 ### Périmètre
@@ -230,7 +243,7 @@ Problèmes identifiés :
 | Choix | Description | Impact |
 |-------|-------------|--------|
 | `vol_utile = vol_brut` dans le nouveau formulaire mobile | Quand un lot est saisi sans calcul de débit (formulaire mobile), `vol_utile` est égal à `vol_brut`. `getStock()` utilise `vol_utile` → le stock affiché est le volume brut, pas le volume débité. | Les chiffres de stock sont légèrement surestimés pour les lots sans débit. Acceptable en phase de test. À afficher clairement dans l'interface en Phase 2 (ex: "volume brut — débit non calculé"). |
-| Double formulaire de saisie | L'ancien formulaire (3 étapes, desktop) et le nouveau (mobile, drums) coexistent. | Intentionnel — transition progressive. Les deux écrivent dans la même table Supabase. |
+| Double formulaire de saisie | L'ancien formulaire (3 étapes, desktop) et le nouveau (mobile, drums) coexistent. | ~~Intentionnel — transition progressive.~~ **Clos le 2 juillet 2026** : l'ancien formulaire a été supprimé (A10). Seul le formulaire mobile subsiste. |
 
 ---
 
@@ -243,7 +256,7 @@ Problèmes identifiés :
 | ✅ Résolu | ~~Audit sécurité/précision R1-R11, S1-S5, D1-D2~~ — terminé 11 mai 2026 | tous | — |
 | 🟡 Phase 2 | Migrer concaténations HTML → `cel()` dans l'ancien formulaire mobile | `app.js` | Session dédiée |
 | 🟡 Phase 2 | Afficher "volume brut — débit non calculé" pour les lots sans épaisseur | `app.js` + `ui.css` | Session dédiée |
-| 🟠 Avant production | Vérifier RLS Supabase sur toutes les tables | Supabase dashboard | Hors code |
+| ✅ Résolu | ~~Vérifier RLS Supabase sur toutes les tables~~ — audité et corrigé le 2 juillet 2026 (fuite `codes_acces` bouchée, reste A12) | Supabase dashboard | — |
 
 ---
 
@@ -301,7 +314,7 @@ Problèmes identifiés :
 - 3 boutons `.btn-home` : `width: calc(100% - 32px)`, `border-radius: 12px`, hauteur min 56px
 
 ### Service Worker
-- Cache actuel : **duramen-v30**
+- Cache actuel : **duramen-v38** (2 juillet 2026)
 
 ---
 
@@ -334,6 +347,8 @@ Problèmes identifiés :
 - `destination` — destinataire
 - `commune`, `contact`, `notes` — infos complémentaires
 - `cause_abattage` — cause d'abattage (écrit par `confirmerExtractionDest()`)
+- `type_sortie`, `vol_brut_extrait`, `type_valorisation`, `lineaire`, `projet`, `commune_installation` — colonnes créées le 2 juillet 2026 (le code les envoyait déjà, l'enregistrement échouait en HTTP 400)
+- `grumes_keys` — JSON des clés de grumes extraites (`lotId_positionGrume`), créée le 2 juillet 2026 (A6)
 - `date`, `date_iso` — date de l'extraction
 
 **Table `feedbacks`**
@@ -373,7 +388,7 @@ theme.css      ← variables de design (couleurs, typo) — ✅
 ui.css         ← composants visuels (.card, .btn…) — ✅
 core.js        ← noyau métier : DuramenCore (signatures figées) — ✅
 app.js         ← logique UI, navigation, Supabase — ✅
-sw.js          ← Service Worker (offline, cache duramen-v30) — ✅
+sw.js          ← Service Worker (offline, cache duramen-v38) — ✅
 ```
 
 ---
