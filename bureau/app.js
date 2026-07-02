@@ -67,7 +67,11 @@ async function bTentativeConnexion() {
 
   bShowLoading(true);
   try {
-    var data = await bSbSelect('codes_acces', 'code=eq.' + encodeURIComponent(code) + '&actif=eq.true&select=code,commune');
+    var res = await fetch(SUPABASE_URL + '/rest/v1/rpc/verifier_code', {
+      method: 'POST', headers: bH, body: JSON.stringify({ code_saisi: code })
+    });
+    if (!res.ok) throw new Error('Vérification du code : ' + res.status);
+    var data = await res.json();
     bShowLoading(false);
     if (!data || !data.length) { erreur.textContent = 'Code invalide ou inactif.'; return; }
     bCommune = { code: data[0].code, nom: data[0].commune };

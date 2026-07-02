@@ -1260,8 +1260,8 @@ async function tentativeConnexion() {
   btn.textContent = 'VÉRIFICATION…';
   try {
     var res = await fetch(
-      SUPABASE_URL + '/rest/v1/codes_acces?code=eq.' + encodeURIComponent(code) + '&actif=eq.true&select=code,commune',
-      { headers: sbH }
+      SUPABASE_URL + '/rest/v1/rpc/verifier_code',
+      { method: 'POST', headers: sbH, body: JSON.stringify({ code_saisi: code }) }
     );
     if (!res.ok) throw new Error('Erreur reseau ' + res.status);
     var data = await res.json();
