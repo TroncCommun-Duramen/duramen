@@ -87,6 +87,12 @@ _(aucune)_
 | 8 | A9 — Mode circonférence : volume affiché ≠ volume enregistré (arrondi du diamètre) | Feature | Basse |
 | 9 | A10 — Supprimer l'ancien formulaire mort (étapes 1-3 de index.html + fonctions associées de app.js) | Structure puis Feature | Basse |
 | 10 | A11 — GPS sans timeout · overlay « Chargement » clignote à chaque rafraîchissement auto | Feature | Basse |
+| 11 | **Points d'entrée par profession** — Aiguillage à l'entrée selon le métier : bûcheron/élagueur → ajout de bois, scieur mobile → débit, menuisier → prélèvement. Une fois le rôle choisi, seuls les écrans de ce parcours restent visibles (les autres onglets disparaissent de la navigation). Bouton discret « Changer de rôle ». Choix mémorisé en localStorage. Stock présenté en 2 états : grume brute / grume débitée. | À définir | À définir |
+| 12 | **Géolocalisation manuelle des grumes** — Possibilité de renseigner manuellement la position d'une grume à la saisie. | À définir | À définir |
+| 13 | **Lieu de stockage** — Sélection du lieu de stockage par liste déroulante. Plus tard (non prioritaire) : capacité maximale d'accueil par lieu, avec signal d'alerte si le lot enregistré dépasse la capacité restante. | À définir | À définir |
+| 14 | **Identification unique de chaque grume** — Saisie de l'identifiant par photo smartphone de la plaque d'identification apposée sur la grume, avec saisie manuelle du numéro en alternative. L'identifiant suit la grume sur tout son parcours : stockage → débit scieur → transformation menuisier. | À définir | À définir |
+| 15 | **Transformation par le scieur mobile dans le stock** — Point majeur, à traiter dans une session dédiée. Opération de débit : grume brute → bois débité, avec traçabilité (filiation grume → lots débités). | À définir | À définir |
+| 16 | **Signal visuel « appeler le scieur mobile »** — Indicateur affiché lorsque le volume cumulé de grumes brutes atteint un seuil suffisant pour justifier le déplacement du scieur mobile. Seuil à définir : valeur fixe ou paramétrable par commune. | À définir | À définir |
 
 ---
 
