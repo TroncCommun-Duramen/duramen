@@ -20,10 +20,6 @@ body {
 /* ─── UTILITAIRES ─── */
 .hidden { display: none !important; }
 
-/* Extrait de HTML (inline styles supprimés) */
-.commune-hint { font-size: 0.62rem; color: var(--cendre); }
-.ext-disponible { margin-top: 14px; }
-
 /* ─── HEADER ─── */
 header {
   background: var(--washi);
@@ -89,7 +85,6 @@ header {
 }
 
 .header-right { text-align: right; flex-shrink: 0; }
-.header-stats-mobile { display: none; }
 .stat-pill {
   background: var(--neige);
   border: var(--border-thin);
@@ -201,15 +196,10 @@ main {
   .title-tc { font-size: 0.6rem; margin-top: 4px; letter-spacing: 0.06em; }
   .header-right { display: none; }
   header { display: none; }
-  .header-stats-mobile { display: none !important; }
   .tabs-wrap { display: none; }
   .bottom-nav { display: block; }
   footer { display: none; }
   main { padding: 14px 12px 84px; }
-  .card { padding: 14px 13px; }
-  .card-title { font-size: 0.62rem; }
-  .step-indicator { gap: 5px; }
-  .step { font-size: 0.6rem; }
 
   /* Connexion — règle 16px mobile */
   .login-card { padding: 36px 24px 28px; }
@@ -226,37 +216,7 @@ main {
 
 }
 
-/* ─── CARD ─── */
-.card {
-  background: var(--washi);
-  border-radius: var(--border-radius-md);
-  padding: 24px 26px;
-  margin-bottom: 16px;
-  border: var(--border-thin);
-}
-.card-title {
-  font-family: var(--font-display);
-  font-size: 0.62rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--sumi);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-bottom: 18px;
-  display: flex; align-items: center; gap: 9px;
-  padding-bottom: 12px;
-  border-bottom: var(--border-thin);
-}
-.card-title .icon { font-size: 0.9rem; }
-
 /* ─── FORM ─── */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
-.form-grid.four  { grid-template-columns: 1fr 1fr 1fr 1fr; }
-.form-grid.full  { grid-template-columns: 1fr; }
-@media(max-width:680px){
-  .form-grid,.form-grid.three,.form-grid.four { grid-template-columns: 1fr; }
-}
-
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label {
   font-family: var(--font-body);
@@ -285,11 +245,6 @@ main {
 }
 .field input:not(:placeholder-shown):not(:focus) {
   border-bottom: var(--border-filled);
-}
-input.commune-locked {
-  color: var(--cendre);
-  cursor: default;
-  border-bottom-color: var(--pierre);
 }
 .commune-readonly-val {
   padding: 9px 0;
@@ -343,36 +298,6 @@ select {
 }
 .btn-primary:hover { background: var(--sumi); }
 
-.btn-signal {
-  background: var(--indigo);
-  color: var(--washi);
-  border: none;
-}
-.btn-signal:hover { background: var(--indigo-sombre); }
-
-.btn-success {
-  background: var(--sumi);
-  color: var(--washi);
-  border: none;
-}
-.btn-success:hover { background: var(--sumi); }
-
-.btn-orange {
-  background: var(--sumi);
-  color: var(--washi);
-  border: none;
-}
-.btn-orange:hover { background: var(--sumi); }
-
-.btn-danger {
-  background: transparent;
-  color: var(--rouge);
-  border: 1px solid var(--rouge);
-  padding: 5px 10px;
-  font-size: 0.62rem;
-}
-.btn-danger:hover { background: var(--rouge); color: var(--washi); }
-
 .btn-outline {
   background: transparent;
   color: var(--cendre);
@@ -389,191 +314,6 @@ select {
   margin-top: 2px;
   padding: 3px 10px;
 }
-
-/* ─── GRUMES LIST ─── */
-.grume-item {
-  background: var(--washi);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-sm);
-  padding: 12px 16px;
-  margin-bottom: 8px;
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-}
-.grume-num {
-  background: var(--sumi);
-  color: var(--washi);
-  border-radius: 50%;
-  width: 26px; height: 26px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display);
-  font-weight: var(--font-weight-medium); font-size: 0.62rem;
-  flex-shrink: 0;
-}
-.grume-info { flex: 1; display: flex; gap: 16px; flex-wrap: wrap; }
-.grume-field { display: flex; flex-direction: column; gap: 2px; }
-.grume-field span:first-child { font-size: 0.54rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--cendre); }
-.grume-field span:last-child { font-size: 0.92rem; font-weight: var(--font-weight-regular); }
-
-/* ─── RESULTS ─── */
-.result-block {
-  background: var(--washi);
-  color: var(--sumi);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-md);
-  padding: 24px 26px;
-  margin-bottom: 16px;
-  position: relative;
-}
-.result-block > * { position: relative; z-index: 1; }
-.result-block h3 {
-  font-family: var(--font-display);
-  font-size: 0.54rem;
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-bottom: 18px;
-  color: var(--cendre);
-  display: flex; align-items: center; gap: 8px;
-}
-.result-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 10px;
-}
-.result-stat {
-  border: var(--border-thin);
-  border-radius: var(--border-radius-sm);
-  padding: 14px 16px;
-  text-align: center;
-}
-.result-stat .val {
-  font-family: var(--font-display);
-  font-size: 1.23rem;
-  font-weight: var(--font-weight-light);
-  color: var(--sumi);
-  line-height: 1;
-  letter-spacing: -0.03em;
-}
-.result-stat .unit { font-size: 0.54rem; color: var(--indigo); margin-top: 4px; letter-spacing: 0.1em; text-transform: uppercase; }
-.result-stat .lbl { font-size: 0.54rem; color: var(--cendre); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.1em; }
-
-.dechets-block {
-  background: rgba(var(--rouge-rgb), 0.06);
-  border: 1px solid rgba(var(--rouge-rgb), 0.2);
-  border-radius: var(--border-radius-sm);
-  padding: 12px 16px;
-  margin-top: 14px;
-  display: flex; align-items: center; gap: 10px;
-  font-size: 0.82rem;
-}
-.dechets-block strong { color: var(--rouge); }
-
-/* ─── TABLE ─── */
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-th {
-  background: var(--neige);
-  color: var(--cendre);
-  padding: 9px 12px;
-  text-align: left;
-  font-family: var(--font-body);
-  font-size: 0.54rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: var(--font-weight-medium);
-}
-th:first-child { border-radius: var(--border-radius-sm) 0 0 0; }
-th:last-child { border-radius: 0 var(--border-radius-sm) 0 0; }
-td { padding: 9px 12px; border-bottom: var(--border-thin); }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: var(--neige); }
-
-/* ─── BADGE ─── */
-.badge {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.54rem;
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-}
-.badge-int    { background: var(--indigo-clair); color: var(--indigo); border: 1px solid var(--indigo); }
-.badge-ext    { background: var(--neige); color: var(--cendre); border: var(--border-thin); }
-.badge-struct { background: var(--sumi); color: var(--washi); }
-.badge-mob    { background: var(--brume); color: var(--sumi); }
-.badge-autre  { background: var(--neige); color: var(--cendre); border: var(--border-thin); }
-
-/* ─── LOT CARDS ─── */
-.lot-card {
-  background: var(--washi);
-  border-bottom: var(--border-thin);
-  padding: 16px 0;
-  transition: all 0.15s;
-}
-.lot-card:hover { background: var(--neige); }
-.lot-card-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
-.lot-card-title { font-family: var(--font-display); font-size: 0.82rem; font-weight: var(--font-weight-light); letter-spacing: 0.02em; color: var(--sumi); }
-.lot-card-meta { font-size: 0.75rem; color: var(--cendre); margin-top: 3px; }
-.lot-card-stats { display: flex; gap: 14px; margin-top: 11px; flex-wrap: wrap; }
-.lot-stat { font-size: 0.75rem; color: var(--cendre); }
-.lot-stat strong { color: var(--sumi); }
-
-/* ─── STOCK ─── */
-.stock-header {
-  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
-}
-.stock-title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: var(--font-weight-light);
-  letter-spacing: 0.04em;
-  color: var(--sumi);
-}
-.stock-subtitle {
-  font-family: var(--font-body);
-  color: var(--cendre);
-  font-size: 0.9rem;
-  margin-top: 2px;
-}
-
-.essence-row {
-  background: var(--washi);
-  border-bottom: var(--border-thin);
-  padding: 14px 0;
-  transition: all 0.15s;
-}
-.essence-row:hover { background: var(--neige); }
-.essence-row-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.essence-name {
-  font-family: var(--font-display);
-  font-size: 0.82rem;
-  font-weight: var(--font-weight-light);
-  flex: 1; min-width: 120px;
-  display: flex; align-items: center; gap: 8px;
-  letter-spacing: 0.02em;
-}
-.essence-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.essence-stats { display: flex; gap: 20px; flex-wrap: wrap; }
-.essence-stat { text-align: center; min-width: 70px; }
-.essence-stat .es-val { font-family: var(--font-display); font-size: 1rem; font-weight: var(--font-weight-light); color: var(--sumi); letter-spacing: -0.02em; }
-.essence-stat .es-lbl { font-size: 0.54rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--cendre); }
-.essence-bar-wrap { height: 1px; background: var(--brume); border-radius: 0; margin-top: 10px; overflow: hidden; }
-.essence-bar { height: 100%; border-radius: 0; background: var(--indigo); transition: width 0.5s ease; }
-
-.stock-total-card {
-  background: var(--washi);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-md);
-  padding: 18px 22px;
-  margin-bottom: 16px;
-  display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
-}
-.stock-total-item { text-align: center; flex: 1; min-width: 100px; }
-.stock-total-item .tv { font-family: var(--font-display); font-size: 1.23rem; font-weight: var(--font-weight-light); color: var(--sumi); line-height: 1; letter-spacing: -0.03em; }
-.stock-total-item .tu { font-size: 0.54rem; color: var(--indigo); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.1em; }
-.stock-total-item .tl { font-size: 0.54rem; color: var(--cendre); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.1em; }
-.stock-divider { width: 1px; background: var(--brume); align-self: stretch; min-height: 50px; }
 
 /* ─── MODAL ─── */
 .extract-modal-bg {
@@ -616,20 +356,6 @@ tr:hover td { background: var(--neige); }
 }
 .extract-modal .modal-close:hover { color: var(--sumi); }
 
-/* ─── EXTRACTION LIST ─── */
-.extraction-list { margin-top: 16px; }
-.extraction-item {
-  background: var(--washi);
-  border-bottom: var(--border-thin);
-  padding: 13px 0;
-}
-.extraction-item .ei-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 7px; }
-.extraction-item .ei-title { font-family: var(--font-display); font-size: 0.82rem; font-weight: var(--font-weight-light); letter-spacing: 0.02em; color: var(--sumi); }
-.extraction-item .ei-meta { font-size: 0.72rem; color: var(--cendre); margin-top: 2px; }
-.extraction-item .ei-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; padding-top: 8px; border-top: var(--border-thin); }
-.extraction-item .ei-stat { font-size: 0.75rem; color: var(--cendre); }
-.extraction-item .ei-stat strong { color: var(--sumi); }
-
 /* ─── INFO BOX ─── */
 .info-box {
   background: var(--neige);
@@ -643,63 +369,6 @@ tr:hover td { background: var(--neige); }
   line-height: 1.6;
 }
 
-/* ─── STEP INDICATOR ─── */
-.step-indicator { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-.step { display: flex; align-items: center; gap: 6px; font-size: 0.62rem; color: var(--cendre); text-transform: uppercase; letter-spacing: 0.1em; }
-.step-dot {
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: var(--washi);
-  color: var(--cendre);
-  border: 1px solid var(--pierre);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display);
-  font-size: 0.6rem; font-weight: var(--font-weight-medium);
-}
-.step.done .step-dot { background: var(--indigo); color: var(--washi); border-color: var(--indigo); }
-.step.active .step-dot { background: var(--sumi); color: var(--washi); border-color: var(--sumi); }
-.step.active { color: var(--sumi); }
-.step-sep { color: var(--brume); font-size: 0.8rem; }
-
-/* ─── FORMULA BADGE ─── */
-.formule-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: var(--indigo);
-  color: var(--washi);
-  border-radius: var(--border-radius-sm);
-  padding: 4px 10px;
-  font-size: 0.54rem;
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: help;
-  position: relative;
-}
-.formule-badge::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: 120%; left: 50%;
-  transform: translateX(-50%);
-  background: var(--sumi);
-  color: var(--washi);
-  padding: 8px 12px;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.62rem;
-  width: 260px;
-  text-align: left;
-  line-height: 1.5;
-  font-weight: var(--font-weight-light);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s;
-  z-index: 10;
-  white-space: pre-line;
-  font-family: var(--font-body);
-  text-transform: none;
-  letter-spacing: 0;
-}
-.formule-badge:hover::after { opacity: 1; }
-
 /* ─── EMPTY STATE ─── */
 .empty-state { text-align: center; padding: 44px 20px; color: var(--cendre); }
 .empty-state .icon { font-size: 2rem; margin-bottom: 12px; }
@@ -707,10 +376,7 @@ tr:hover td { background: var(--neige); }
 
 /* ─── UTIL ─── */
 .mt-16 { margin-top: 16px; }
-.mt-10 { margin-top: 10px; }
 .flex-end { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
-.flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-.separator { border: none; border-top: var(--border-thin); margin: 18px 0; }
 
 /* ─── ÉCRAN DE CONNEXION ─── */
 #ecran-connexion {
@@ -733,7 +399,6 @@ tr:hover td { background: var(--neige); }
 }
 .login-logo { margin-bottom: 22px; display: flex; justify-content: center; }
 .login-logo svg { width: 88px; height: 88px; color: var(--sumi); display: block; }
-.login-logo-img { display: none; }
 .login-title {
   font-family: var(--font-display);
   font-size: 1.6rem; font-weight: var(--font-weight-thin);
@@ -803,35 +468,6 @@ tr:hover td { background: var(--neige); }
   border-radius: var(--border-radius-pill);
 }
 
-/* ─── NOM DU LOT HERO ─── */
-.lot-nom-hero {
-  background: var(--neige);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-sm);
-  padding: 20px 24px;
-  margin-bottom: 20px;
-  display: flex; align-items: center; gap: 16px;
-}
-.lot-nom-hero-label {
-  font-family: var(--font-display);
-  font-size: 0.54rem; font-weight: var(--font-weight-medium);
-  letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--cendre); margin-bottom: 6px;
-}
-.lot-nom-hero-input {
-  width: 100%; padding: 8px 0;
-  border: none; border-bottom: var(--border-field);
-  background: transparent; color: var(--sumi);
-  font-family: var(--font-display); font-size: 1.1rem;
-  font-weight: var(--font-weight-light); letter-spacing: 0.02em;
-  outline: none; transition: border-color 0.2s;
-}
-.lot-nom-hero-input:focus { border-bottom-color: var(--indigo); }
-.lot-nom-hero-input::placeholder { color: var(--pierre); font-weight: var(--font-weight-light); font-size: 0.9rem; font-style: italic; letter-spacing: 0; }
-.lot-nom-required {
-  font-size: 0.54rem; color: var(--indigo); margin-top: 4px; letter-spacing: 0.06em;
-}
-
 /* ─── PARTAGE COMMUNE ─── */
 .partage-toggle-wrap {
   display: flex; align-items: center; justify-content: space-between;
@@ -858,29 +494,6 @@ tr:hover td { background: var(--neige); }
 }
 .toggle-switch input:checked + .toggle-slider { background: var(--indigo); }
 .toggle-switch input:checked + .toggle-slider::after { transform: translateX(20px); }
-
-/* ─── VUE TERRITOIRE ─── */
-.territoire-card {
-  background: var(--washi);
-  border-bottom: var(--border-thin);
-  padding: 16px 0;
-}
-.territoire-commune-name {
-  font-family: var(--font-display); font-size: 0.82rem;
-  font-weight: var(--font-weight-light); color: var(--sumi); letter-spacing: 0.02em;
-  margin-bottom: 8px; display: flex; align-items: center;
-  justify-content: space-between;
-}
-.territoire-commune-name .chip-partage {
-  font-family: var(--font-body); font-size: 0.54rem;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  background: var(--indigo-clair); color: var(--indigo);
-  border: 1px solid var(--indigo);
-  padding: 2px 7px; border-radius: var(--border-radius-sm);
-}
-.territoire-stats { display: flex; gap: 16px; flex-wrap: wrap; }
-.territoire-stat { font-size: 0.75rem; color: var(--cendre); }
-.territoire-stat strong { color: var(--sumi); font-weight: var(--font-weight-medium); }
 
 /* ─── MENTIONS LÉGALES ─── */
 #panel-mentions {
@@ -975,33 +588,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   font-size: 0.85rem;
   color: var(--sumi);
   letter-spacing: 0.05em;
-}
-
-/* ─── STAT CARDS (extractions, territoire) ─── */
-.stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-.stat-card { flex: 1; min-width: 130px; padding: 14px; text-align: center; margin-bottom: 0; }
-.stat-val { font-size: 1.23rem; font-weight: var(--font-weight-light); color: var(--sumi); }
-.stat-lbl { font-size: 0.54rem; color: var(--cendre); text-transform: uppercase; margin-top: 4px; }
-
-/* ─── ESSENCE USAGE INFO ─── */
-.essence-usage-info { margin-top: 7px; font-size: 0.72rem; color: var(--cendre); }
-
-/* ─── TERRITOIRE LOT ROWS ─── */
-.territoire-lot-row {
-  font-size: 0.75rem; padding: 7px 0;
-  border-bottom: var(--border-thin);
-  display: flex; justify-content: space-between; flex-wrap: wrap;
-}
-.territoire-lot-nom { font-weight: var(--font-weight-medium); }
-.territoire-lot-meta { color: var(--cendre); }
-
-/* ─── ICON ACCENT ─── */
-.icon-inline {
-  display: inline-block;
-  width: 20px; height: 20px;
-  vertical-align: middle;
-  margin-right: 4px;
-  color: var(--sumi);
 }
 
 /* ─── ACCUEIL MOBILE ─── */
@@ -1819,45 +1405,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   border: var(--border-thin);
 }
 
-/* ─── Donut essences ─── */
-.histo-donut-wrap {
-  display: flex;
-  gap: 28px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-  padding: 20px 0;
-}
-.histo-donut-svg { flex-shrink: 0; }
-.histo-donut-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-  min-width: 120px;
-}
-.histo-donut-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  color: var(--sumi);
-}
-.histo-donut-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.histo-donut-legend-vol {
-  margin-left: auto;
-  font-family: var(--font-display);
-  font-size: 0.82rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--indigo);
-}
-
 /* ─── Extractions dans la vue commune ─── */
 .histo-ext-list { margin-top: 8px; }
 .histo-ext-item {
@@ -2176,7 +1723,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   font-weight: var(--font-weight-semibold);
   line-height: 1;
 }
-.ext-field { margin-bottom: 14px; }
 .ext-label {
   display: block;
   font-family: var(--font-body);
@@ -2187,26 +1733,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   letter-spacing: 0.1em;
   margin-bottom: 6px;
 }
-.ext-input,
-.ext-select {
-  width: 100%;
-  height: 48px;
-  padding: 0 14px;
-  background: var(--washi);
-  border: var(--border-field);
-  border-radius: var(--border-radius-md);
-  font-family: var(--font-body);
-  font-size: 1rem;
-  font-weight: var(--font-weight-regular);
-  color: var(--sumi);
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-}
-.ext-input:focus,
-.ext-select:focus { outline: none; border: var(--border-active); }
-.ext-input::placeholder { color: var(--pierre); }
-
 /* Chips essences */
 .ext-essence-chips {
   display: flex;
@@ -2315,23 +1841,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   background: var(--indigo);
   cursor: pointer;
   border: none;
-}
-
-/* Résultat débit */
-.ext-debit-result {
-  display: none;
-}
-.ext-debit-utile {
-  font-family: var(--font-body);
-  font-size: 0.88rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--vert);
-}
-.ext-debit-dech {
-  font-family: var(--font-body);
-  font-size: 0.88rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--orange);
 }
 
 /* Lien formule */
@@ -2520,11 +2029,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   font-weight: var(--font-weight-regular);
   color: var(--sumi);
   margin-bottom: 2px;
-}
-.grume-sel-qty {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  color: var(--cendre);
 }
 .grume-sel-vol {
   font-family: var(--font-display);

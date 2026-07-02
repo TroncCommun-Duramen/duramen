@@ -24,15 +24,8 @@ async function sbInsert(table, data) {
   if (!res.ok) { var e = await res.text(); throw new Error('Insertion ' + table + ': ' + res.status + ' ' + e); }
   return res.json();
 }
-async function sbDelete(table, id) {
-  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
-    method: 'DELETE', headers: sbH
-  });
-  if (!res.ok) throw new Error('Suppression ' + table + ': ' + res.status);
-}
-
 // ═══════════ DONNEES ═══════════
-var grumes = [], lots = [], extractions = [];
+var lots = [], extractions = [];
 
 // ESSENCES_INFO est dans core.js → DuramenCore.ESSENCES_INFO
 
@@ -134,213 +127,6 @@ async function chargerDonnees() {
   }
 }
 
-function sauver() { mettreAJourHeaderStats(); }
-
-// ─── Commune persistante ──────────────────────────────────────────────────
-function appliquerCommuneLocked() {
-  var inp  = document.getElementById('commune');
-  var hint = document.getElementById('commune-hint');
-  if (!inp) return;
-  inp.readOnly = true;
-  inp.classList.add('commune-locked');
-  if (hint) hint.classList.remove('hidden');
-}
-function chargerCommune() {
-  var saved = localStorage.getItem('duramen_commune');
-  var inp   = document.getElementById('commune');
-  if (saved && inp) { inp.value = saved; appliquerCommuneLocked(); }
-}
-function reinitialiserCommune() {
-  if (!confirm('Modifier la commune enregistree ?')) return;
-  localStorage.removeItem('duramen_commune');
-  var inp  = document.getElementById('commune');
-  var hint = document.getElementById('commune-hint');
-  inp.value = ''; inp.readOnly = false;
-  inp.classList.remove('commune-locked');
-  if (hint) hint.classList.add('hidden');
-  inp.focus();
-}
-
-// ─── Navigation ──────────────────────────────────────────────────────────
-function setStep(n) {
-  [1, 2, 3].forEach(function (i) {
-    var el = document.getElementById('step' + i);
-    el.classList.remove('active', 'done');
-    if (i < n)  el.classList.add('done');
-    if (i === n) el.classList.add('active');
-  });
-}
-function goToEtape1() {
-  document.getElementById('etape1').classList.remove('hidden');
-  document.getElementById('etape2').classList.add('hidden');
-  document.getElementById('etape3').classList.add('hidden');
-  setStep(1);
-}
-function goToEtape2() {
-  var nom = document.getElementById('lot-nom').value.trim();
-  var ess = document.getElementById('essence').value;
-  var com = document.getElementById('commune').value.trim();
-  var cau = document.getElementById('cause').value;
-  var pro = document.getElementById('provenance').value;
-  var ann = document.getElementById('annee').value;
-  var usa = document.getElementById('usage').value;
-  if (!nom) {
-    document.getElementById('lot-nom-required').classList.remove('hidden');
-    document.getElementById('lot-nom').focus();
-    return;
-  }
-  document.getElementById('lot-nom-required').classList.add('hidden');
-  if (!ess || !cau || !pro || !ann || !usa) {
-    alert('Merci de renseigner tous les champs obligatoires.');
-    return;
-  }
-  if (com && !localStorage.getItem('duramen_commune')) {
-    localStorage.setItem('duramen_commune', com);
-    appliquerCommuneLocked();
-  }
-  document.getElementById('etape1').classList.add('hidden');
-  document.getElementById('etape2').classList.remove('hidden');
-  document.getElementById('etape3').classList.add('hidden');
-  setStep(2);
-}
-function goToEtape3() {
-  if (grumes.length === 0) { alert('Veuillez saisir au moins une grume.'); return; }
-  document.getElementById('etape2').classList.add('hidden');
-  document.getElementById('etape3').classList.remove('hidden');
-  setStep(3);
-  var ess  = document.getElementById('essence').value;
-  var info = DuramenCore.ESSENCES_INFO[ess];
-  document.getElementById('info-essence-debit').textContent = info
-    ? ess + ' — Delta recommande : ' + info.delta + '%'
-    : '';
-  calculerDebit();
-}
-
-// ─── Grumes ──────────────────────────────────────────────────────────────
-function ajouterGrume() {
-  var l = parseFloat(document.getElementById('g-longueur').value);
-  var d = parseFloat(document.getElementById('g-diametre').value);
-  if (!l || !d || l <= 0 || d <= 0) { alert('Longueur et diametre sont obligatoires.'); return; }
-  grumes.push({ longueur: l, diametre: d });
-  document.getElementById('g-longueur').value = '';
-  document.getElementById('g-diametre').value = '';
-  document.getElementById('g-longueur').focus();
-  afficherGrumes();
-  sauverBrouillon();
-}
-function supprimerGrume(i) { grumes.splice(i, 1); afficherGrumes(); sauverBrouillon(); }
-function afficherGrumes() {
-  var c = document.getElementById('grumes-container');
-  document.getElementById('nb-grumes-badge').textContent =
-    grumes.length + ' grume' + (grumes.length > 1 ? 's' : '');
-  if (grumes.length === 0) {
-    c.innerHTML = '<div class="empty-state"><div class="icon">&#x1FAB5;</div><p>Aucune grume saisie.<br>Ajoutez votre premiere grume ci-dessus.</p></div>';
-    return;
-  }
-  c.innerHTML = grumes.map(function (g, i) {
-    var vol = (Math.PI * Math.pow(g.diametre / 200, 2) * g.longueur).toFixed(3);
-    return '<div class="grume-item">'
-      + '<div class="grume-num">' + (i + 1) + '</div>'
-      + '<div class="grume-info">'
-      + '<div class="grume-field"><span>Longueur</span><span>' + g.longueur + ' m</span></div>'
-      + '<div class="grume-field"><span>Diam.</span><span>' + g.diametre + ' cm</span></div>'
-      + '<div class="grume-field"><span>Vol.</span><span>' + vol + ' m3</span></div>'
-      + '</div>'
-      + '<button class="btn btn-danger btn-sm" onclick="supprimerGrume(' + i + ')">x</button>'
-      + '</div>';
-  }).join('');
-}
-
-// ─── Calcul debit ────────────────────────────────────────────────────────
-function calculerDebit() {
-  var epaisseur = parseFloat(document.getElementById('epaisseur').value);
-  var container = document.getElementById('resultats-container');
-  var K = 3;
-  if (!epaisseur || grumes.length === 0) { container.classList.add('hidden'); return; }
-  var res  = DuramenCore.calculerVolumes(grumes, epaisseur);
-  var rows = res.details.map(function (d, i) {
-    var lm = d.largeurMoy > 0 ? d.largeurMoy.toFixed(1) : '0';
-    return '<tr><td>' + (i + 1) + '</td><td>' + d.longueur + ' m</td><td>' + d.diametre
-      + ' cm</td><td>' + d.volBrut.toFixed(3) + ' m3</td><td>' + d.nbPlanches + '</td><td>'
-      + d.lineaire.toFixed(1) + ' m</td><td>' + lm + ' cm</td></tr>';
-  });
-  var rendement = (res.rendement * 100).toFixed(1);
-  document.getElementById('result-grid').innerHTML =
-    '<div class="result-stat"><div class="val">' + res.volUtile.toFixed(3) + '</div><div class="unit">m3</div><div class="lbl">Volume debite</div></div>'
-    + '<div class="result-stat"><div class="val">' + grumes.length + '</div><div class="unit">grumes</div><div class="lbl">Billes</div></div>'
-    + '<div class="result-stat"><div class="val">' + res.nbPlanches + '</div><div class="unit">planches</div><div class="lbl">Debit theorique</div></div>'
-    + '<div class="result-stat"><div class="val">' + res.lineaire.toFixed(1) + '</div><div class="unit">m lin.</div><div class="lbl">Lineaire</div></div>'
-    + '<div class="result-stat"><div class="val">' + rendement + '</div><div class="unit">%</div><div class="lbl">Rendement</div></div>';
-  document.getElementById('dechets-block').innerHTML =
-    '<span>&#x267B;&#xFE0F;</span><span>Vol. brut : <strong>' + res.volBrut.toFixed(3)
-    + ' m3</strong> &mdash; Pertes estimees : <strong>' + res.volDechets.toFixed(3) + ' m3</strong>'
-    + ' (rendement 55% x ' + (epaisseur / (epaisseur + K) * 100).toFixed(1) + '%)</span>';
-  document.getElementById('result-tbody').innerHTML = rows.join('');
-  container.classList.remove('hidden');
-}
-
-// ─── Sauvegarde lot ───────────────────────────────────────────────────────
-async function sauvegarderLot() {
-  var epaisseur = parseFloat(document.getElementById('epaisseur').value);
-  if (!epaisseur) {
-    alert('Veuillez renseigner l epaisseur des planches.'); return;
-  }
-  var res = DuramenCore.calculerVolumes(grumes, epaisseur);
-  var tVB = res.volBrut, tVD = res.volUtile, tP = res.nbPlanches, tL = res.lineaire;
-  var essence = document.getElementById('essence').value;
-  var usages  = [];
-  lots.forEach(function (l) {
-    if (l.essence === essence && l.usage && usages.indexOf(l.usage) === -1) usages.push(l.usage);
-  });
-  var now = new Date();
-  var lot = {
-    id:           crypto.randomUUID(),
-    commune_code: communeConnectee.code,
-    nom:          document.getElementById('lot-nom').value.trim()
-                    || (essence + ' - ' + document.getElementById('commune').value.trim()),
-    essence:      essence,
-    commune:      document.getElementById('commune').value.trim(),
-    cause:        document.getElementById('cause').value,
-    provenance:   document.getElementById('provenance').value,
-    annee:        document.getElementById('annee').value,
-    usage:        document.getElementById('usage').value,
-    partage:      document.getElementById('lot-partage').checked,
-    epaisseur:    epaisseur,
-    delta:        45, // fixe : rendement 55% = perte 45%
-    nb_grumes:    grumes.length,
-    vol_brut:     tVB,
-    vol_utile:    tVB,
-    vol_dechets:  tVB - tVD,
-    nb_planches:  tP,
-    lineaire:     tL,
-    date:         now.toLocaleDateString('fr-FR'),
-    date_iso:     now.toISOString(),
-    grumes:       grumes.slice(),
-    usages:       usages,
-    latitude:     nouvGPS.lat,
-    longitude:    nouvGPS.lon
-  };
-  try {
-    showLoading(true);
-    await sbInsert('lots', lot);
-    await chargerDonnees();
-    grumes = [];
-    afficherGrumes();
-    ['essence', 'cause', 'provenance', 'annee', 'usage', 'epaisseur', 'lot-nom']
-      .forEach(function (id) { document.getElementById(id).value = ''; });
-    document.getElementById('lot-partage').checked = false;
-    document.getElementById('resultats-container').classList.add('hidden');
-    goToEtape1();
-    effacerBrouillon();
-    alert('Lot sauvegarde !\n' + lot.nom + '\n' + tVD.toFixed(3) + ' m3 debites - ' + tP + ' planches');
-  } catch (err) {
-    showError('Erreur sauvegarde : ' + err.message);
-  } finally {
-    showLoading(false);
-  }
-}
-
-// ─── Stock ────────────────────────────────────────────────────────────────
 // ─── État de l'écran Extraction ───────────────────────────────────────────
 var extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '' };
 var extGrumesSel = [];
@@ -955,43 +741,6 @@ async function afficherHistoriqueCommunaute(content) {
   }
 }
 
-// ─── Couleurs des essences pour le donut ──────────────────────────────────
-var ESSENCE_COULEURS = {
-  'Aulne': '#6b8e6b', 'Châtaignier': '#9e5c2d', 'Chêne': '#8B6914',
-  'Cyprès': '#5c7060', 'Douglas': '#4a7a5c', 'Épicéa': '#3d6b4f',
-  'Frêne': '#5c7a3e', 'Hêtre': '#b5763a', 'Mélèze': '#8a7040',
-  'Merisier': '#d04060', 'Noyer': '#5c3d1e', 'Peuplier': '#7ab359',
-  'Pin maritime': '#7c9c5a', 'Pin sylvestre': '#6a8c4a', 'Platane': '#8fa87c',
-  'Robinier (Acacia)': '#c4a24d', 'Séquoia': '#a0522d', 'Tilleul': '#9ab86e',
-  'Autre': '#aaaaaa'
-};
-
-function creerDonutEssences(parEss, totalVol) {
-  var R = 50, C = 2 * Math.PI * R;
-  var offset = 0;
-  var arcs = '';
-  Object.keys(parEss)
-    .sort(function (a, b) { return parEss[b].vol - parEss[a].vol; })
-    .forEach(function (ess) {
-      var pct = totalVol > 0 ? parEss[ess].vol / totalVol : 0;
-      if (pct < 0.005) return;
-      var couleur = ESSENCE_COULEURS[ess] || '#888';
-      arcs += '<circle cx="64" cy="64" r="' + R + '" fill="none"'
-        + ' stroke="' + couleur + '" stroke-width="18"'
-        + ' stroke-dasharray="' + (pct * C).toFixed(2) + ' ' + C.toFixed(2) + '"'
-        + ' stroke-dashoffset="' + (-(offset * C)).toFixed(2) + '"'
-        + ' transform="rotate(-90 64 64)"/>';
-      offset += pct;
-    });
-  return '<svg width="128" height="128" viewBox="0 0 128 128" class="histo-donut-svg">'
-    + '<circle cx="64" cy="64" r="' + R + '" fill="none" stroke="var(--brume)" stroke-width="18"/>'
-    + arcs
-    + '<text x="64" y="59" text-anchor="middle" font-size="16" font-weight="600" fill="var(--sumi)">'
-    + totalVol.toFixed(1) + '</text>'
-    + '<text x="64" y="73" text-anchor="middle" font-size="8" fill="var(--cendre)">m³ dispo</text>'
-    + '</svg>';
-}
-
 function rendreHistoriqueContenu(container, lotsData) {
   if (!lotsData || lotsData.length === 0) {
     var es = cel('div', 'empty-state');
@@ -1119,45 +868,20 @@ function exporterHistoriquePDF() {
   window.print();
 }
 
-async function supprimerLot(idx) {
-  if (!confirm('Supprimer ce lot ? Action irreversible.')) return;
-  try {
-    showLoading(true);
-    await sbDelete('lots', lots[idx].id);
-    await chargerDonnees();
-  } catch (err) {
-    showError('Erreur : ' + err.message);
-  } finally {
-    showLoading(false);
-  }
-}
-
 // ─── Header stats ─────────────────────────────────────────────────────────
 function mettreAJourHeaderStats() {
   var stock = DuramenCore.getStock();
   var tD  = Object.values(stock).reduce(function (s, e) { return s + e.dispo; }, 0);
   var nbE = Object.keys(stock).length;
-  ['hs-vol',  'hs-vol-m' ].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = tD.toFixed(3); });
-  ['hs-lots', 'hs-lots-m'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = lots.length; });
-  ['hs-essences', 'hs-essences-m'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = nbE; });
+  var elVol = document.getElementById('hs-vol');
+  var elLot = document.getElementById('hs-lots');
+  var elEss = document.getElementById('hs-essences');
+  if (elVol) elVol.textContent = tD.toFixed(3);
+  if (elLot) elLot.textContent = lots.length;
+  if (elEss) elEss.textContent = nbE;
 }
 
 // ─── Accueil mobile ───────────────────────────────────────────────────────
-function mettreAJourStatutReseau() {
-  var el = document.getElementById('accueil-online-dot');
-  if (!el) return;
-  var label = el.querySelector('.accueil-network-label');
-  if (navigator.onLine) {
-    el.classList.add('online');
-    el.classList.remove('offline');
-    if (label) label.textContent = 'En ligne';
-  } else {
-    el.classList.remove('online');
-    el.classList.add('offline');
-    if (label) label.textContent = 'Hors ligne';
-  }
-}
-
 function mettreAJourAccueil() {
   var communeEl = document.getElementById('accueil-commune');
   if (communeEl && communeConnectee) communeEl.textContent = communeConnectee.nom;
@@ -1165,106 +889,16 @@ function mettreAJourAccueil() {
   var tD = Object.values(stock).reduce(function (s, e) { return s + e.dispo; }, 0);
   var stockEl = document.getElementById('accueil-stock-val');
   if (stockEl) stockEl.textContent = tD.toFixed(3);
-  mettreAJourStatutReseau();
-}
-
-// ─── Territoire ───────────────────────────────────────────────────────────
-async function afficherTerritoire() {
-  var container = document.getElementById('territoire-container');
-  while (container.firstChild) container.removeChild(container.firstChild);
-
-  var charg = cel('div', 'empty-state');
-  charg.appendChild(cel('div', 'icon', '⏳'));
-  charg.appendChild(cel('p', '', 'Chargement...'));
-  container.appendChild(charg);
-
-  var lP = [];
-  try {
-    lP = await sbSelect('lots', 'partage=eq.true&order=created_at.desc');
-  } catch (err) {
-    while (container.firstChild) container.removeChild(container.firstChild);
-    var errEl = cel('div', 'empty-state');
-    errEl.appendChild(cel('p', '', 'Erreur : ' + err.message));
-    container.appendChild(errEl);
-    return;
-  }
-
-  while (container.firstChild) container.removeChild(container.firstChild);
-
-  if (lP.length === 0) {
-    var vide = cel('div', 'empty-state');
-    vide.appendChild(cel('div', 'icon', '🌐'));
-    vide.appendChild(cel('p', '', 'Aucun lot partagé pour l\'instant.'));
-    container.appendChild(vide);
-    return;
-  }
-
-  var pC = {};
-  lP.forEach(function (l) {
-    var cl = l.commune || l.commune_code || '—';
-    if (!pC[cl]) pC[cl] = [];
-    pC[cl].push(l);
-  });
-  var tV = lP.reduce(function (s, l) { return s + (l.vol_brut || 0); }, 0);
-  var nC = Object.keys(pC).length;
-
-  var statsRow = cel('div', 'stats-row');
-  [
-    { val: tV.toFixed(3), lbl: 'm³ bruts partagés' },
-    { val: String(nC),    lbl: nC > 1 ? 'communes' : 'commune' },
-    { val: String(lP.length), lbl: 'lots' }
-  ].forEach(function (s) {
-    var card = cel('div', 'card stat-card');
-    card.appendChild(cel('div', 'stat-val', s.val));
-    card.appendChild(cel('div', 'stat-lbl', s.lbl));
-    statsRow.appendChild(card);
-  });
-  container.appendChild(statsRow);
-
-  Object.keys(pC).sort().forEach(function (commune) {
-    var lC  = pC[commune];
-    var vC  = lC.reduce(function (s, l) { return s + (l.vol_brut || 0); }, 0);
-    var ess = lC.map(function (l) { return l.essence; })
-                .filter(function (v, i, a) { return v && a.indexOf(v) === i; });
-
-    var card = cel('div', 'territoire-card');
-
-    var nomRow = cel('div', 'territoire-commune-name');
-    nomRow.appendChild(document.createTextNode(commune));
-    nomRow.appendChild(cel('span', 'chip-partage', 'Partage actif'));
-    card.appendChild(nomRow);
-
-    var stats = cel('div', 'territoire-stats');
-    var sVol = cel('div', 'territoire-stat'); sVol.appendChild(document.createTextNode('Volume : ')); var sVolB = cel('strong', '', vC.toFixed(3) + ' m³'); sVol.appendChild(sVolB);
-    var sLot = cel('div', 'territoire-stat'); sLot.appendChild(document.createTextNode('Lots : ')); sLot.appendChild(cel('strong', '', String(lC.length)));
-    var sEss = cel('div', 'territoire-stat'); sEss.appendChild(document.createTextNode('Essences : ')); sEss.appendChild(cel('strong', '', ess.join(', ') || '—'));
-    stats.appendChild(sVol); stats.appendChild(sLot); stats.appendChild(sEss);
-    card.appendChild(stats);
-
-    var lotsWrap = cel('div', 'mt-10');
-    lC.forEach(function (l) {
-      var row  = cel('div', 'territoire-lot-row');
-      var nom  = cel('span', 'territoire-lot-nom', l.nom || '—');
-      var meta = cel('span', 'territoire-lot-meta',
-        (l.essence || '—') + ' — ' + (l.vol_brut || 0).toFixed(3) + ' m³ — ' + (l.annee || '—'));
-      row.appendChild(nom);
-      row.appendChild(meta);
-      lotsWrap.appendChild(row);
-    });
-    card.appendChild(lotsWrap);
-    container.appendChild(card);
-  });
 }
 
 // ─── Authentification via Supabase ────────────────────────────────────────
 var communeConnectee = null;
 
 function verifierAcces() {
-  var session = localStorage.getItem('duramen_session') || sessionStorage.getItem('duramen_session');
+  var session = localStorage.getItem('duramen_session');
   if (session) {
     try {
       communeConnectee = JSON.parse(session);
-      localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
       sbH['x-commune-code'] = communeConnectee.code;
       ouvrirApp();
       return;
@@ -1291,8 +925,6 @@ async function tentativeConnexion() {
     if (data && data.length > 0) {
       communeConnectee = { code: data[0].code, nom: data[0].commune };
       localStorage.setItem('duramen_session', JSON.stringify(communeConnectee));
-      if (!localStorage.getItem('duramen_commune'))
-        localStorage.setItem('duramen_commune', communeConnectee.nom);
       sbH['x-commune-code'] = communeConnectee.code;
       ouvrirApp();
     } else {
@@ -1343,7 +975,6 @@ function ouvrirApp() {
   if (btnCommunaute) btnCommunaute.textContent = 'Nantes Métropole';
   initialiserPanelSaisie();
   captureGPS();
-  chargerCommune();
   chargerDonnees();
   demarrerRafraichissement();
   mettreAJourAccueil();
@@ -1368,50 +999,6 @@ function fermerMentions() {
   document.querySelector('.bottom-nav').classList.remove('hidden');
   if (!localStorage.getItem('duramen_session'))
     document.getElementById('ecran-connexion').classList.add('visible');
-}
-
-// ─── Brouillon (auto-sauvegarde) ──────────────────────────────────────────
-function sauverBrouillon() {
-  var draft = {
-    nom:        document.getElementById('lot-nom').value,
-    essence:    document.getElementById('essence').value,
-    commune:    document.getElementById('commune').value,
-    cause:      document.getElementById('cause').value,
-    provenance: document.getElementById('provenance').value,
-    annee:      document.getElementById('annee').value,
-    usage:      document.getElementById('usage').value,
-    partage:    document.getElementById('lot-partage').checked,
-    epaisseur:  document.getElementById('epaisseur').value,
-    grumes:     grumes.slice()
-  };
-  localStorage.setItem('duramen_draft', JSON.stringify(draft));
-}
-
-function effacerBrouillon() {
-  localStorage.removeItem('duramen_draft');
-}
-
-function restaurerBrouillon() {
-  if (saisieEnCours) return;
-  var raw = localStorage.getItem('duramen_draft');
-  if (!raw) return;
-  try {
-    var draft = JSON.parse(raw);
-    if (!confirm('Reprendre la saisie en cours ?')) { effacerBrouillon(); return; }
-    document.getElementById('lot-nom').value    = draft.nom        || '';
-    document.getElementById('essence').value    = draft.essence    || '';
-    document.getElementById('commune').value    = draft.commune    || '';
-    document.getElementById('cause').value      = draft.cause      || '';
-    document.getElementById('provenance').value = draft.provenance || '';
-    document.getElementById('annee').value      = draft.annee      || '';
-    document.getElementById('usage').value      = draft.usage      || '';
-    document.getElementById('lot-partage').checked = draft.partage || false;
-    document.getElementById('epaisseur').value  = draft.epaisseur  || '';
-    grumes = Array.isArray(draft.grumes) ? draft.grumes : [];
-    afficherGrumes();
-  } catch (e) {
-    effacerBrouillon();
-  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1550,21 +1137,6 @@ function nouvRendreGrumes() {
   var syn = document.getElementById('saisie-synthese');
   if (syn) syn.classList.toggle('hidden', nouvGrumes.length === 0);
   nouvRendreSynthese();
-}
-
-// ─── Ajouter une ligne de grume ───────────────────────────────────────────
-function nouvAjouterLigne() {
-  nouvGrumes.push({ longueur: 3.00, diametre: 30, quantite: 1 });
-  var idx   = nouvGrumes.length - 1;
-  var liste = document.getElementById('saisie-grumes-liste');
-  if (!liste) return;
-  var card  = creerCarteGrume(idx);
-  liste.appendChild(card);
-  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  var syn = document.getElementById('saisie-synthese');
-  if (syn) syn.classList.remove('hidden');
-  nouvRendreSynthese();
-  nouvSauverBrouillon();
 }
 
 // ─── Supprimer une ligne de grume ─────────────────────────────────────────
@@ -2191,7 +1763,6 @@ function switchTab(panel, btn) {
   btn.classList.add('active');
   if (panel === 'stock')      afficherExtraction();
   if (panel === 'historique') afficherHistorique();
-  if (panel === 'territoire') afficherTerritoire();
 }
 
 
@@ -2204,21 +1775,6 @@ function demarrerRafraichissement() {
     if (communeConnectee) chargerDonnees();
   }, 120000); // 120 000 ms = 2 minutes
 }
-
-// ─── Écouteurs auto-sauvegarde (ancien formulaire — gardés pour compatibilité) ──
-['lot-nom', 'commune', 'epaisseur'].forEach(function (id) {
-  var el = document.getElementById(id);
-  if (el) el.addEventListener('input', sauverBrouillon);
-});
-['essence', 'cause', 'provenance', 'annee', 'usage'].forEach(function (id) {
-  var el = document.getElementById(id);
-  if (el) el.addEventListener('change', sauverBrouillon);
-});
-var lpEl = document.getElementById('lot-partage');
-if (lpEl) lpEl.addEventListener('change', sauverBrouillon);
-
-window.addEventListener('online',  mettreAJourStatutReseau);
-window.addEventListener('offline', mettreAJourStatutReseau);
 
 // ─── Swipe down sur les sheets statiques ─────────────────────────────────
 (function () {
