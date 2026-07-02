@@ -188,7 +188,19 @@ DuramenCore.validerSortie(extraction)
 
 ---
 
-## 9. Convention de commits Git
+## 9. Convention Git — branches et commits
+
+### Branches
+
+**`main` reste toujours propre : c'est la version de référence, installable à tout moment.**
+
+- **TOUJOURS** créer une branche dédiée avant toute modification du code de l'application (index.html, app.js, core.js, theme.css, ui.css, sw.js, manifest.json). Jamais de travail directement sur `main`.
+- **Nommage** : `feat/<nom-court>` pour une fonctionnalité (ex. `feat/transformation-grumes`), `fix/<nom-court>` pour une correction.
+- **Une branche = une fonctionnalité.** Pas de fourre-tout : chaque évolution doit pouvoir être validée ou abandonnée indépendamment.
+- **Fusion dans `main` uniquement après validation par le porteur de projet.** Après fusion, supprimer la branche.
+- **Seule exception** : les modifications de documentation (`Docs/`, `CLAUDE.md`) peuvent aller directement sur `main`.
+
+### Commits
 
 ```
 Format : <type>(<périmètre>): <intention en français>
