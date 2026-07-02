@@ -77,7 +77,7 @@ _(aucune)_
 | 2 | Icône PWA : fond `--indigo` + icône blanche (coordonner avec graphiste) | Design | Basse |
 | 3 | ~~A2 — Vérifier RLS Supabase~~ ✅ audité le 2 juil. : RLS actif, `lots`/`extractions` isolées serveur, fuite trouvée sur `codes_acces` | Supabase (hors code) | ✅ Fait |
 | 3b | ~~🔴 A2-fix — Boucher la fuite `codes_acces`~~ ✅ fait le 2 juil. (RPC `verifier_code` + policies fermées) | Supabase + Feature | ✅ Fait |
-| 3c | 🟠 A2-dur — Figer le `search_path` de `get_commune_code` (warning Security Advisor « Function Search Path Mutable »). Correctif 1 ligne côté Supabase. | Supabase (hors code) | Moyenne |
+| 3c | ~~🟠 A2-dur — Figer le `search_path` de `get_commune_code`~~ ✅ fait le 2 juil. (`alter function … set search_path = public`), lecture par commune revérifiée | Supabase (hors code) | ✅ Fait |
 | 3d | 🔴 A12 — Les codes d'accès servent d'identifiant de commune : `lots.commune_code` expose les codes secrets via les lots partagés (`partage=eq.true`, lisibles **sans authentification**). Séparer identifiant public / code secret (touche tables, RLS, `get_commune_code`, les 2 apps), puis **régénérer tous les codes**. À coupler avec la remise à zéro des données. | Supabase + Feature | **Haute** |
 | 3e | Atelier modèle de données avec le commanditaire (avant la remise à zéro) : cheminement complet de la grume — identifiant par grume (fusion avec A6), géolocalisation à chaque étape (abattage → stockage → destination), liste définitive des champs d'extraction | Décision projet | **Haute** |
 | 4 | ~~A5 — Verrou anti sur-extraction~~ ✅ fait le 2 juil. (trigger + re-validation client) | Supabase + Feature | ✅ Fait |
