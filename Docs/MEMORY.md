@@ -485,3 +485,34 @@ Le plus urgent est **A2 — RLS Supabase** : l'isolation des données entre comm
 - [[CLAUDE_QUICK]] — sections essentielles de CLAUDE.md à lire au démarrage
 - [[DESIGN_SYSTEM]] — référence visuelle complète
 - [[Journal/JOURNAL_SESSION_06]] — dernière session documentée
+
+---
+
+## Décision — Feuille de débit menuisier (juillet 2026)
+
+**Question posée :** intégrer à DURAMEN une feuille de débit / optimiseur de découpe pour les menuisiers destinataires des extractions ?
+
+**Recherche marché :** deux familles d'outils existent déjà — générateurs de fiches de débit
+liés à la conception 3D (OpenCutList, extension SketchUp gratuite et open-source, référence
+francophone) et optimiseurs de calepinage (OptiCoupe, CutList Optimizer, CutOptima, DebitPro,
+MaxCut). Tous sont orientés panneaux et barres de section standard.
+
+**Décision : NE PAS intégrer d'optimiseur de débit.**
+Raisons :
+1. Le stock DURAMEN est du bois massif brut de sciage (plateaux irréguliers, aubier, défauts).
+   Même OpenCutList ne fait pas de calepinage sur le massif : le choix des pièces dans un
+   plateau est un savoir-faire d'atelier, pas un calcul.
+2. Hors du noyau ENTRÉE → STOCK → SORTIE. Gros chantier algorithmique pour un résultat inadapté.
+3. Redondant avec des outils gratuits déjà utilisés par les menuisiers.
+
+**Pistes retenues (légères, dans l'esprit du noyau — la sortie reste une sortie, on enrichit son format) :**
+1. **Bordereau de sortie imprimable** (priorité) : à l'extraction, générer un document listant
+   les pièces sorties — essence, dimensions, épaisseur, date d'abattage, humidité estimée,
+   date de disponibilité intérieur (données déjà calculées d'après SECHAGE_essences.md).
+   Coût : une fonction dans app.js + une vue imprimable. Zéro nouvelle table, core.js intact.
+2. **Export CSV compatible OpenCutList** (bonus) : bouton « Exporter la sortie en CSV » avec
+   les colonnes attendues par l'onglet Importer d'OCL (désignation, longueur, largeur,
+   épaisseur, quantité, matière). Quelques dizaines de lignes de JS, aucune dépendance.
+
+**Ligne rouge :** tout ce qui touche au calepinage, à la saisie de pièces projet ou aux plans
+de coupe appartient aux outils métier des menuisiers, pas à DURAMEN.
