@@ -128,7 +128,7 @@ async function chargerDonnees() {
 }
 
 // ─── État de l'écran Extraction ───────────────────────────────────────────
-var extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '' };
+var extDraft     = { destination: '', communeInstall: '', lieu: '' };
 var extGrumesSel = [];
 var extEssFiltre = null;
 var extDebitActif = false;
@@ -359,43 +359,6 @@ function assureModalExtractionDest() {
   fCom.appendChild(vCom);
   modal.appendChild(fCom);
 
-  // Usage
-  var fUsa = cel('div', 'field');
-  var lUsa = cel('label', '', 'Usage');
-  lUsa.htmlFor = 'modal-ext-usage';
-  var sUsa = cel('select', '');
-  sUsa.id = 'modal-ext-usage';
-  ['', 'Intérieur', 'Extérieur'].forEach(function (u) {
-    var o = cel('option', '', u || '— Choisir —');
-    o.value = u;
-    sUsa.appendChild(o);
-  });
-  fUsa.appendChild(lUsa);
-  fUsa.appendChild(sUsa);
-  modal.appendChild(fUsa);
-
-  // Cause de l'abattage
-  var fCause = cel('div', 'field');
-  var lCause = cel('label', '', 'Cause de l\'abattage');
-  lCause.htmlFor = 'modal-ext-cause';
-  var sCause = cel('select', '');
-  sCause.id = 'modal-ext-cause';
-  [
-    ['', '— Choisir (optionnel) —'],
-    ['Coupe sanitaire', 'Coupe sanitaire'],
-    ['Intempérie', 'Intempérie (chablis, neige…)'],
-    ['Entretien', 'Entretien courant'],
-    ['Aménagement', 'Aménagement urbain'],
-    ['Plantation', 'Renouvellement plantation']
-  ].forEach(function (kv) {
-    var o = cel('option', '', kv[1]);
-    o.value = kv[0];
-    sCause.appendChild(o);
-  });
-  fCause.appendChild(lCause);
-  fCause.appendChild(sCause);
-  modal.appendChild(fCause);
-
   // Lieu (optionnel)
   var fLieu = cel('div', 'field');
   var lLieu = cel('label', '', 'Lieu (optionnel)');
@@ -429,10 +392,8 @@ function ouvrirModalExtractionDest() {
   if (extGrumesSel.length === 0) { showError('Sélectionnez au moins une grume.'); return; }
   assureModalExtractionDest();
   var nomEl  = document.getElementById('modal-ext-nom');
-  var usaEl  = document.getElementById('modal-ext-usage');
   var lieuEl = document.getElementById('modal-ext-lieu');
   if (nomEl)  nomEl.value  = extDraft.destination;
-  if (usaEl)  usaEl.value  = extDraft.usage;
   if (lieuEl) lieuEl.value = extDraft.lieu;
   document.getElementById('modal-ext-bg').classList.add('open');
   if (nomEl) nomEl.focus();
@@ -625,21 +586,17 @@ function majDebitExtraction() {
 
 async function confirmerExtractionDest() {
   var nomEl   = document.getElementById('modal-ext-nom');
-  var usaEl   = document.getElementById('modal-ext-usage');
-  var causeEl = document.getElementById('modal-ext-cause');
   var lieuEl  = document.getElementById('modal-ext-lieu');
 
   var destination    = nomEl   ? nomEl.value.trim()  : '';
-  var usage          = usaEl   ? usaEl.value          : '';
-  var causeAbattage  = causeEl ? causeEl.value        : '';
   var lieu           = lieuEl  ? lieuEl.value.trim()  : '';
   var communeInstall = communeConnectee ? communeConnectee.nom : '';
-
-  if (!usage) { showError('Choisissez un usage.'); return; }
+  // Usage retiré de la fiche (7 juil. 2026) mais toujours exigé par
+  // DuramenCore.validerSortie (noyau figé) et présent en base.
+  var usage = 'Non défini';
 
   extDraft.destination    = destination;
   extDraft.communeInstall = communeInstall;
-  extDraft.usage          = usage;
   extDraft.lieu           = lieu;
 
   var parEssence     = {};
@@ -653,7 +610,7 @@ async function confirmerExtractionDest() {
   for (var i = 0; i < essences.length; i++) {
     var valid = DuramenCore.validerSortie({
       essence: essences[i], volume: Math.round(parEssence[essences[i]] * 10000) / 10000,
-      usage: extDraft.usage, destination: extDraft.destination
+      usage: usage, destination: extDraft.destination
     });
     if (!valid.ok) { showError(valid.erreur); return; }
   }
@@ -667,7 +624,7 @@ async function confirmerExtractionDest() {
     for (var k = 0; k < essences.length; k++) {
       var valid2 = DuramenCore.validerSortie({
         essence: essences[k], volume: Math.round(parEssence[essences[k]] * 10000) / 10000,
-        usage: extDraft.usage, destination: extDraft.destination
+        usage: usage, destination: extDraft.destination
       });
       if (!valid2.ok) {
         showError('Le stock a changé entre-temps. ' + valid2.erreur);
@@ -682,12 +639,12 @@ async function confirmerExtractionDest() {
         commune_code:    communeConnectee.code,
         essence:         ess,
         volume:          Math.round(parEssence[ess] * 10000) / 10000,
-        usage:           extDraft.usage,
+        usage:           usage,
         destination:     extDraft.destination,
         commune:         communeInstall,
         contact:         '',
         notes:           extDraft.lieu ? 'Lieu : ' + extDraft.lieu : '',
-        cause_abattage:  causeAbattage,
+        cause_abattage:  '',
         type_sortie:     extDebitActif ? 'debit' : 'grume',
         grumes_keys:     clesParEssence[ess],
         date:            now.toLocaleDateString('fr-FR'),
@@ -708,7 +665,7 @@ async function confirmerExtractionDest() {
       }
     }
     await chargerDonnees();
-    extDraft     = { destination: '', communeInstall: '', usage: '', lieu: '' };
+    extDraft     = { destination: '', communeInstall: '', lieu: '' };
     extGrumesSel = [];
     fermerModalExtractionDest();
     afficherExtraction();
