@@ -68,6 +68,7 @@
 | Cache SW incrémenté `duramen-v38` → `duramen-v39` ✅ | `sw.js` | 7 juillet 2026 |
 | Fiche Destination (extraction mobile) allégée : champs « Usage » et « Cause de l'abattage » retirés ; `usage` enregistré « Non défini » en base (exigé par `validerSortie`, noyau figé), `cause_abattage` vide. Restent : nom du projet, commune (lecture seule), lieu optionnel ✅ | `app.js` | 7 juillet 2026 |
 | Cache SW incrémenté `duramen-v39` → `duramen-v40` ✅ | `sw.js` | 7 juillet 2026 |
+| Modale extraction bureau alignée : choix « Usage » (Intérieur/Extérieur) retiré de l'étape Destination, `usage` enregistré « Non défini » comme sur mobile. Pas d'incrément SW (fichiers bureau hors cache) ✅ | `bureau/app.js`, `bureau/index.html` | 7 juillet 2026 |
 
 ---
 
