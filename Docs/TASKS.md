@@ -66,6 +66,8 @@
 | A14 — Bureau : en-tête `x-commune-code` posé dans `bLancerApp()` — la session restaurée au rechargement ne le renvoyait plus (extractions et lots privés invisibles, stock surestimé, risque de double extraction) ✅ | `bureau/app.js` | 7 juillet 2026 |
 | A16 — Case « Partager avec toutes les communes » décochée à chaque ouverture de la modale « Nommer le lot » (elle gardait l'état du lot précédent) ✅ | `app.js` | 7 juillet 2026 |
 | Cache SW incrémenté `duramen-v38` → `duramen-v39` ✅ | `sw.js` | 7 juillet 2026 |
+| Fiche Destination (extraction mobile) allégée : champs « Usage » et « Cause de l'abattage » retirés ; `usage` enregistré « Non défini » en base (exigé par `validerSortie`, noyau figé), `cause_abattage` vide. Restent : nom du projet, commune (lecture seule), lieu optionnel ✅ | `app.js` | 7 juillet 2026 |
+| Cache SW incrémenté `duramen-v39` → `duramen-v40` ✅ | `sw.js` | 7 juillet 2026 |
 
 ---
 
