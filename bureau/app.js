@@ -100,6 +100,10 @@ function bDeconnecter() {
 }
 
 function bLancerApp() {
+  // L'en-tête x-commune-code est exigé par les policies RLS : sans lui, la base
+  // masque extractions et lots privés. Posé ici pour couvrir aussi la session
+  // restaurée depuis localStorage au rechargement de la page.
+  bH['x-commune-code'] = bCommune.code;
   document.getElementById('b-connexion').classList.add('hidden');
   document.getElementById('b-app').classList.remove('hidden');
   document.getElementById('b-tab-commune-nom').textContent = bCommune.nom;
