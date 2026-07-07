@@ -1548,6 +1548,10 @@ function nouvOuvrirModal() {
   document.getElementById('modal-nommer-bg').classList.add('open');
   var inp = document.getElementById('modal-nom-input');
   if (inp) { inp.value = ''; inp.focus(); }
+  // Jamais de partage par défaut (mentions légales) : la modale est réutilisée
+  // d'un lot à l'autre, la case doit repartir décochée.
+  var ptg = document.getElementById('modal-partage');
+  if (ptg) ptg.checked = false;
 }
 function nouvFermerModal() {
   var bg = document.getElementById('modal-nommer-bg');
