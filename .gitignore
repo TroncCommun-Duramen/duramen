@@ -1,0 +1,5 @@
+# Fichiers système macOS
+.DS_Store
+
+# Documents privés — ne jamais publier sur le dépôt public
+Docs/LETTRE-*.docx
