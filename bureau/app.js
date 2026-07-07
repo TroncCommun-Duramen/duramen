@@ -38,7 +38,6 @@ var bExtEssence   = null;
 var bExtGrumes    = [];    // grumes disponibles pour l'essence choisie
 var bExtGrumesSel = [];    // grumes sélectionnées (objets)
 var bExtType      = 'planches'; // 'brute' | 'planches'
-var bExtUsageDest = 'Intérieur';
 
 // Clés des grumes déjà sorties du stock (extractions.grumes_keys).
 // Format partagé avec l'appli mobile : id du lot + '_' + position (0 = première).
@@ -595,7 +594,6 @@ function bOuvrirModalExt() {
   bExtGrumes    = [];
   bExtGrumesSel = [];
   bExtType      = 'planches';
-  bExtUsageDest = 'Intérieur';
   bMextGoStep(1);
   bMextInitChips();
   document.getElementById('b-mext-overlay').classList.remove('hidden');
@@ -795,16 +793,7 @@ function bMextStep2Suivant() {
   if (commEl) commEl.textContent = bCommune ? bCommune.nom : '—';
   document.getElementById('b-mext-projet').value = '';
   document.getElementById('b-mext-lieu').value   = '';
-  bExtUsageDest = 'Intérieur';
-  document.getElementById('b-mext-usage-int').classList.add('active');
-  document.getElementById('b-mext-usage-ext').classList.remove('active');
   bMextGoStep(3);
-}
-
-function bMextSetUsage(usage) {
-  bExtUsageDest = usage;
-  document.getElementById('b-mext-usage-int').classList.toggle('active', usage === 'Intérieur');
-  document.getElementById('b-mext-usage-ext').classList.toggle('active', usage === 'Extérieur');
 }
 
 async function bMextConfirmer() {
@@ -818,7 +807,10 @@ async function bMextConfirmer() {
   var volUtil  = bExtType === 'planches' ? volBrut * rg * (ep / (ep + ts)) : volBrut;
   var lineaire = bExtType === 'planches' ? volUtil * 5000 / ep : 0;
   var dest = [projet, comm, lieu].filter(Boolean).join(' · ') || '—';
-  var valid = DuramenCore.validerSortie({ essence: bExtEssence, volume: volUtil, usage: bExtUsageDest, destination: dest });
+  // Usage retiré de la fiche (7 juil. 2026) mais toujours exigé par
+  // DuramenCore.validerSortie (noyau figé) et présent en base.
+  var usage = 'Non défini';
+  var valid = DuramenCore.validerSortie({ essence: bExtEssence, volume: volUtil, usage: usage, destination: dest });
   if (!valid.ok) { bShowToast(valid.erreur, true); return; }
   bShowLoading(true);
   try {
@@ -831,7 +823,7 @@ async function bMextConfirmer() {
       vol_brut_extrait:   volBrut,
       type_valorisation:  bExtType,
       lineaire:           lineaire > 0 ? Math.round(lineaire * 10) / 10 : null,
-      usage:              bExtUsageDest,
+      usage:              usage,
       destination:        dest,
       projet:             projet || null,
       commune_installation: comm || null,
