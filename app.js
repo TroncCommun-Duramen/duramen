@@ -834,7 +834,9 @@ async function afficherHistoriqueCommunaute(content) {
   loading.appendChild(cel('p', '', 'Chargement des données du réseau…'));
   content.appendChild(loading);
   try {
-    var tousLots = await sbSelect('lots', 'partage=eq.true&order=created_at.desc');
+    // A12 : lots partagés lus par la fonction lots_partages(),
+    // qui ne renvoie jamais le code d'accès secret des communes.
+    var tousLots = await sbSelect('rpc/lots_partages', '');
     while (content.firstChild) content.removeChild(content.firstChild);
     rendreHistoriqueContenu(content, tousLots);
   } catch (err) {

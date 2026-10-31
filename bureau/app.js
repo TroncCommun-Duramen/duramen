@@ -139,7 +139,8 @@ async function bChargerDonnees() {
     var r = await Promise.all([
       bSbSelect('lots',        'commune_code=eq.' + code + '&order=created_at.desc'),
       bSbSelect('extractions', 'commune_code=eq.' + code + '&order=created_at.desc'),
-      bSbSelect('lots',        'partage=eq.true&order=created_at.desc')
+      // A12 : sans le code d'accès secret des communes
+      bSbSelect('rpc/lots_partages', '')
     ]);
     lots        = r[0] || [];
     extractions = r[1] || [];
@@ -182,7 +183,7 @@ function bMettreAJourHeader() {
   document.getElementById('b-stat-ext-ops').textContent = extsMois.length + ' opération' + (extsMois.length > 1 ? 's' : '');
 
   var volMetro = bLotsMetro.reduce(function(s, l) { return s + (l.vol_utile || 0); }, 0);
-  var commUniq = bLotsMetro.map(function(l) { return l.commune_code; }).filter(function(v, i, a) { return a.indexOf(v) === i; }).length;
+  var commUniq = bLotsMetro.map(function(l) { return l.commune; }).filter(function(v, i, a) { return a.indexOf(v) === i; }).length;
   document.getElementById('b-stat-metro').textContent        = volMetro.toFixed(1) + ' m³';
   document.getElementById('b-stat-metro-detail').textContent = commUniq + ' commune' + (commUniq > 1 ? 's' : '') + ' · ' + bLotsMetro.length + ' lots';
 }
