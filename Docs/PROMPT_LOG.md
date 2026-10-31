@@ -48,6 +48,7 @@ HH:MM — [commit: abc1234] résultat final
 11:08 — Audit complet avant le lancement de mardi (mobile, bureau, Supabase)
 11:28 — Recherche des usages de la filière : volumes au millième de m³ (règles ATIBT)
 11:31 — Alignement des volumes au millième de m³, mise en ligne, mise à jour du coffre Obsidian
+11:39 — A12 : vérifié non fait (ni sur GitHub ni dans la base) → code secret masqué au partage
 
 ---
 
