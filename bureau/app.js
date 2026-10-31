@@ -49,6 +49,25 @@ function bClesGrumesExtraites() {
   return cles;
 }
 
+// ═══════════ PRÉCISION DES VOLUMES ═══════════
+// Le millième de m³ (1 dm³) : usage de la filière bois (règles ATIBT),
+// identique à la version mobile (app.js à la racine).
+function arrondiM3(v) { return Math.round((v || 0) * 1000) / 1000; }
+
+// Même règle que la version mobile :
+// - la sortie emporte les dernières grumes de l'essence : elle vaut
+//   exactement le stock restant ;
+// - sinon, un dépassement de 1 dm³ par grume au plus est ramené au stock.
+function volumeSortie(essence, volume, videEssence) {
+  var v = arrondiM3(volume);
+  var s = DuramenCore.getStock()[essence];
+  if (!s) return v;
+  if (videEssence) return s.dispo;
+  var tolerance = 0.001 * Math.max(1, s.nbGrumes);
+  if (v > s.dispo && v - s.dispo <= tolerance) v = s.dispo;
+  return v;
+}
+
 // ═══════════ UI ═══════════
 function bShowLoading(on) {
   document.getElementById('b-loading').classList.toggle('hidden', !on);
@@ -810,6 +829,11 @@ async function bMextConfirmer() {
   // Usage retiré de la fiche (7 juil. 2026) mais toujours exigé par
   // DuramenCore.validerSortie (noyau figé) et présent en base.
   var usage = 'Non défini';
+  // Grume brute : volume aligné au millième, stock vidé sans reste.
+  // Débit en planches : comportement inchangé (voir séparation brut / débit).
+  if (bExtType !== 'planches') {
+    volUtil = volumeSortie(bExtEssence, volUtil, bExtGrumesSel.length === bExtGrumes.length);
+  }
   var valid = DuramenCore.validerSortie({ essence: bExtEssence, volume: volUtil, usage: usage, destination: dest });
   if (!valid.ok) { bShowToast(valid.erreur, true); return; }
   bShowLoading(true);
@@ -819,8 +843,8 @@ async function bMextConfirmer() {
       commune_code:       bCommune.code,
       commune:            bCommune.nom,
       essence:            bExtEssence,
-      volume:             volUtil,
-      vol_brut_extrait:   volBrut,
+      volume:             arrondiM3(volUtil),
+      vol_brut_extrait:   arrondiM3(volBrut),
       type_valorisation:  bExtType,
       lineaire:           lineaire > 0 ? Math.round(lineaire * 10) / 10 : null,
       usage:              usage,

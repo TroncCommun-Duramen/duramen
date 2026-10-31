@@ -29,6 +29,27 @@ var lots = [], extractions = [];
 
 // ESSENCES_INFO est dans core.js → DuramenCore.ESSENCES_INFO
 
+// ─── Précision des volumes : le millième de m³ (1 dm³) ────────────────────
+// Usage de la filière bois (règles de mesurage ATIBT) : cubage des grumes
+// et des sciages en m³ avec trois décimales. Tout volume enregistré passe ici.
+function arrondiM3(v) { return Math.round((v || 0) * 1000) / 1000; }
+
+// Volume d'une sortie, prêt à valider et à enregistrer.
+// Chaque volume est arrondi au millième : la somme des grumes choisies peut
+// différer du stock de quelques millièmes.
+// - La sortie emporte les dernières grumes de l'essence : elle vaut
+//   exactement le stock restant. Le stock tombe à zéro, sans reste.
+// - Sinon, un dépassement de 1 dm³ par grume au plus est ramené au stock.
+function volumeSortie(essence, volume, videEssence) {
+  var v = arrondiM3(volume);
+  var s = DuramenCore.getStock()[essence];
+  if (!s) return v;
+  if (videEssence) return s.dispo;
+  var tolerance = 0.001 * Math.max(1, s.nbGrumes);
+  if (v > s.dispo && v - s.dispo <= tolerance) v = s.dispo;
+  return v;
+}
+
 // ─── UI helpers ───────────────────────────────────────────────────────────
 function showLoading(on) {
   var el = document.getElementById('loading-overlay');
@@ -142,6 +163,17 @@ function clesGrumesExtraites() {
     (ex.grumes_keys || []).forEach(function (k) { cles[k] = true; });
   });
   return cles;
+}
+
+// Nombre de grumes d'une essence encore en stock (pas encore extraites).
+function nbGrumesRestantes(essence) {
+  var extraites = clesGrumesExtraites();
+  var n = 0;
+  lots.forEach(function (l) {
+    if (l.essence !== essence || !l.grumes) return;
+    l.grumes.forEach(function (g, gi) { if (!extraites[l.id + '_' + gi]) n++; });
+  });
+  return n;
 }
 
 // Vrai si l'agent est en train de préparer une extraction :
@@ -609,7 +641,8 @@ async function confirmerExtractionDest() {
 
   for (var i = 0; i < essences.length; i++) {
     var valid = DuramenCore.validerSortie({
-      essence: essences[i], volume: Math.round(parEssence[essences[i]] * 10000) / 10000,
+      essence: essences[i], volume: volumeSortie(essences[i], parEssence[essences[i]],
+        clesParEssence[essences[i]].length === nbGrumesRestantes(essences[i])),
       usage: usage, destination: extDraft.destination
     });
     if (!valid.ok) { showError(valid.erreur); return; }
@@ -623,7 +656,8 @@ async function confirmerExtractionDest() {
     await chargerDonnees();
     for (var k = 0; k < essences.length; k++) {
       var valid2 = DuramenCore.validerSortie({
-        essence: essences[k], volume: Math.round(parEssence[essences[k]] * 10000) / 10000,
+        essence: essences[k], volume: volumeSortie(essences[k], parEssence[essences[k]],
+          clesParEssence[essences[k]].length === nbGrumesRestantes(essences[k])),
         usage: usage, destination: extDraft.destination
       });
       if (!valid2.ok) {
@@ -638,7 +672,8 @@ async function confirmerExtractionDest() {
         id:              crypto.randomUUID(),
         commune_code:    communeConnectee.code,
         essence:         ess,
-        volume:          Math.round(parEssence[ess] * 10000) / 10000,
+        volume:          arrondiM3(volumeSortie(ess, parEssence[ess],
+                           clesParEssence[ess].length === nbGrumesRestantes(ess))),
         usage:           usage,
         destination:     extDraft.destination,
         commune:         communeInstall,
@@ -1558,8 +1593,8 @@ async function nouvConfirmer() {
     epaisseur:    0,
     delta:        0,
     nb_grumes:    nbGrumes,
-    vol_brut:     +volBrut.toFixed(4),
-    vol_utile:    +volBrut.toFixed(4),
+    vol_brut:     arrondiM3(volBrut),
+    vol_utile:    arrondiM3(volBrut),
     vol_dechets:  0,
     nb_planches:  0,
     lineaire:     0,
