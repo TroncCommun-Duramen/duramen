@@ -40,6 +40,15 @@ HH:MM — [commit: abc1234] résultat final
   `LESSONS.md`, `DESIGN_SYSTEM.md`, `PROMPT_LOG.md`
 — Méthodologie : Phase 0a (design) → 0b (noyau) → 0c (bugs) → 1 (features)
 
+
+## Session 2026-10-31
+
+10:48 — Mail Supabase : projet en pause → restauration du projet
+11:02 — Vérification du compte test « Tronc Commun » (TC-D7WA) : actif, exclu de la vue Communauté par la RLS
+11:08 — Audit complet avant le lancement de mardi (mobile, bureau, Supabase)
+11:28 — Recherche des usages de la filière : volumes au millième de m³ (règles ATIBT)
+11:31 — Alignement des volumes au millième de m³, mise en ligne, mise à jour du coffre Obsidian
+
 ---
 
 ## Voir aussi

@@ -69,6 +69,9 @@
 | Fiche Destination (extraction mobile) allégée : champs « Usage » et « Cause de l'abattage » retirés ; `usage` enregistré « Non défini » en base (exigé par `validerSortie`, noyau figé), `cause_abattage` vide. Restent : nom du projet, commune (lecture seule), lieu optionnel ✅ | `app.js` | 7 juillet 2026 |
 | Cache SW incrémenté `duramen-v39` → `duramen-v40` ✅ | `sw.js` | 7 juillet 2026 |
 | Modale extraction bureau alignée : choix « Usage » (Intérieur/Extérieur) retiré de l'étape Destination, `usage` enregistré « Non défini » comme sur mobile. Pas d'incrément SW (fichiers bureau hors cache) ✅ | `bureau/app.js`, `bureau/index.html` | 7 juillet 2026 |
+| **Préparation du lancement — session 31 octobre 2026** | | |
+| Volumes alignés au millième de m³ (1 dm³), usage de la filière (règles de mesurage ATIBT). Fonctions `arrondiM3()` et `volumeSortie()` dans les 2 apps. Une sortie qui emporte les dernières grumes d'une essence vaut exactement le stock restant : le stock tombe à zéro. Testé sur 20 000 scénarios : aucun refus, aucun reste. Corrige A19 ② et ③ ✅ | `app.js`, `bureau/app.js` | 31 octobre 2026 |
+| Cache SW incrémenté `duramen-v40` → `duramen-v41` ✅ | `sw.js` | 31 octobre 2026 |
 
 ---
 
@@ -109,7 +112,7 @@ _(aucune)_
 | 19 | ~~🟠 A16 — Case « Partager avec toutes les communes » jamais réinitialisée~~ ✅ corrigé le 7 juil. : décochée à chaque ouverture de la modale dans `nouvOuvrirModal()` | Feature | ✅ Fait |
 | 20 | 🟠 A17 — **Bureau moins protégé que le mobile à l'enregistrement d'une extraction** : pas de re-validation sur données fraîches avant insertion, message « STOCK INSUFFISANT » du verrou non extrait de l'erreur brute, et `bTentativeConnexion` réutilise la session locale sans re-vérifier le code côté serveur (variante bureau de A7). | Feature (bureau) | Moyenne |
 | 21 | 🟡 A18 — **Bureau : la ligne « Total » du tableau des lots n'additionne que les 10 lots affichés**, pas l'ensemble — trompeur dès que la commune dépasse 10 lots. | Feature (bureau) | Basse |
-| 22 | 🟡 A19 — Divers basse priorité relevés au scan du 7 juil. : ① rafraîchissement auto (2 min) réinitialise la date du « Bilan du stock » et les réglages débit de l'écran Extraction si aucune grume n'est encore sélectionnée (angle mort de A1) ; ② volumes bureau insérés sans arrondi (16 décimales en base) vs 4 décimales mobile ; ③ validation client stricte au seuil : les arrondis 4 décimales peuvent refuser l'extraction de la totalité d'un stock alors que le trigger serveur tolère 0,0001 ; ④ export CSV sans neutralisation des formules Excel (nom de lot commençant par `=`) ; ⑤ `date_iso` en UTC : saisie vers minuit comptée sur le mauvais jour dans le bilan ; ⑥ code mort bureau (`ESSENCE_COULEURS`, `b-exp-commune`). | Feature | Basse |
+| 22 | 🟡 A19 — Divers basse priorité relevés au scan du 7 juil. : ① rafraîchissement auto (2 min) réinitialise la date du « Bilan du stock » et les réglages débit de l'écran Extraction si aucune grume n'est encore sélectionnée (angle mort de A1) ; ~~② volumes bureau insérés sans arrondi~~ ✅ 31 oct. ; ~~③ refus de l'extraction de la totalité d'un stock~~ ✅ 31 oct. ; ④ export CSV sans neutralisation des formules Excel (nom de lot commençant par `=`) ; ⑤ `date_iso` en UTC : saisie vers minuit comptée sur le mauvais jour dans le bilan ; ⑥ code mort bureau (`ESSENCE_COULEURS`, `b-exp-commune`). | Feature | Basse |
 
 ---
 

@@ -5,6 +5,14 @@
 
 ---
 
+## 31 octobre 2026
+
+### Préparation du lancement auprès des communes
+- `fix(stock)` — Volumes alignés au millième de m³ (usage filière bois). Vider une essence ne provoque plus de refus ni de reste. Mobile et bureau.
+- `fix(sw)` — Cache incrémenté duramen-v40 → duramen-v41.
+
+---
+
 ## 26 avril 2026
 
 ### Audit et conformité design system
