@@ -12,17 +12,60 @@ const sbH = {
   'x-commune-code': ''
 };
 
-async function sbSelect(table, filter) {
-  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + (filter || ''), { headers: sbH });
-  if (!res.ok) throw new Error('Lecture ' + table + ': ' + res.status);
-  return res.json();
+// ─── Délai maximal d'une requête Supabase ─────────────────────────────────
+// Sur le terrain, avec une seule barre de réseau, une requête peut rester
+// sans réponse plusieurs minutes. Au-delà de ce délai, on abandonne et
+// l'appli bascule sur le cache (lecture) ou la file d'envoi (écriture).
+var DELAI_LECTURE_MS = 15000;
+var DELAI_ENVOI_MS   = 20000;
+
+// Erreur « pas de réseau » : la requête n'a pas pu aboutir (réseau coupé,
+// délai dépassé, ou réponse « Hors ligne » d'un ancien Service Worker).
+// À distinguer d'un refus du serveur, qui ne doit jamais être rejoué.
+function erreurReseau(table) {
+  var err = new Error('Pas de réseau (' + table + ')');
+  err.reseau = true;
+  return err;
 }
-async function sbInsert(table, data) {
-  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
-    method: 'POST', headers: sbH, body: JSON.stringify(data)
-  });
-  if (!res.ok) { var e = await res.text(); throw new Error('Insertion ' + table + ': ' + res.status + ' ' + e); }
-  return res.json();
+
+// fetch + lecture complète de la réponse, le tout limité à `ms`.
+async function requeteSupabase(url, options, ms, table) {
+  var ctrl  = new AbortController();
+  var timer = setTimeout(function () { ctrl.abort(); }, ms);
+  try {
+    var res   = await fetch(url, Object.assign({}, options, { signal: ctrl.signal }));
+    var texte = await res.text();
+    if (res.status === 503 && texte === 'Hors ligne') throw erreurReseau(table);
+    return { res: res, texte: texte };
+  } catch (e) {
+    if (e && e.reseau) throw e;
+    throw erreurReseau(table);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function sbSelect(table, filter) {
+  var r = await requeteSupabase(SUPABASE_URL + '/rest/v1/' + table + '?' + (filter || ''),
+    { headers: sbH }, DELAI_LECTURE_MS, table);
+  if (!r.res.ok) throw new Error('Lecture ' + table + ': ' + r.res.status);
+  return JSON.parse(r.texte);
+}
+// `options.sansRetour` : n'attend pas la ligne créée en réponse. Obligatoire
+// pour les tables sans droit de lecture (feedbacks) : demander la ligne en
+// retour y provoque un refus du serveur.
+async function sbInsert(table, data, options) {
+  var entetes = Object.assign({}, sbH);
+  if (options && options.sansRetour) entetes['Prefer'] = 'return=minimal';
+  var r = await requeteSupabase(SUPABASE_URL + '/rest/v1/' + table, {
+    method: 'POST', headers: entetes, body: JSON.stringify(data)
+  }, DELAI_ENVOI_MS, table);
+  if (!r.res.ok) {
+    var err = new Error('Insertion ' + table + ': ' + r.res.status + ' ' + r.texte);
+    err.statut = r.res.status;
+    throw err;
+  }
+  return r.texte ? JSON.parse(r.texte) : [];
 }
 // ═══════════ DONNEES ═══════════
 var lots = [], extractions = [];
@@ -101,11 +144,117 @@ function showOfflineBanner(visible) {
   el.classList.toggle('hidden', !visible);
 }
 
-// ─── Chargement Supabase ──────────────────────────────────────────────────
-async function chargerDonnees() {
+// ─── File d'envoi hors ligne ──────────────────────────────────────────────
+// Un lot (ou un ticket) validé sans réseau est gardé sur le téléphone, puis
+// envoyé automatiquement : à l'ouverture de l'appli, au retour du réseau et
+// à chaque rafraîchissement (2 min). Chaque élément garde son identifiant
+// d'origine : s'il est déjà arrivé en base (réponse perdue en route), le
+// serveur refuse le doublon et l'élément est simplement retiré de la file.
+// Les extractions n'y passent pas : elles se font à l'atelier, avec réseau.
+var CLE_FILE_ENVOI = 'duramen_file_envoi';
+var envoiFileEnCours = false;
+
+function lireFileEnvoi() {
+  try {
+    var f = JSON.parse(localStorage.getItem(CLE_FILE_ENVOI) || '[]');
+    return Array.isArray(f) ? f : [];
+  } catch (e) { return []; }
+}
+function ecrireFileEnvoi(f) {
+  localStorage.setItem(CLE_FILE_ENVOI, JSON.stringify(f));
+}
+function ajouterFileEnvoi(table, data, options) {
+  var f = lireFileEnvoi();
+  f.push({ table: table, data: data, sansRetour: !!(options && options.sansRetour) });
+  ecrireFileEnvoi(f);
+  mettreAJourBandeauEnvoi();
+}
+function retirerFileEnvoi(id) {
+  ecrireFileEnvoi(lireFileEnvoi().filter(function (it) { return !it.data || it.data.id !== id; }));
+}
+// Seuls les éléments de la commune connectée partent (le serveur refuserait
+// les autres) ; ceux d'une autre commune attendent sa reconnexion.
+function fileEnvoiCommune() {
+  if (!communeConnectee) return [];
+  return lireFileEnvoi().filter(function (it) {
+    return it.data && it.data.commune_code === communeConnectee.code;
+  });
+}
+
+function mettreAJourBandeauEnvoi() {
+  var f    = fileEnvoiCommune();
+  var el   = document.getElementById('envoi-attente-banner');
+  if (!f.length) { if (el) el.classList.add('hidden'); return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id        = 'envoi-attente-banner';
+    el.className = 'info-box';
+    var main = document.querySelector('main');
+    if (main) main.insertBefore(el, main.firstChild);
+  }
+  var nbLots    = f.filter(function (it) { return it.table === 'lots'; }).length;
+  var nbTickets = f.length - nbLots;
+  var parts = [];
+  if (nbLots)    parts.push(nbLots + (nbLots > 1 ? ' lots' : ' lot'));
+  if (nbTickets) parts.push(nbTickets + (nbTickets > 1 ? ' tickets' : ' ticket'));
+  el.textContent = '📤 ' + parts.join(' et ') + ' gardé' + (f.length > 1 ? 's' : '')
+    + ' sur ce téléphone — envoi automatique dès le retour du réseau.';
+  el.classList.remove('hidden');
+}
+
+// Envoie ce qui attend. Retourne le nombre d'éléments envoyés.
+// Ne lève jamais d'erreur.
+async function envoyerFileEnvoi() {
+  if (envoiFileEnCours) return 0;
+  var f = fileEnvoiCommune();
+  if (!f.length) { mettreAJourBandeauEnvoi(); return 0; }
+  envoiFileEnCours = true;
+  var nbLotsEnvoyes = 0, nbTicketsEnvoyes = 0;
+  try {
+    for (var i = 0; i < f.length; i++) {
+      var it = f[i];
+      try {
+        await sbInsert(it.table, it.data, { sansRetour: it.sansRetour });
+      } catch (err) {
+        if (err.reseau) break;                    // toujours pas de réseau : on réessaiera
+        // Code 23505 = cet identifiant est déjà en base (envoi précédent arrivé,
+        // réponse perdue en route) → considéré comme envoyé.
+        // Tout autre refus du serveur : on garde l'élément, sans bloquer la suite.
+        if (!(err.statut === 409 && /23505/.test(err.message))) continue;
+      }
+      retirerFileEnvoi(it.data.id);
+      if (it.table === 'lots') nbLotsEnvoyes++; else nbTicketsEnvoyes++;
+    }
+  } catch (e) {
+    // sécurité : la file reste en place pour le prochain essai
+  } finally {
+    envoiFileEnCours = false;
+    mettreAJourBandeauEnvoi();
+  }
+  if (nbLotsEnvoyes || nbTicketsEnvoyes) {
+    var msg = [];
+    if (nbLotsEnvoyes)    msg.push(nbLotsEnvoyes + (nbLotsEnvoyes > 1 ? ' lots envoyés' : ' lot envoyé'));
+    if (nbTicketsEnvoyes) msg.push(nbTicketsEnvoyes + (nbTicketsEnvoyes > 1 ? ' tickets envoyés' : ' ticket envoyé'));
+    showToastSucces('Réseau retrouvé : ' + msg.join(', ') + '.');
+  }
+  return nbLotsEnvoyes + nbTicketsEnvoyes;
+}
+
+// Retour du réseau : on vide la file puis on recharge le stock
+window.addEventListener('online', function () {
   if (!communeConnectee) return;
+  envoyerFileEnvoi().then(function () { chargerDonnees({ silencieux: true }); });
+});
+
+// ─── Chargement Supabase ──────────────────────────────────────────────────
+// `options.silencieux` : rafraîchissement automatique en arrière-plan.
+// Pas de voile « Chargement… » (il bloquerait l'écran en pleine saisie)
+// et pas de message d'erreur répété toutes les 2 minutes.
+async function chargerDonnees(options) {
+  if (!communeConnectee) return;
+  var silencieux = !!(options && options.silencieux);
   var code = encodeURIComponent(communeConnectee.code);
-  showLoading(true);
+  if (!silencieux) showLoading(true);
   try {
     var rawLots = await sbSelect('lots', 'commune_code=eq.' + code + '&order=created_at.desc');
     var rawExt  = await sbSelect('extractions', 'commune_code=eq.' + code + '&order=created_at.desc');
@@ -140,11 +289,11 @@ async function chargerDonnees() {
       mettreAJourAccueil();
       afficherHistorique();
       showOfflineBanner(true);
-    } else {
+    } else if (!silencieux) {
       showError('Erreur chargement : ' + err.message);
     }
   } finally {
-    showLoading(false);
+    if (!silencieux) showLoading(false);
   }
 }
 
@@ -1082,6 +1231,9 @@ function ouvrirApp() {
   initialiserPanelSaisie();
   captureGPS();
   chargerDonnees();
+  // Envoi de ce qui attend sur le téléphone ; si quelque chose est parti,
+  // on recharge le stock pour l'y faire apparaître.
+  envoyerFileEnvoi().then(function (nb) { if (nb) chargerDonnees({ silencieux: true }); });
   demarrerRafraichissement();
   mettreAJourAccueil();
   if (window.innerWidth <= 600) {
@@ -1609,12 +1761,23 @@ async function nouvConfirmer() {
 
   try {
     showLoading(true);
-    await sbInsert('lots', lot);
-    await chargerDonnees();
+    // Pas de réseau (ou réseau trop faible) : le lot est gardé sur le
+    // téléphone et partira tout seul au retour du réseau.
+    var envoye = true;
+    try {
+      await sbInsert('lots', lot);
+    } catch (errEnvoi) {
+      if (!errEnvoi.reseau) throw errEnvoi;
+      ajouterFileEnvoi('lots', lot);
+      envoye = false;
+    }
+    if (envoye) await chargerDonnees();
     nouvFermerModal();
     effacerBrouillonSaisie();
     // Toast de confirmation
-    var toast = cel('div', 'toast-succes', '"' + nom + '" sauvegardé — ' + volBrut.toFixed(3) + ' m³');
+    var toast = cel('div', 'toast-succes', envoye
+      ? '"' + nom + '" sauvegardé — ' + volBrut.toFixed(3) + ' m³'
+      : '"' + nom + '" gardé sur le téléphone — envoi automatique au retour du réseau');
     document.body.appendChild(toast);
     setTimeout(function () {
       toast.classList.add('hidden');
@@ -1846,18 +2009,29 @@ async function envoyerTicket() {
   var msg = document.getElementById('feedback-message');
   if (!feedbackTypeSelectionne) { showError('Choisissez un type de retour.'); return; }
   if (!msg || !msg.value.trim()) { showError('Le message ne peut pas être vide.'); return; }
+  var ticket = {
+    id: crypto.randomUUID(),
+    commune_code: communeConnectee.code,
+    commune: communeConnectee.nom,
+    type: feedbackTypeSelectionne,
+    message: msg.value.trim()
+  };
   try {
     showLoading(true);
-    await sbInsert('feedbacks', {
-      id: crypto.randomUUID(),
-      commune_code: communeConnectee.code,
-      commune: communeConnectee.nom,
-      type: feedbackTypeSelectionne,
-      message: msg.value.trim()
-    });
+    // sansRetour : la table feedbacks n'autorise pas la relecture
+    var envoye = true;
+    try {
+      await sbInsert('feedbacks', ticket, { sansRetour: true });
+    } catch (errEnvoi) {
+      if (!errEnvoi.reseau) throw errEnvoi;
+      ajouterFileEnvoi('feedbacks', ticket, { sansRetour: true });
+      envoye = false;
+    }
     showLoading(false);
     effacerTicket();
-    showToastSucces('Ticket envoyé. Merci pour votre retour !');
+    showToastSucces(envoye
+      ? 'Ticket envoyé. Merci pour votre retour !'
+      : 'Ticket gardé sur le téléphone — envoi automatique au retour du réseau.');
     retourAccueil();
   } catch(e) {
     showLoading(false);
@@ -1889,7 +2063,8 @@ var refreshTimer = null;
 function demarrerRafraichissement() {
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(function() {
-    if (communeConnectee) chargerDonnees();
+    if (!communeConnectee) return;
+    envoyerFileEnvoi().then(function () { chargerDonnees({ silencieux: true }); });
   }, 120000); // 120 000 ms = 2 minutes
 }
 
