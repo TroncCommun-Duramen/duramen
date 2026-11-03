@@ -86,7 +86,7 @@ Branche `feat/grumes` (3 nov. 2026) — demandes du porteur, points 1 à 8 + par
 | Supabase : `lots` → `grumes`, `grumes_partagees()`, nom unique par commune, partage par défaut, commune « Nantes Métropole » (NM) | ✅ Fait |
 | Session Feature : `core.js`, `app.js`, `bureau/app.js`, cache v43 | ✅ Fait (commit 7315960) |
 | Session Structure : `index.html` + `bureau/index.html` — « lot » → « grume » dans les textes fixes, mentions légales §5 (partage automatique), retrait des boutons « Grume brute » et des curseurs trait de scie / rendement du bureau, onglet bureau « métropole » | ✅ Fait (commit 60a80f7) |
-| Session Design : couleurs propres pour Chêne rouge, Chêne des marais, Cèdre (provisoirement `ec-autre`) | À faire |
+| Session Design : couleurs propres pour Chêne rouge, Chêne des marais, Cèdre — `core.js` pointe déjà vers `ec-chene-rouge`, `ec-chene-marais`, `ec-cedre` (classes à créer dans `ui.css`) | À faire |
 | Après fusion dans `main` : supprimer la passerelle (vue `lots`, fonction `lots_partages()`) et la colonne `extractions.cause_abattage` | À faire |
 | Point 9 — séparer le stock grumes brutes / session de coupe | Branche `feat/campagne-sciage` (voir ci-dessous) |
 

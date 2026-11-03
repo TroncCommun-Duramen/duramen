@@ -7,11 +7,11 @@ var DuramenCore = (function () {
   // Clés avec accents — obligatoire pour correspondre aux valeurs du formulaire
   var ESSENCES_INFO = {
     'Aulne':             { delta: 20, usage: 'Ébénisterie, tournage',               color: 'ec-aulne' },
-    'Cèdre':             { delta: 17, usage: 'Bardage, menuiserie, coffres',        color: 'ec-autre' },
+    'Cèdre':             { delta: 17, usage: 'Bardage, menuiserie, coffres',        color: 'ec-cedre' },
     'Châtaignier':       { delta: 18, usage: 'Piquets, charpente, lambris',         color: 'ec-chataignier' },
     'Chêne':             { delta: 20, usage: 'Mobilier, parquet, charpente',        color: 'ec-chene' },
-    'Chêne des marais':  { delta: 20, usage: 'Mobilier, parquet',                   color: 'ec-autre' },
-    'Chêne rouge':       { delta: 20, usage: 'Mobilier, parquet, menuiserie int.',  color: 'ec-autre' },
+    'Chêne des marais':  { delta: 20, usage: 'Mobilier, parquet',                   color: 'ec-chene-marais' },
+    'Chêne rouge':       { delta: 20, usage: 'Mobilier, parquet, menuiserie int.',  color: 'ec-chene-rouge' },
     'Cyprès':            { delta: 17, usage: 'Menuiserie ext., bardage',            color: 'ec-cypres' },
     'Douglas':           { delta: 16, usage: 'Charpente, bardage, terrasse',        color: 'ec-douglas' },
     'Épicéa':            { delta: 17, usage: 'Charpente légère, coffrage',          color: 'ec-epicea' },
