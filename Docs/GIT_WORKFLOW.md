@@ -56,14 +56,14 @@ git config --global user.name "TroncCommun-Duramen"
 
 ## Revenir à la version précédente en cas de gros bug
 
-Chaque grosse mise à jour pose une étiquette sur la version d'avant. On peut y revenir à tout moment.
+Avant chaque grosse mise à jour, une branche de sauvegarde garde la version d'avant. On peut y revenir à tout moment.
 
-| Étiquette | Version gardée |
+| Branche de sauvegarde | Version gardée |
 |-----------|----------------|
-| `avant-fusion-2026-11-03` | `main` au 31 oct. 2026, avant grumes / campagne de sciage / envoi hors ligne |
+| `sauvegarde/avant-fusion-2026-11-03` | `main` au 31 oct. 2026, avant grumes / campagne de sciage / envoi hors ligne |
 
 **Le plus simple — demander à Claude :**
-> « Annule la fusion du 3 novembre : reviens à l'étiquette `avant-fusion-2026-11-03`. »
+> « Annule la fusion du 3 novembre : reviens à la branche de sauvegarde `sauvegarde/avant-fusion-2026-11-03`. »
 
 **À la main :**
 ```bash

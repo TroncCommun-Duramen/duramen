@@ -16,7 +16,7 @@
 - `refactor(bureau)` — Fonction et table de couleurs inutilisées retirées.
 - `style(ui)` — 31 classes inutilisées retirées de `ui.css`, 75 de `bureau/ui.css`. Rendu identique, vérifié écran par écran.
 - `fix(sw)` — Cache incrémenté duramen-v52 → duramen-v53.
-- Point de retour : étiquette `avant-fusion-2026-11-03` (voir GIT_WORKFLOW.md).
+- Point de retour : branche de sauvegarde `sauvegarde/avant-fusion-2026-11-03` (voir GIT_WORKFLOW.md).
 
 ---
 

@@ -79,7 +79,7 @@
 | Scan avant fusion : syntaxe, liens HTML/JS/CSS, noyau figé intact, champs envoyés = colonnes Supabase, sécurité par commune active sur toutes les tables ✅ | toute l'application + Supabase | 3 novembre 2026 |
 | Nettoyage : restes de l'ancien débit en planches (mobile), fonction et couleurs inutilisées (bureau), 31 classes inutilisées (`ui.css`), 75 classes inutilisées (`bureau/ui.css`). Testé dans un navigateur avant/après : 20 écrans identiques au pixel près, aucune erreur ✅ | `app.js`, `bureau/app.js`, `ui.css`, `bureau/ui.css` | 3 novembre 2026 |
 | Cache SW incrémenté `duramen-v52` → `duramen-v53` ✅ | `sw.js` | 3 novembre 2026 |
-| Point de retour : étiquette `avant-fusion-2026-11-03` sur l'ancienne version de `main` (procédure dans GIT_WORKFLOW.md) ✅ | GitHub | 3 novembre 2026 |
+| Point de retour : branche de sauvegarde `sauvegarde/avant-fusion-2026-11-03` sur l'ancienne version de `main` (procédure dans GIT_WORKFLOW.md) ✅ | GitHub | 3 novembre 2026 |
 
 ---
 
