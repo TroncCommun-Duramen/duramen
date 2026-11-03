@@ -39,7 +39,7 @@
       <div class="b-stat-sub b-stat-sub-green" id="b-stat-delta">—</div>
     </div>
     <div class="b-stat-block">
-      <div class="b-stat-lbl">LOTS ACTIFS</div>
+      <div class="b-stat-lbl">GRUMES ACTIVES</div>
       <div class="b-stat-val" id="b-stat-lots">—</div>
       <div class="b-stat-sub" id="b-stat-essences">—</div>
     </div>
@@ -59,7 +59,7 @@
   <!-- TABS (sticky) -->
   <nav class="b-tabs">
     <button class="b-tab active" id="b-tab-commune"   onclick="bSwitchTab('commune')">Commune — <span id="b-tab-commune-nom">—</span></button>
-    <button class="b-tab"        id="b-tab-metropole" onclick="bSwitchTab('metropole')">Nantes Métropole</button>
+    <button class="b-tab"        id="b-tab-metropole" onclick="bSwitchTab('metropole')">métropole</button>
     <button class="b-tab"        id="b-tab-export"    onclick="bSwitchTab('export')">Export</button>
     <button class="b-tab b-tab-feedback" id="b-tab-feedback" onclick="bSwitchTab('feedback')">📋 Ticket retour</button>
   </nav>
@@ -81,11 +81,11 @@
             </div>
             <div class="b-commune-donut-legende" id="b-commune-donut-legende"></div>
           </div>
-          <div class="b-section-lbl b-section-lbl-mt">DERNIERS LOTS ENREGISTRÉS</div>
+          <div class="b-section-lbl b-section-lbl-mt">DERNIÈRES GRUMES ENREGISTRÉES</div>
           <div class="b-table-wrap">
             <table class="b-table" id="b-lots-table">
               <thead>
-                <tr><th></th><th>Nom du lot</th><th>Essence</th><th>Volume</th><th>Provenance</th><th>Date</th></tr>
+                <tr><th></th><th>Grume</th><th>Essence</th><th>Volume</th><th>Provenance</th><th>Date</th></tr>
               </thead>
               <tbody id="b-lots-tbody"></tbody>
             </table>
@@ -112,7 +112,7 @@
       </div><!-- fin commune-layout -->
     </div><!-- fin panel-commune -->
 
-    <!-- ══ NANTES MÉTROPOLE ══ -->
+    <!-- ══ MÉTROPOLE ══ -->
     <div class="b-panel" id="b-panel-metropole">
       <div class="b-metro-topbar">
         <span class="b-metro-lecture">Lecture seule — aucune extraction ni ajout depuis cette vue</span>
@@ -141,7 +141,7 @@
           <div class="b-table-wrap">
             <table class="b-table" id="b-metro-table">
               <thead>
-                <tr><th>Commune</th><th>Essence</th><th>Volume</th><th>Lots</th></tr>
+                <tr><th>Commune</th><th>Essence</th><th>Volume</th><th>Grumes</th></tr>
               </thead>
               <tbody id="b-metro-tbody"></tbody>
             </table>
@@ -160,7 +160,7 @@
             <div class="b-field-lbl">SOURCE</div>
             <select class="b-select-filtre" id="b-exp-source">
               <option value="commune">Ma commune uniquement</option>
-              <option value="metropole">Nantes Métropole (partagés)</option>
+              <option value="metropole">métropole (toutes les communes)</option>
             </select>
           </div>
         </div>
@@ -245,14 +245,13 @@
       <div class="b-mext-chips" id="b-mext-chips"></div>
       <div class="b-mext-section-lbl">Type de valorisation</div>
       <div class="b-type-toggle">
-        <button class="b-type-btn" id="b-mext-type-brute" onclick="bMextSetType('brute')">Grume brute</button>
-        <button class="b-type-btn active" id="b-mext-type-planches" onclick="bMextSetType('planches')">Débit en planches</button>
+        <button class="b-type-btn active" id="b-mext-type-planches">Débit en planches</button>
       </div>
       <div class="b-type-desc" id="b-mext-type-desc">
         <span class="b-type-desc-icon">🪚</span>
         <div class="b-type-desc-txt">
           <strong id="b-mext-type-desc-titre">Débit en planches</strong>
-          <span id="b-mext-type-desc-body">Calcul du volume utile et du déchet selon l'épaisseur de planche, le trait de scie et le rendement géométrique.</span>
+          <span id="b-mext-type-desc-body">Calcul du volume utile et du déchet selon l'épaisseur de planche.</span>
         </div>
       </div>
       <div class="b-mext-nav">
@@ -269,14 +268,6 @@
         <div class="b-slider-row">
           <div class="b-slider-head"><div class="b-slider-lbl">Épaisseur planche</div><div class="b-slider-val" id="b-mext-val-ep">27 mm</div></div>
           <input type="range" class="b-slider" min="15" max="60" value="27" id="b-mext-sl-ep" oninput="bMextMajSlider('b-mext-val-ep',this.value,'mm');bMextMajVol()">
-        </div>
-        <div class="b-slider-row">
-          <div class="b-slider-head"><div class="b-slider-lbl">Trait de scie</div><div class="b-slider-val" id="b-mext-val-ts">3 mm</div></div>
-          <input type="range" class="b-slider" min="2" max="8" value="3" id="b-mext-sl-ts" oninput="bMextMajSlider('b-mext-val-ts',this.value,'mm');bMextMajVol()">
-        </div>
-        <div class="b-slider-row">
-          <div class="b-slider-head"><div class="b-slider-lbl">Rendement géom.</div><div class="b-slider-val" id="b-mext-val-rg">50 %</div></div>
-          <input type="range" class="b-slider" min="30" max="80" value="50" id="b-mext-sl-rg" oninput="bMextMajSlider('b-mext-val-rg',this.value,' %');bMextMajVol()">
         </div>
         <div class="b-formule-lin">
           <span class="b-voir-formule">Voir la formule</span>
