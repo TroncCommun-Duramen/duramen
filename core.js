@@ -7,8 +7,11 @@ var DuramenCore = (function () {
   // Clés avec accents — obligatoire pour correspondre aux valeurs du formulaire
   var ESSENCES_INFO = {
     'Aulne':             { delta: 20, usage: 'Ébénisterie, tournage',               color: 'ec-aulne' },
+    'Cèdre':             { delta: 17, usage: 'Bardage, menuiserie, coffres',        color: 'ec-autre' },
     'Châtaignier':       { delta: 18, usage: 'Piquets, charpente, lambris',         color: 'ec-chataignier' },
     'Chêne':             { delta: 20, usage: 'Mobilier, parquet, charpente',        color: 'ec-chene' },
+    'Chêne des marais':  { delta: 20, usage: 'Mobilier, parquet',                   color: 'ec-autre' },
+    'Chêne rouge':       { delta: 20, usage: 'Mobilier, parquet, menuiserie int.',  color: 'ec-autre' },
     'Cyprès':            { delta: 17, usage: 'Menuiserie ext., bardage',            color: 'ec-cypres' },
     'Douglas':           { delta: 16, usage: 'Charpente, bardage, terrasse',        color: 'ec-douglas' },
     'Épicéa':            { delta: 17, usage: 'Charpente légère, coffrage',          color: 'ec-epicea' },
@@ -18,8 +21,7 @@ var DuramenCore = (function () {
     'Merisier':          { delta: 25, usage: 'Ébénisterie fine, veneer',            color: 'ec-merisier' },
     'Noyer':             { delta: 25, usage: 'Ébénisterie, mobilier luxe',          color: 'ec-noyer' },
     'Peuplier':          { delta: 22, usage: 'Caisserie, contrepl.',                color: 'ec-peuplier' },
-    'Pin maritime':      { delta: 18, usage: 'Charpente, emballage',                color: 'ec-pin-m' },
-    'Pin sylvestre':     { delta: 18, usage: 'Charpente, menuiserie int.',          color: 'ec-pin-s' },
+    'Pin':               { delta: 18, usage: 'Charpente, menuiserie int.',          color: 'ec-pin-m' },
     'Platane':           { delta: 20, usage: 'Ébénisterie, parquet, lambris',       color: 'ec-platane' },
     'Robinier (Acacia)': { delta: 15, usage: 'Poteaux, terrasse, ext.',             color: 'ec-robinier' },
     'Séquoia':           { delta: 15, usage: 'Bardage, mobilier jardin',            color: 'ec-sequoia' },
@@ -29,6 +31,41 @@ var DuramenCore = (function () {
 
   // Épaisseur du trait de scie, en mm (constante métier)
   var TRAIT_SCIE_MM = 3;
+
+  // Rendement géométrique du débit en planches (constante métier, 50 %)
+  var RENDEMENT_GEOM = 0.5;
+
+  // Ordre d'affichage des essences : les plus présentes sur le territoire
+  // d'abord, puis ordre alphabétique. « Autre » reste en dernier.
+  var ESSENCES_ORDRE = [
+    'Chêne', 'Chêne rouge', 'Frêne', 'Platane', 'Pin', 'Chêne des marais', 'Cèdre',
+    'Aulne', 'Châtaignier', 'Cyprès', 'Douglas', 'Épicéa', 'Hêtre', 'Mélèze',
+    'Merisier', 'Noyer', 'Peuplier', 'Robinier (Acacia)', 'Séquoia', 'Tilleul',
+    'Autre'
+  ];
+
+  // Préfixe des noms de grume par commune (ex. VER-0001).
+  // VER, BOU, NAN, ORV, SEB et NM fixés par le porteur de projet ;
+  // les autres : 3 lettres, sans article ni « Saint », toutes différentes.
+  var PREFIXES_COMMUNES = {
+    'Basse-Goulaine': 'BAS', 'Bouaye': 'BOA', 'Bouguenais': 'BOU',
+    'Brains': 'BRA', 'Carquefou': 'CAR', 'Couëron': 'COU', 'Indre': 'IND',
+    'La Chapelle-sur-Erdre': 'CHA', 'La Montagne': 'MON', 'Le Pellerin': 'PEL',
+    'Les Sorinières': 'SOR', 'Mauves-sur-Loire': 'MAU', 'Nantes': 'NAN',
+    'Nantes Métropole': 'NM', 'Orvault': 'ORV', 'Rezé': 'REZ',
+    'Saint-Aignan-Grandlieu': 'AIG', 'Saint-Herblain': 'HER',
+    'Saint-Jean-de-Boiseau': 'JEA', 'Saint-Léger-les-Vignes': 'LEG',
+    'Saint-Sébastien-sur-Loire': 'SEB', 'Sainte-Luce-sur-Loire': 'LUC',
+    'Sautron': 'SAU', 'Thouaré-sur-Loire': 'THO', 'Tronc Commun': 'TC',
+    'Vertou': 'VER'
+  };
+
+  // Préfixe d'une commune ; à défaut, ses 3 premières lettres en majuscules.
+  function prefixeCommune(nomCommune) {
+    if (PREFIXES_COMMUNES[nomCommune]) return PREFIXES_COMMUNES[nomCommune];
+    return String(nomCommune || '').normalize('NFD').replace(/[^A-Za-z]/g, '')
+      .slice(0, 3).toUpperCase();
+  }
 
   // ─── Calcul des volumes ──────────────────────────────────────────────────
   // Formule DURAMEN : V_débité = V_brut × 0.55 × (e / (e + trait_scie))
@@ -157,6 +194,10 @@ var DuramenCore = (function () {
   // ─── API publique ─────────────────────────────────────────────────────────
   return {
     ESSENCES_INFO:   ESSENCES_INFO,
+    ESSENCES_ORDRE:  ESSENCES_ORDRE,
+    TRAIT_SCIE_MM:   TRAIT_SCIE_MM,
+    RENDEMENT_GEOM:  RENDEMENT_GEOM,
+    prefixeCommune:  prefixeCommune,
     calculerVolumes: calculerVolumes,
     getStock:        getStock,
     getHistorique:   getHistorique,

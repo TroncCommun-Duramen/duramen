@@ -137,10 +137,10 @@ async function bChargerDonnees() {
   try {
     var code = encodeURIComponent(bCommune.code);
     var r = await Promise.all([
-      bSbSelect('lots',        'commune_code=eq.' + code + '&order=created_at.desc'),
+      bSbSelect('grumes',      'commune_code=eq.' + code + '&order=created_at.desc'),
       bSbSelect('extractions', 'commune_code=eq.' + code + '&order=created_at.desc'),
-      // A12 : sans le code d'accès secret des communes
-      bSbSelect('rpc/lots_partages', '')
+      // Grumes de toutes les communes, sans leur code d'accès secret
+      bSbSelect('rpc/grumes_partagees', '')
     ]);
     lots        = r[0] || [];
     extractions = r[1] || [];
@@ -185,7 +185,7 @@ function bMettreAJourHeader() {
   var volMetro = bLotsMetro.reduce(function(s, l) { return s + (l.vol_utile || 0); }, 0);
   var commUniq = bLotsMetro.map(function(l) { return l.commune; }).filter(function(v, i, a) { return a.indexOf(v) === i; }).length;
   document.getElementById('b-stat-metro').textContent        = volMetro.toFixed(1) + ' m³';
-  document.getElementById('b-stat-metro-detail').textContent = commUniq + ' commune' + (commUniq > 1 ? 's' : '') + ' · ' + bLotsMetro.length + ' lots';
+  document.getElementById('b-stat-metro-detail').textContent = commUniq + ' commune' + (commUniq > 1 ? 's' : '') + ' · ' + bLotsMetro.length + ' grume' + (bLotsMetro.length > 1 ? 's' : '');
 }
 
 function bMettreAJourFooter() {
@@ -194,7 +194,7 @@ function bMettreAJourFooter() {
   var stock = DuramenCore.getStock();
   var vol   = Object.values(stock).reduce(function(s, v) { return s + v.dispo; }, 0);
   var volM  = bLotsMetro.reduce(function(s, l) { return s + (l.vol_utile || 0); }, 0);
-  var labels = { commune: 'Commune — ' + (bCommune ? bCommune.nom : ''), metropole: 'Nantes Métropole', export: 'Export', feedback: 'Ticket retour' };
+  var labels = { commune: 'Commune — ' + (bCommune ? bCommune.nom : ''), metropole: 'métropole', export: 'Export', feedback: 'Ticket retour' };
   document.getElementById('b-footer-gauche').textContent  = 'Feuille ' + n + ' sur 4 · ' + (labels[bOnglet] || '');
   document.getElementById('b-footer-droite').textContent  = 'Stock : ' + vol.toFixed(1) + ' m³ · Métropole : ' + volM.toFixed(1) + ' m³';
 }
@@ -320,7 +320,7 @@ function bAfficherTableLots() {
   // Ligne header
   var trH = document.createElement('tr');
   trH.className = 'b-tr-header';
-  ['', 'Lots actifs — ' + bCommune.nom, '', '', '', ''].forEach(function(t, i) {
+  ['', 'Grumes actives — ' + bCommune.nom, '', '', '', ''].forEach(function(t, i) {
     var td = document.createElement('td'); td.colSpan = i === 1 ? 5 : 1; td.textContent = t; trH.appendChild(td);
   });
   tbody.appendChild(trH);
@@ -407,7 +407,7 @@ function bAfficherMetropole() {
   var trH = document.createElement('tr');
   trH.className = 'b-tr-header';
   var tdH = document.createElement('td'); tdH.colSpan = 4;
-  tdH.textContent = 'Nantes Métropole — ' + nbComm + ' commune' + (nbComm > 1 ? 's' : '') + ' · ' + rows.length + ' ligne' + (rows.length > 1 ? 's' : '');
+  tdH.textContent = 'métropole — ' + nbComm + ' commune' + (nbComm > 1 ? 's' : '') + ' · ' + rows.length + ' ligne' + (rows.length > 1 ? 's' : '');
   trH.appendChild(tdH);
   tbody.appendChild(trH);
 
@@ -430,7 +430,7 @@ function bAfficherMetropole() {
     tr.appendChild(tdV);
     // td4 — lots
     var tdL = document.createElement('td');
-    var lotsSpan = document.createElement('span'); lotsSpan.style.color = 'var(--cendre)'; lotsSpan.textContent = row.lots + ' lot' + (row.lots > 1 ? 's' : ''); tdL.appendChild(lotsSpan);
+    var lotsSpan = document.createElement('span'); lotsSpan.style.color = 'var(--cendre)'; lotsSpan.textContent = row.lots + ' grume' + (row.lots > 1 ? 's' : ''); tdL.appendChild(lotsSpan);
     tr.appendChild(tdL);
     tbody.appendChild(tr);
   });
@@ -554,7 +554,7 @@ function bExportSelection() {
 }
 
 function bCsvTelecharger(nom, data) {
-  var entetes = ['Commune', 'Nom du lot', 'Essence', 'Date', 'Provenance', 'Cause', 'Nb grumes', 'Vol. brut m3', 'Partage avec NM'];
+  var entetes = ['Commune', 'Grume', 'Essence', 'Date', 'Provenance', 'Cause', 'Nb grumes', 'Vol. brut m3'];
   var lignes = data.map(function(l) {
     var date = l.date || (l.created_at ? new Date(l.created_at).toLocaleDateString('fr-FR') : '');
     return [
@@ -565,12 +565,11 @@ function bCsvTelecharger(nom, data) {
       '"' + String(l.provenance || '').replace(/"/g, '""') + '"',
       '"' + String(l.cause || '').replace(/"/g, '""') + '"',
       l.nb_grumes || 0,
-      (l.vol_brut || 0).toFixed(3).replace('.', ','),
-      '"' + (l.partage ? 'Oui' : 'Non') + '"'
+      (l.vol_brut || 0).toFixed(3).replace('.', ',')
     ];
   });
   var totalVolBrut = data.reduce(function(s, l) { return s + (l.vol_brut || 0); }, 0);
-  var ligneTotal = ['"TOTAL"', '""', '""', '""', '""', '""', '', totalVolBrut.toFixed(3).replace('.', ','), '""'];
+  var ligneTotal = ['"TOTAL"', '""', '""', '""', '""', '""', '', totalVolBrut.toFixed(3).replace('.', ',')];
   var bom = '﻿';
   var csv = bom + entetes.join(';') + '\n'
     + lignes.map(function(l) { return l.join(';'); }).join('\n')
@@ -696,6 +695,8 @@ function bMextInitChips() {
 }
 
 function bMextSetType(type) {
+  // « Grume brute » retirée : l'extraction est toujours un débit en planches
+  type = 'planches';
   bExtType = type;
   document.getElementById('b-mext-type-brute').classList.toggle('active',   type === 'brute');
   document.getElementById('b-mext-type-planches').classList.toggle('active', type === 'planches');
@@ -708,7 +709,7 @@ function bMextSetType(type) {
     if (icon)  icon.textContent  = '🌳';
   } else {
     if (titre) titre.textContent = 'Débit en planches';
-    if (body)  body.textContent  = 'Calcul du volume utile et du déchet selon l\'épaisseur de planche, le trait de scie et le rendement géométrique.';
+    if (body)  body.textContent  = 'Calcul du volume utile et du déchet selon l\'épaisseur de planche.';
     if (icon)  icon.textContent  = '🪚';
   }
 }
@@ -773,11 +774,7 @@ function bMextInitGrumes() {
   if (blocUtile) blocUtile.style.display = bExtType === 'planches' ? '' : 'none';
   if (blocDec)   blocDec.style.display   = bExtType === 'planches' ? '' : 'none';
   document.getElementById('b-mext-sl-ep').value = 27;
-  document.getElementById('b-mext-sl-ts').value = 3;
-  document.getElementById('b-mext-sl-rg').value = 50;
   document.getElementById('b-mext-val-ep').textContent = '27 mm';
-  document.getElementById('b-mext-val-ts').textContent = '3 mm';
-  document.getElementById('b-mext-val-rg').textContent = '50 %';
   document.getElementById('b-mext-val-lin').textContent = '—';
   document.getElementById('b-mext-v-ext').textContent  = '—';
   document.getElementById('b-mext-v-util').textContent = '—';
@@ -799,8 +796,8 @@ function bMextMajVol() {
     return;
   }
   var ep   = parseInt(document.getElementById('b-mext-sl-ep').value);
-  var ts   = parseInt(document.getElementById('b-mext-sl-ts').value);
-  var rg   = parseInt(document.getElementById('b-mext-sl-rg').value) / 100;
+  var ts   = DuramenCore.TRAIT_SCIE_MM;
+  var rg   = DuramenCore.RENDEMENT_GEOM;
   var util = volBrut * rg * (ep / (ep + ts));
   document.getElementById('b-mext-v-util').textContent = util.toFixed(3);
   document.getElementById('b-mext-v-dec').textContent  = (volBrut - util).toFixed(3);
@@ -822,8 +819,8 @@ async function bMextConfirmer() {
   var lieu    = document.getElementById('b-mext-lieu').value.trim();
   var comm    = bCommune ? bCommune.nom : '';
   var ep      = parseInt(document.getElementById('b-mext-sl-ep').value);
-  var ts      = parseInt(document.getElementById('b-mext-sl-ts').value);
-  var rg      = parseInt(document.getElementById('b-mext-sl-rg').value) / 100;
+  var ts      = DuramenCore.TRAIT_SCIE_MM;
+  var rg      = DuramenCore.RENDEMENT_GEOM;
   var volUtil  = bExtType === 'planches' ? volBrut * rg * (ep / (ep + ts)) : volBrut;
   var lineaire = bExtType === 'planches' ? volUtil * 5000 / ep : 0;
   var dest = [projet, comm, lieu].filter(Boolean).join(' · ') || '—';
