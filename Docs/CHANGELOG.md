@@ -5,6 +5,21 @@
 
 ---
 
+## 3 novembre 2026
+
+### Grumes, campagne de sciage, envoi hors ligne — fusion dans `main`
+- `feat(grumes)` — Une saisie = une grume, nommée par commune (VER-0001…). Partage automatique.
+- `feat(sciage)` — Campagne de sciage, feuille de débit, clôture, stock de produits sciés.
+- `feat(extraction)` — Sortie de produits sciés. La grume brute reste possible en exception.
+- `fix(hors-ligne)` — File d'envoi : les grumes et tickets saisis sans réseau partent au retour du réseau.
+- `refactor(extraction)` — Restes de l'ancien débit en planches retirés (mobile).
+- `refactor(bureau)` — Fonction et table de couleurs inutilisées retirées.
+- `style(ui)` — 31 classes inutilisées retirées de `ui.css`, 75 de `bureau/ui.css`. Rendu identique, vérifié écran par écran.
+- `fix(sw)` — Cache incrémenté duramen-v52 → duramen-v53.
+- Point de retour : étiquette `avant-fusion-2026-11-03` (voir GIT_WORKFLOW.md).
+
+---
+
 ## 31 octobre 2026
 
 ### Préparation du lancement auprès des communes

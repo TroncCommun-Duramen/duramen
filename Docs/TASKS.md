@@ -74,41 +74,23 @@
 | Cache SW incrémenté `duramen-v40` → `duramen-v41` ✅ | `sw.js` | 31 octobre 2026 |
 | A12 (partie 1) — Code secret masqué au partage : les lots partagés sont lus par la fonction `lots_partages()` (security definer), qui ne renvoie jamais `commune_code` et exclut les communes de test. Mobile et bureau l'utilisent. La policy `lots_select` ne laisse plus lire que ses propres lots. Testé : une commune lit les lots partagés des autres sans leur code ✅ | Supabase + `app.js` + `bureau/app.js` | 31 octobre 2026 |
 | Cache SW incrémenté `duramen-v41` → `duramen-v42` ✅ | `sw.js` | 31 octobre 2026 |
+| **Grumes, campagne de sciage, envoi hors ligne — fusion du 3 novembre 2026** | | |
+| Branches `fix/envoi-hors-ligne`, `feat/grumes` et `feat/campagne-sciage` fusionnées dans `main`. Une saisie = une grume (VER-0000), partage automatique, campagne de sciage, feuille de débit, stock produits, sortie de produits sciés, file d'envoi hors ligne ✅ | toute l'application + Supabase | 3 novembre 2026 |
+| Scan avant fusion : syntaxe, liens HTML/JS/CSS, noyau figé intact, champs envoyés = colonnes Supabase, sécurité par commune active sur toutes les tables ✅ | toute l'application + Supabase | 3 novembre 2026 |
+| Nettoyage : restes de l'ancien débit en planches (mobile), fonction et couleurs inutilisées (bureau), 31 classes inutilisées (`ui.css`), 75 classes inutilisées (`bureau/ui.css`). Testé dans un navigateur avant/après : 20 écrans identiques au pixel près, aucune erreur ✅ | `app.js`, `bureau/app.js`, `ui.css`, `bureau/ui.css` | 3 novembre 2026 |
+| Cache SW incrémenté `duramen-v52` → `duramen-v53` ✅ | `sw.js` | 3 novembre 2026 |
+| Point de retour : étiquette `avant-fusion-2026-11-03` sur l'ancienne version de `main` (procédure dans GIT_WORKFLOW.md) ✅ | GitHub | 3 novembre 2026 |
 
 ---
 
 ## Tâches en cours
 
-Branche `feat/grumes` (3 nov. 2026) — demandes du porteur, points 1 à 8 + partage automatique :
+Suites de la fusion du 3 nov. 2026 :
 
 | Étape | État |
 |-------|------|
-| Supabase : `lots` → `grumes`, `grumes_partagees()`, nom unique par commune, partage par défaut, commune « Nantes Métropole » (NM) | ✅ Fait |
-| Session Feature : `core.js`, `app.js`, `bureau/app.js`, cache v43 | ✅ Fait (commit 7315960) |
-| Session Structure : `index.html` + `bureau/index.html` — « lot » → « grume » dans les textes fixes, mentions légales §5 (partage automatique), retrait des boutons « Grume brute » et des curseurs trait de scie / rendement du bureau, onglet bureau « métropole » | ✅ Fait (commit 60a80f7) |
-| Session Design : couleurs propres pour Chêne rouge, Chêne des marais, Cèdre — `core.js` pointe déjà vers `ec-chene-rouge`, `ec-chene-marais`, `ec-cedre` (classes à créer dans `ui.css`) | À faire |
-| Après fusion dans `main` : supprimer la passerelle (vue `lots`, fonction `lots_partages()`) et la colonne `extractions.cause_abattage` | À faire |
-| Point 9 — séparer le stock grumes brutes / session de coupe | Branche `feat/campagne-sciage` (voir ci-dessous) |
-
-Branche `feat/campagne-sciage` (partie de `feat/grumes`, 3 nov. 2026) :
-
-| Étape | État |
-|-------|------|
-| 1. Supabase : table `campagnes`, colonnes `extractions.produits` / `vol_produits` / `campagne_id`, verrous serveur (grume sortie une seule fois, stock produits), fonctions métropole `grumes_en_stock_partagees()` et `produits_partages()` | ✅ Fait, testé en SQL puis annulé |
-| 2. Feature : badge d'urgence de débit, campagne, feuille de débit, clôture, stock produits | ✅ Fait (cache v47), testé navigateur (Supabase simulé) + envois rejoués en SQL |
-| 3. Feature : écran Extraction → produits sciés (grume brute en exception, hors campagne en cours) | ✅ Fait (cache v49), testé navigateur (Supabase simulé) |
-| 4a. Structure : accueil « m³ en grumes brutes », bouton « Sortir des produits bois » | ✅ Fait (cache v50) |
-| 4b. Design | À faire |
-
-Classes CSS créées par l'étape 2, à styler en session Design (aujourd'hui sans style propre) :
-- badges : `badge-urgence-ok` (indigo : valeur calculée), `badge-urgence-alerte` (orange), `badge-urgence-depasse` (rouge), `badge-a-debiter`, `badge-sechage-en-cours`, `badge-sechage-sec`
-- campagne : `stock-etat-bar`, `sciage-section`, `sciage-campagne-card`, `sciage-campagne-actions`, `sciage-btn-nouvelle`, `sciage-btn-supprimer`, `sciage-modal`, `sciage-grume-row`, `sciage-grume-check`, `sciage-choix`, `sciage-type-bar`, `sciage-estimation` (indigo : valeur calculée), `sciage-resume`
-- clôture : `sciage-cloture-grume`, `sciage-realise`, `sciage-produits`, `sciage-produit-ligne`, `sciage-btn-ajouter`, `sciage-btn-retirer`
-- stock produits : `produit-card`
-- extraction : `ext-mode-bar`, `ext-produits-liste`, `ext-produit-card` (+ `.selected`), `ext-qte`, `ext-qte-btn`, `ext-qte-input`, `ext-qte-tout`
-- feuille de débit : `feuille-debit`, `feuille-table`, `feuille-pied`, `feuille-impression` (version imprimée)
-
-Hors périmètre pour l'instant : la version bureau (`bureau/app.js`) ne connaît pas encore les campagnes ni le stock produits.
+| Garder la passerelle Supabase (vue `lots`, fonction `lots_partages()`, colonne `extractions.cause_abattage`) tant que la nouvelle version n'est pas validée sur le terrain : c'est elle qui permet de revenir à l'ancienne version. Ensuite, la supprimer | En attente de validation terrain |
+| Version bureau : elle ne connaît pas encore les campagnes ni le stock produits. Elle compte une grume sciée comme encore en stock et propose à l'extraction une grume déjà prévue dans une campagne. À aligner sur le mobile (lié à A15) | À faire — **Haute** |
 
 ---
 
