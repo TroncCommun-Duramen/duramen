@@ -6,6 +6,26 @@
 
 ---
 
+## Session 3 novembre 2026 (soir) — Campagne de sciage (branche `feat/campagne-sciage`)
+
+Décisions du porteur :
+- **Stock en deux états** : grumes brutes, puis produits bois. La feuille de débit (campagne de sciage) fait le passage de l'un à l'autre.
+- **Campagne** : on choisit des grumes, chacune en **plot** (épaisseur standard 27/41/54/65/80 mm, nombre de planches estimé) ou en **avivé** (section en saisie libre). Feuille imprimable « Demandé / Réalisé ». À la clôture, la colonne « Réalisé » est pré-remplie avec le demandé : on ne corrige que les écarts. QR code optionnel, plus tard.
+- **Clôture uniquement avec réseau** (un seul envoi : tout passe ou rien).
+- **Badge d'urgence de débit** : date de saisie + durée max en grume (tableau FIBOIS : 1 mois / 6 mois / 1 an). Orange à 75 % du délai, rouge au-delà. Essences absentes du tableau : 1 mois.
+- **Séchage** : règle unique **1 an par cm** de la plus petite cote, depuis la date de sciage. Libellé « Sec à l'air ». Calculé, jamais enregistré (règle ajustable plus tard).
+- **Extraction** : on sort des **produits sciés** ; la grume brute reste possible en exception (rondins, pas japonais).
+- Statuts grume (brute / à débiter / débitée) **calculés**, jamais enregistrés.
+
+Modèle de données (Supabase, ajouts uniquement) :
+- `campagnes` : `lignes` (jsonb) = choix de débit par grume. Ajout/suppression seulement ; une campagne clôturée ne peut plus être supprimée.
+- `extractions.type_sortie` : `sciage` (grume → produits réels dans `produits`), `produit` (sortie de produits : `produits` = [{cle, quantite, volume}], **volume = 0** imposé pour ne pas retirer deux fois le bois du stock de grumes ; volume réel dans `vol_produits`), `grume brute`, `debit` (ancien).
+- Clé d'un produit : `<id extraction sciage>_<position>`.
+- Verrou `trg_verifier_cles` : une grume ne sort qu'une fois ; on ne sort pas plus de produits qu'il n'en reste.
+- Métropole : `grumes_en_stock_partagees()` (grumes non sorties) et `produits_partages()` (produits restants). `grumes_partagees()` inchangée.
+
+Point repéré : le document `SECHAGE_essences.md` confond semaines et mois dans ses tableaux de durée (ex. 27 mm feuillus durs : « 13–14 mois » = 5 sem/cm × 2,7 cm en semaines).
+
 ## Session 3 novembre 2026 — Le lot devient la grume (branche `feat/grumes`)
 
 Décisions du porteur :

@@ -88,7 +88,16 @@ Branche `feat/grumes` (3 nov. 2026) — demandes du porteur, points 1 à 8 + par
 | Session Structure : `index.html` + `bureau/index.html` — « lot » → « grume » dans les textes fixes, mentions légales §5 (partage automatique), retrait des boutons « Grume brute » et des curseurs trait de scie / rendement du bureau, onglet bureau « métropole » | À faire |
 | Session Design : couleurs propres pour Chêne rouge, Chêne des marais, Cèdre (provisoirement `ec-autre`) | À faire |
 | Après fusion dans `main` : supprimer la passerelle (vue `lots`, fonction `lots_partages()`) et la colonne `extractions.cause_abattage` | À faire |
-| Point 9 — séparer le stock grumes brutes / session de coupe | Session dédiée |
+| Point 9 — séparer le stock grumes brutes / session de coupe | Branche `feat/campagne-sciage` (voir ci-dessous) |
+
+Branche `feat/campagne-sciage` (partie de `feat/grumes`, 3 nov. 2026) :
+
+| Étape | État |
+|-------|------|
+| 1. Supabase : table `campagnes`, colonnes `extractions.produits` / `vol_produits` / `campagne_id`, verrous serveur (grume sortie une seule fois, stock produits), fonctions métropole `grumes_en_stock_partagees()` et `produits_partages()` | ✅ Fait, testé en SQL puis annulé |
+| 2. Feature : badge d'urgence de débit, campagne, feuille de débit, clôture, stock produits | À faire |
+| 3. Feature : écran Extraction → produits sciés (grume brute en exception) | À faire |
+| 4. Structure puis Design | À faire |
 
 ---
 
