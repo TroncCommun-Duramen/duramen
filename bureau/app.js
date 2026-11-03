@@ -217,14 +217,6 @@ function bAfficherOnglet() {
 }
 
 // ═══════════ ONGLET COMMUNE ═══════════
-var ESSENCE_COULEURS = {
-  'Chêne': '#8B6914', 'Châtaignier': '#9e5c2d', 'Frêne': '#5c7a3e',
-  'Hêtre': '#b5763a', 'Douglas': '#4a7a5c', 'Épicéa': '#3d6b4f',
-  'Séquoia': '#a0522d', 'Robinier (Acacia)': '#c4a24d', 'Peuplier': '#7ab359',
-  'Noyer': '#5c3d1e', 'Merisier': '#d04060', 'Pin maritime': '#7c9c5a',
-  'Aulne': '#6b8e6b', 'Platane': '#8fa87c', 'Tilleul': '#9ab86e'
-};
-
 var BLUES_DEGRADE = ['#1a2f6a', '#2B3F8C', '#3d55a8', '#5570c0', '#7088d4', '#8da0e0', '#aab8ec', '#c4d0f4'];
 
 function bPiePath(cx, cy, r, startAngle, endAngle) {
@@ -522,7 +514,6 @@ function bDrawDonut(data) {
 
 // ═══════════ ONGLET EXPORT ═══════════
 function bInitExport() {
-  var selC = document.getElementById('b-exp-commune');
   var selE = document.getElementById('b-exp-essence');
   var selA = document.getElementById('b-exp-annee');
 
@@ -692,26 +683,6 @@ function bMextInitChips() {
     };
     container.appendChild(chip);
   });
-}
-
-function bMextSetType(type) {
-  // « Grume brute » retirée : l'extraction est toujours un débit en planches
-  type = 'planches';
-  bExtType = type;
-  document.getElementById('b-mext-type-brute').classList.toggle('active',   type === 'brute');
-  document.getElementById('b-mext-type-planches').classList.toggle('active', type === 'planches');
-  var titre = document.getElementById('b-mext-type-desc-titre');
-  var body  = document.getElementById('b-mext-type-desc-body');
-  var icon  = document.querySelector('#b-mext-type-desc .b-type-desc-icon');
-  if (type === 'brute') {
-    if (titre) titre.textContent = 'Grume brute';
-    if (body)  body.textContent  = 'Volume brut sans transformation. Le m³ enregistré correspond au volume mesuré des grumes sélectionnées.';
-    if (icon)  icon.textContent  = '🌳';
-  } else {
-    if (titre) titre.textContent = 'Débit en planches';
-    if (body)  body.textContent  = 'Calcul du volume utile et du déchet selon l\'épaisseur de planche.';
-    if (icon)  icon.textContent  = '🪚';
-  }
 }
 
 function bMextStep1Suivant() {
