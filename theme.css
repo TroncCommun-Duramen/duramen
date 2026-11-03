@@ -58,4 +58,13 @@
   --blanc-semi:     rgba(255, 255, 255, 0.65); /* labels sur fond sombre */
   --blanc-alpha:    rgba(255, 255, 255, 0.12); /* icône sur bouton sumi */
   --rouge-rgb:      192, 57, 43;               /* pour dégradés rouge semi-transparent */
+
+  /* ─── Couleurs d'essences (pastilles) ─── */
+  --ec-chene-rouge:  #8c3b2a;   /* brique sombre */
+  --ec-chene-marais: #6e7a2f;   /* olive */
+  --ec-cedre:        #5b7f86;   /* bleu-vert du cèdre */
+
+  /* ─── Impression (feuille de débit) ─── */
+  --print-encre:   #000000;     /* texte et bordures imprimés */
+  --print-papier:  #FFFFFF;     /* fond papier */
 }

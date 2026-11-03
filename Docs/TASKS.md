@@ -74,12 +74,23 @@
 | Cache SW incrémenté `duramen-v40` → `duramen-v41` ✅ | `sw.js` | 31 octobre 2026 |
 | A12 (partie 1) — Code secret masqué au partage : les lots partagés sont lus par la fonction `lots_partages()` (security definer), qui ne renvoie jamais `commune_code` et exclut les communes de test. Mobile et bureau l'utilisent. La policy `lots_select` ne laisse plus lire que ses propres lots. Testé : une commune lit les lots partagés des autres sans leur code ✅ | Supabase + `app.js` + `bureau/app.js` | 31 octobre 2026 |
 | Cache SW incrémenté `duramen-v41` → `duramen-v42` ✅ | `sw.js` | 31 octobre 2026 |
+| **Grumes, campagne de sciage, envoi hors ligne — fusion du 3 novembre 2026** | | |
+| Branches `fix/envoi-hors-ligne`, `feat/grumes` et `feat/campagne-sciage` fusionnées dans `main`. Une saisie = une grume (VER-0000), partage automatique, campagne de sciage, feuille de débit, stock produits, sortie de produits sciés, file d'envoi hors ligne ✅ | toute l'application + Supabase | 3 novembre 2026 |
+| Scan avant fusion : syntaxe, liens HTML/JS/CSS, noyau figé intact, champs envoyés = colonnes Supabase, sécurité par commune active sur toutes les tables ✅ | toute l'application + Supabase | 3 novembre 2026 |
+| Nettoyage : restes de l'ancien débit en planches (mobile), fonction et couleurs inutilisées (bureau), 31 classes inutilisées (`ui.css`), 75 classes inutilisées (`bureau/ui.css`). Testé dans un navigateur avant/après : 20 écrans identiques au pixel près, aucune erreur ✅ | `app.js`, `bureau/app.js`, `ui.css`, `bureau/ui.css` | 3 novembre 2026 |
+| Cache SW incrémenté `duramen-v52` → `duramen-v53` ✅ | `sw.js` | 3 novembre 2026 |
+| Point de retour : branche de sauvegarde `sauvegarde/avant-fusion-2026-11-03` sur l'ancienne version de `main` (procédure dans GIT_WORKFLOW.md) ✅ | GitHub | 3 novembre 2026 |
 
 ---
 
 ## Tâches en cours
 
-_(aucune)_
+Suites de la fusion du 3 nov. 2026 :
+
+| Étape | État |
+|-------|------|
+| Garder la passerelle Supabase (vue `lots`, fonction `lots_partages()`, colonne `extractions.cause_abattage`) tant que la nouvelle version n'est pas validée sur le terrain : c'est elle qui permet de revenir à l'ancienne version. Ensuite, la supprimer | En attente de validation terrain |
+| Version bureau : elle ne connaît pas encore les campagnes ni le stock produits. Elle compte une grume sciée comme encore en stock et propose à l'extraction une grume déjà prévue dans une campagne. À aligner sur le mobile (lié à A15) | À faire — **Haute** |
 
 ---
 

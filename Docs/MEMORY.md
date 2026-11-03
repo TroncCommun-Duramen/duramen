@@ -6,7 +6,41 @@
 
 ---
 
-## Session 2 juillet 2026 (soir) — A6, A10 et brouillon fusionnés dans main ✅
+## Session 3 novembre 2026 (soir) — Campagne de sciage (branche `feat/campagne-sciage`)
+
+Décisions du porteur :
+- **Stock en deux états** : grumes brutes, puis produits bois. La feuille de débit (campagne de sciage) fait le passage de l'un à l'autre.
+- **Campagne** : seulement une **date prévue** (le nom « Campagne du JJ/MM/AAAA » en découle) et des grumes cochées, chacune en **plot** (épaisseur standard 27/41/54/65/80 mm, nombre de planches estimé) ou en **avivé** (section en saisie libre). Feuille imprimable « Demandé / Réalisé ». À la clôture, la colonne « Réalisé » est pré-remplie avec le demandé : on ne corrige que les écarts. QR code optionnel, plus tard.
+- **Clôture uniquement avec réseau** (un seul envoi : tout passe ou rien).
+- **Badge d'urgence de débit** : date de saisie + durée max en grume (tableau FIBOIS : 1 mois / 6 mois / 1 an). Orange à 75 % du délai, rouge au-delà. Essences absentes du tableau : 1 mois.
+- **Séchage** : règle unique **1 an par cm** de la plus petite cote, depuis la date de clôture de la campagne. Libellé « Sec à l'air ». Calculé, jamais enregistré (règle ajustable plus tard). **Information seulement, jamais un blocage** : un produit en séchage peut être sorti.
+- **Extraction** : on sort des **produits sciés** (nombre de pièces par produit) ; la grume brute reste possible en exception (rondins, pas japonais), **sauf si elle est dans une campagne en cours**. Le débit en planches de l'ancien écran Extraction est retiré : il passe par la campagne.
+- Statuts grume (brute / à débiter / débitée) **calculés**, jamais enregistrés.
+
+Modèle de données (Supabase, ajouts uniquement) :
+- `campagnes` : `lignes` (jsonb) = choix de débit par grume. Ajout/suppression seulement ; une campagne clôturée ne peut plus être supprimée.
+- `extractions.type_sortie` : `sciage` (grume → produits réels dans `produits`), `produit` (sortie de produits : `produits` = [{cle, quantite, volume}], **volume = 0** imposé pour ne pas retirer deux fois le bois du stock de grumes ; volume réel dans `vol_produits`), `grume brute`, `debit` (ancien).
+- Clé d'un produit : `<id extraction sciage>_<position>`.
+- Verrou `trg_verifier_cles` : une grume ne sort qu'une fois ; on ne sort pas plus de produits qu'il n'en reste.
+- Métropole : `grumes_en_stock_partagees()` (grumes non sorties) et `produits_partages()` (produits restants). `grumes_partagees()` inchangée.
+
+Point repéré : le document `SECHAGE_essences.md` confond semaines et mois dans ses tableaux de durée (ex. 27 mm feuillus durs : « 13–14 mois » = 5 sem/cm × 2,7 cm en semaines).
+
+## Session 3 novembre 2026 — Le lot devient la grume (branche `feat/grumes`)
+
+Décisions du porteur :
+- **Une saisie = une grume.** Plus de quantité ni de lignes multiples. Le modèle garde le tableau `grumes` (1 élément) : l'extraction par clé `id_0` reste valable.
+- **Nom de grume** : préfixe commune + tiret + 4 chiffres tapés par l'agent (`VER-0001`). Préfixes dans `core.js` (`PREFIXES_COMMUNES`). Fixés par le porteur : VER, BOU (Bouguenais), NAN, ORV, SEB, NM. Les autres : 3 lettres sans article ni « Saint » (BOA = Bouaye, HER = Saint-Herblain…). Nom unique par commune (index `grumes_nom_unique`).
+- **Partage automatique** : toutes les grumes sont visibles des autres communes (`grumes_partagees()`, communes de test exclues). Bouton « Partager » supprimé.
+- **Nouvelle commune « Nantes Métropole »** (code NM-…). Le stock partagé s'appelle désormais « métropole ».
+- **Extraction = débit en planches uniquement**, trait de scie 3 mm et rendement 50 % fixes (`DuramenCore.TRAIT_SCIE_MM`, `RENDEMENT_GEOM`).
+- Essences : Chêne, Chêne rouge, Frêne, Platane, Pin, Chêne des marais, Cèdre, puis ordre alphabétique (`DuramenCore.ESSENCES_ORDRE`).
+
+Supabase : table renommée `grumes`. Une **passerelle temporaire** (vue `lots` + fonction `lots_partages()`) garde la version en ligne fonctionnelle jusqu'à la fusion. Colonne `extractions.cause_abattage` gardée jusqu'à la fusion (la version en ligne l'envoie encore).
+
+Tests : saisie, doublon, extraction, vue métropole testés dans un navigateur (Supabase simulé, colonnes vérifiées), puis envois rejoués en SQL avec le rôle public et l'en-tête commune (RLS, verrou de stock, index unique : OK), annulés ensuite. Base toujours vide.
+
+ — A6, A10 et brouillon fusionnés dans main ✅
 
 Trois branches testées en local, validées par le porteur sur téléphone, puis fusionnées le soir même (branches supprimées) :
 

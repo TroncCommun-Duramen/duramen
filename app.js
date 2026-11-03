@@ -12,20 +12,63 @@ const sbH = {
   'x-commune-code': ''
 };
 
-async function sbSelect(table, filter) {
-  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + (filter || ''), { headers: sbH });
-  if (!res.ok) throw new Error('Lecture ' + table + ': ' + res.status);
-  return res.json();
+// ─── Délai maximal d'une requête Supabase ─────────────────────────────────
+// Sur le terrain, avec une seule barre de réseau, une requête peut rester
+// sans réponse plusieurs minutes. Au-delà de ce délai, on abandonne et
+// l'appli bascule sur le cache (lecture) ou la file d'envoi (écriture).
+var DELAI_LECTURE_MS = 15000;
+var DELAI_ENVOI_MS   = 20000;
+
+// Erreur « pas de réseau » : la requête n'a pas pu aboutir (réseau coupé,
+// délai dépassé, ou réponse « Hors ligne » d'un ancien Service Worker).
+// À distinguer d'un refus du serveur, qui ne doit jamais être rejoué.
+function erreurReseau(table) {
+  var err = new Error('Pas de réseau (' + table + ')');
+  err.reseau = true;
+  return err;
 }
-async function sbInsert(table, data) {
-  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
-    method: 'POST', headers: sbH, body: JSON.stringify(data)
-  });
-  if (!res.ok) { var e = await res.text(); throw new Error('Insertion ' + table + ': ' + res.status + ' ' + e); }
-  return res.json();
+
+// fetch + lecture complète de la réponse, le tout limité à `ms`.
+async function requeteSupabase(url, options, ms, table) {
+  var ctrl  = new AbortController();
+  var timer = setTimeout(function () { ctrl.abort(); }, ms);
+  try {
+    var res   = await fetch(url, Object.assign({}, options, { signal: ctrl.signal }));
+    var texte = await res.text();
+    if (res.status === 503 && texte === 'Hors ligne') throw erreurReseau(table);
+    return { res: res, texte: texte };
+  } catch (e) {
+    if (e && e.reseau) throw e;
+    throw erreurReseau(table);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function sbSelect(table, filter) {
+  var r = await requeteSupabase(SUPABASE_URL + '/rest/v1/' + table + '?' + (filter || ''),
+    { headers: sbH }, DELAI_LECTURE_MS, table);
+  if (!r.res.ok) throw new Error('Lecture ' + table + ': ' + r.res.status);
+  return JSON.parse(r.texte);
+}
+// `options.sansRetour` : n'attend pas la ligne créée en réponse. Obligatoire
+// pour les tables sans droit de lecture (feedbacks) : demander la ligne en
+// retour y provoque un refus du serveur.
+async function sbInsert(table, data, options) {
+  var entetes = Object.assign({}, sbH);
+  if (options && options.sansRetour) entetes['Prefer'] = 'return=minimal';
+  var r = await requeteSupabase(SUPABASE_URL + '/rest/v1/' + table, {
+    method: 'POST', headers: entetes, body: JSON.stringify(data)
+  }, DELAI_ENVOI_MS, table);
+  if (!r.res.ok) {
+    var err = new Error('Insertion ' + table + ': ' + r.res.status + ' ' + r.texte);
+    err.statut = r.res.status;
+    throw err;
+  }
+  return r.texte ? JSON.parse(r.texte) : [];
 }
 // ═══════════ DONNEES ═══════════
-var lots = [], extractions = [];
+var lots = [], extractions = [], campagnes = [];
 
 // ESSENCES_INFO est dans core.js → DuramenCore.ESSENCES_INFO
 
@@ -101,14 +144,135 @@ function showOfflineBanner(visible) {
   el.classList.toggle('hidden', !visible);
 }
 
-// ─── Chargement Supabase ──────────────────────────────────────────────────
-async function chargerDonnees() {
-  if (!communeConnectee) return;
-  var code = encodeURIComponent(communeConnectee.code);
-  showLoading(true);
+// ─── File d'envoi hors ligne ──────────────────────────────────────────────
+// Une grume (ou un ticket) validée sans réseau est gardé sur le téléphone, puis
+// envoyé automatiquement : à l'ouverture de l'appli, au retour du réseau et
+// à chaque rafraîchissement (2 min). Chaque élément garde son identifiant
+// d'origine : s'il est déjà arrivé en base (réponse perdue en route), le
+// serveur refuse le doublon et l'élément est simplement retiré de la file.
+// Les extractions n'y passent pas : elles se font à l'atelier, avec réseau.
+var CLE_FILE_ENVOI = 'duramen_file_envoi';
+var envoiFileEnCours = false;
+
+function lireFileEnvoi() {
   try {
-    var rawLots = await sbSelect('lots', 'commune_code=eq.' + code + '&order=created_at.desc');
+    var f = JSON.parse(localStorage.getItem(CLE_FILE_ENVOI) || '[]');
+    return Array.isArray(f) ? f : [];
+  } catch (e) { return []; }
+}
+function ecrireFileEnvoi(f) {
+  localStorage.setItem(CLE_FILE_ENVOI, JSON.stringify(f));
+}
+function ajouterFileEnvoi(table, data, options) {
+  var f = lireFileEnvoi();
+  f.push({ table: table, data: data, sansRetour: !!(options && options.sansRetour) });
+  ecrireFileEnvoi(f);
+  mettreAJourBandeauEnvoi();
+}
+function retirerFileEnvoi(id) {
+  ecrireFileEnvoi(lireFileEnvoi().filter(function (it) { return !it.data || it.data.id !== id; }));
+}
+// Seuls les éléments de la commune connectée partent (le serveur refuserait
+// les autres) ; ceux d'une autre commune attendent sa reconnexion.
+function fileEnvoiCommune() {
+  if (!communeConnectee) return [];
+  return lireFileEnvoi().filter(function (it) {
+    return it.data && it.data.commune_code === communeConnectee.code;
+  });
+}
+
+function mettreAJourBandeauEnvoi() {
+  var f    = fileEnvoiCommune();
+  var el   = document.getElementById('envoi-attente-banner');
+  if (!f.length) { if (el) el.classList.add('hidden'); return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id        = 'envoi-attente-banner';
+    el.className = 'info-box';
+    var main = document.querySelector('main');
+    if (main) main.insertBefore(el, main.firstChild);
+  }
+  var nbLots    = f.filter(function (it) { return it.table === 'grumes'; }).length;
+  var nbTickets = f.length - nbLots;
+  var parts = [];
+  if (nbLots)    parts.push(nbLots + (nbLots > 1 ? ' grumes' : ' grume'));
+  if (nbTickets) parts.push(nbTickets + (nbTickets > 1 ? ' tickets' : ' ticket'));
+  // « grume » et « ticket » : accord au féminin seulement s'il n'y a que des grumes
+  var accord = nbTickets ? 'gardé' : 'gardée';
+  el.textContent = '📤 ' + parts.join(' et ') + ' ' + accord + (f.length > 1 ? 's' : '')
+    + ' sur ce téléphone — envoi automatique dès le retour du réseau.';
+  el.classList.remove('hidden');
+}
+
+// Envoie ce qui attend. Retourne le nombre d'éléments envoyés.
+// Ne lève jamais d'erreur.
+async function envoyerFileEnvoi() {
+  if (envoiFileEnCours) return 0;
+  var f = fileEnvoiCommune();
+  if (!f.length) { mettreAJourBandeauEnvoi(); return 0; }
+  envoiFileEnCours = true;
+  var nbLotsEnvoyes = 0, nbTicketsEnvoyes = 0;
+  try {
+    for (var i = 0; i < f.length; i++) {
+      var it = f[i];
+      try {
+        await sbInsert(it.table, it.data, { sansRetour: it.sansRetour });
+      } catch (err) {
+        if (err.reseau) break;                    // toujours pas de réseau : on réessaiera
+        // Code 23505 = cet identifiant est déjà en base (envoi précédent arrivé,
+        // réponse perdue en route) → considéré comme envoyé.
+        // Tout autre refus du serveur : on garde l'élément, sans bloquer la suite.
+        // Exception : ce numéro existe déjà en base (index grumes_nom_unique).
+        // Le numéro correspond à l'étiquette physique : c'est une erreur de
+        // saisie ou une grume déjà enregistrée. La grume n'est PAS en base :
+        // on la retire de la file et on affiche ses mesures pour vérification.
+        if (/grumes_nom_unique/.test(err.message)) {
+          retirerFileEnvoi(it.data.id);
+          var g0 = (it.data.grumes && it.data.grumes[0]) || {};
+          showError('Le numéro ' + it.data.nom + ' existe déjà. Vérifiez l\'étiquette de la grume : '
+            + 'erreur de saisie ou grume déjà enregistrée. Grume non envoyée : '
+            + it.data.essence + ', ' + g0.longueur + ' m × ' + g0.diametre + ' cm.');
+          continue;
+        }
+        if (!(err.statut === 409 && /23505/.test(err.message))) continue;
+      }
+      retirerFileEnvoi(it.data.id);
+      if (it.table === 'grumes') nbLotsEnvoyes++; else nbTicketsEnvoyes++;
+    }
+  } catch (e) {
+    // sécurité : la file reste en place pour le prochain essai
+  } finally {
+    envoiFileEnCours = false;
+    mettreAJourBandeauEnvoi();
+  }
+  if (nbLotsEnvoyes || nbTicketsEnvoyes) {
+    var msg = [];
+    if (nbLotsEnvoyes)    msg.push(nbLotsEnvoyes + (nbLotsEnvoyes > 1 ? ' grumes envoyées' : ' grume envoyée'));
+    if (nbTicketsEnvoyes) msg.push(nbTicketsEnvoyes + (nbTicketsEnvoyes > 1 ? ' tickets envoyés' : ' ticket envoyé'));
+    showToastSucces('Réseau retrouvé : ' + msg.join(', ') + '.');
+  }
+  return nbLotsEnvoyes + nbTicketsEnvoyes;
+}
+
+// Retour du réseau : on vide la file puis on recharge le stock
+window.addEventListener('online', function () {
+  if (!communeConnectee) return;
+  envoyerFileEnvoi().then(function () { chargerDonnees({ silencieux: true }); });
+});
+
+// ─── Chargement Supabase ──────────────────────────────────────────────────
+// `options.silencieux` : rafraîchissement automatique en arrière-plan.
+// Pas de voile « Chargement… » (il bloquerait l'écran en pleine saisie)
+// et pas de message d'erreur répété toutes les 2 minutes.
+async function chargerDonnees(options) {
+  if (!communeConnectee) return;
+  var silencieux = !!(options && options.silencieux);
+  var code = encodeURIComponent(communeConnectee.code);
+  if (!silencieux) showLoading(true);
+  try {
+    var rawLots = await sbSelect('grumes', 'commune_code=eq.' + code + '&order=created_at.desc');
     var rawExt  = await sbSelect('extractions', 'commune_code=eq.' + code + '&order=created_at.desc');
+    var rawCamp = await sbSelect('campagnes', 'commune_code=eq.' + code + '&order=created_at.desc');
     lots = rawLots.map(function (l) {
       return Object.assign({}, l, {
         volBrut:    l.vol_brut    || 0,
@@ -121,8 +285,10 @@ async function chargerDonnees() {
       });
     });
     extractions = rawExt;
+    campagnes   = rawCamp;
     localStorage.setItem('duramen_lots_cache',        JSON.stringify(lots));
     localStorage.setItem('duramen_extractions_cache', JSON.stringify(extractions));
+    localStorage.setItem('duramen_campagnes_cache',   JSON.stringify(campagnes));
     mettreAJourHeaderStats();
     mettreAJourAccueil();
     afficherHistorique();
@@ -136,15 +302,16 @@ async function chargerDonnees() {
     if (cachedLots) {
       lots        = JSON.parse(cachedLots);
       extractions = cachedExt ? JSON.parse(cachedExt) : [];
+      campagnes   = lireJSONLocal('duramen_campagnes_cache') || [];
       mettreAJourHeaderStats();
       mettreAJourAccueil();
       afficherHistorique();
       showOfflineBanner(true);
-    } else {
+    } else if (!silencieux) {
       showError('Erreur chargement : ' + err.message);
     }
   } finally {
-    showLoading(false);
+    if (!silencieux) showLoading(false);
   }
 }
 
@@ -152,7 +319,10 @@ async function chargerDonnees() {
 var extDraft     = { destination: '', communeInstall: '', lieu: '' };
 var extGrumesSel = [];
 var extEssFiltre = null;
-var extDebitActif = false;
+// Mode de sortie : 'produits' (cas normal) ou 'grume' (exception : rondins,
+// pas japonais…). Sélection de produits : clé du produit → nombre de pièces.
+var extMode        = 'produits';
+var extProduitsSel = {};
 
 // Clés des grumes déjà sorties du stock, lues dans extractions.grumes_keys.
 // Une clé = id du lot + '_' + position de la grume dans le lot (ex. "abc_0").
@@ -182,6 +352,7 @@ function extractionEnCours() {
   var sheet = document.getElementById('grume-sel-sheet-wrap');
   var modal = document.getElementById('modal-ext-bg');
   return !!(extGrumesSel.length > 0
+    || Object.keys(extProduitsSel).some(function (k) { return extProduitsSel[k] > 0; })
     || extEssFiltre !== null
     || (sheet && sheet.classList.contains('open'))
     || (modal && modal.classList.contains('open')));
@@ -205,8 +376,29 @@ function afficherExtraction() {
   var panel = document.getElementById('ext-content');
   if (!panel) return;
   while (panel.firstChild) panel.removeChild(panel.firstChild);
-  extGrumesSel = [];
-  extEssFiltre = null;
+  extGrumesSel   = [];
+  extProduitsSel = {};
+  extEssFiltre   = null;
+
+  // Bascule : produits bois (cas normal) / grume brute (exception)
+  var bar = cel('div', 'histo-toggle-bar ext-mode-bar');
+  [['produits', 'Produits bois'], ['grume', 'Grume brute']].forEach(function (o) {
+    var b = cel('button', 'histo-toggle-btn' + (extMode === o[0] ? ' active' : ''), o[1]);
+    b.type    = 'button';
+    b.onclick = function () { extMode = o[0]; afficherExtraction(); };
+    bar.appendChild(b);
+  });
+  panel.appendChild(bar);
+
+  if (extMode === 'produits') {
+    afficherExtractionProduits(panel);
+    assureModalExtractionDest();
+    return;
+  }
+
+  panel.appendChild(cel('div', 'info-box',
+    'Exception : la grume sort entière, sans sciage (rondins, pas japonais…). '
+    + 'Les grumes d\'une campagne de sciage en cours ne sont pas proposées.'));
 
   // Section grumes à extraire
   var secGrumes = cel('div', 'ext-section');
@@ -241,89 +433,11 @@ function afficherExtraction() {
   secGrumes.appendChild(selSummary);
   panel.appendChild(secGrumes);
 
-  // Section débit en planches
-  extDebitActif = false;
-  var secDebit = cel('div', 'ext-section');
-
-  var toggleGrid = cel('div', 'ext-debit-grid');
-
-  var btnBrute = cel('button', 'ext-debit-toggle active', 'Grume brute');
-  btnBrute.type    = 'button';
-  btnBrute.id      = 'ext-btn-brute';
-  btnBrute.onclick = function () { basculerDebitExtraction(false); };
-
-  var btnDebit = cel('button', 'ext-debit-toggle', 'Débit en planches');
-  btnDebit.type    = 'button';
-  btnDebit.id      = 'ext-btn-debit';
-  btnDebit.onclick = function () { basculerDebitExtraction(true); };
-
-  toggleGrid.appendChild(btnBrute);
-  toggleGrid.appendChild(btnDebit);
-  secDebit.appendChild(toggleGrid);
-
-  var slidersWrap = cel('div', 'ext-debit-sliders hidden');
-  slidersWrap.id = 'ext-debit-sliders';
-
-  var slidersDef = [
-    { id: 'ext-epaisseur', label: 'Épaisseur planche',  min: 20, max: 50, step: 1, def: 27, unit: 'mm' },
-    { id: 'ext-scie',      label: 'Trait de scie',       min: 2,  max: 4,  step: 1, def: 3,  unit: 'mm' },
-    { id: 'ext-rendement', label: 'Rendement géom.',     min: 30, max: 70, step: 5, def: 50, unit: '%'  }
-  ];
-  slidersDef.forEach(function (s) {
-    var row = cel('div', 'ext-slider-row');
-    var top = cel('div', 'ext-slider-top');
-    top.appendChild(cel('span', 'ext-label', s.label));
-    var valEl = cel('span', 'ext-slider-val', s.def + ' ' + s.unit);
-    valEl.id = s.id + '-val';
-    top.appendChild(valEl);
-    row.appendChild(top);
-    var inp = cel('input', 'ext-slider');
-    inp.type  = 'range';
-    inp.min   = String(s.min);
-    inp.max   = String(s.max);
-    inp.step  = String(s.step);
-    inp.value = String(s.def);
-    inp.id    = s.id;
-    inp.addEventListener('input', function () {
-      valEl.textContent = inp.value + ' ' + s.unit;
-      majDebitExtraction();
-    });
-    row.appendChild(inp);
-    slidersWrap.appendChild(row);
-  });
-
-  var formulaRow  = cel('div', 'ext-formula-row');
-  var formuleLien = cel('button', 'ext-formula-link', 'Voir la formule');
-  formuleLien.type = 'button';
-  var formuleZone  = cel('div', 'ext-formula-zone hidden');
-  var ftxt = cel('p', 'ext-formula-text', 'V_utile = V × R × (e ÷ (e + t))   —   V_déchet = V − V_utile');
-  var fdet = cel('p', 'ext-formula-detail', 'V = volume brut · R = rendement géom. · e = épaisseur planche · t = trait de scie');
-  formuleZone.appendChild(ftxt);
-  formuleZone.appendChild(fdet);
-  formuleLien.onclick = function () {
-    formuleZone.classList.toggle('hidden');
-    formuleLien.textContent = formuleZone.classList.contains('hidden') ? 'Voir la formule' : 'Masquer la formule';
-  };
-  var lineaireBox = cel('div', 'ext-lineaire-box');
-  var linLbl = cel('div', 'ext-lineaire-lbl', 'Linéaire indicatif');
-  var linVal = cel('div', 'ext-lineaire-val', '—');
-  linVal.id = 'ext-lineaire-val';
-  lineaireBox.appendChild(linLbl);
-  lineaireBox.appendChild(linVal);
-  formulaRow.appendChild(formuleLien);
-  formulaRow.appendChild(lineaireBox);
-  slidersWrap.appendChild(formulaRow);
-  slidersWrap.appendChild(formuleZone);
-  secDebit.appendChild(slidersWrap);
-  panel.appendChild(secDebit);
-
-  // Barre de synthèse
+  // Barre de synthèse (le débit en planches passe par la campagne de sciage)
   var synthese = cel('div', 'ext-synthese hidden');
   synthese.id  = 'ext-synthese';
   [
-    { id: 'ext-syn-brut',  lbl: 'm³ extrait' },
-    { id: 'ext-syn-utile', lbl: 'm³ utile'   },
-    { id: 'ext-syn-dech',  lbl: 'm³ déchet'  }
+    { id: 'ext-syn-brut',  lbl: 'm³ extrait' }
   ].forEach(function (s) {
     var item = cel('div', 'ext-syn-item');
     var val  = cel('div', 'ext-syn-val', '—');
@@ -343,17 +457,6 @@ function afficherExtraction() {
   assureModalExtractionDest();
 }
 
-function basculerDebitExtraction(activer) {
-  extDebitActif = activer;
-  var btnBrute = document.getElementById('ext-btn-brute');
-  var btnDebit = document.getElementById('ext-btn-debit');
-  var sliders  = document.getElementById('ext-debit-sliders');
-  if (btnBrute) btnBrute.classList.toggle('active', !extDebitActif);
-  if (btnDebit) btnDebit.classList.toggle('active', extDebitActif);
-  if (sliders)  sliders.classList.toggle('hidden', !extDebitActif);
-  majSyntheseExtraction();
-}
-
 // ─── Modale Destination (extraction) ─────────────────────────────────────
 function assureModalExtractionDest() {
   if (document.getElementById('modal-ext-bg')) return;
@@ -367,7 +470,9 @@ function assureModalExtractionDest() {
   modal.appendChild(closeBtn);
 
   modal.appendChild(cel('h2', '', 'Destination'));
-  modal.appendChild(cel('p', 'modal-sub', 'À qui vont ces grumes ?'));
+  var sousTitre = cel('p', 'modal-sub', 'À qui vont ces grumes ?');
+  sousTitre.id = 'modal-ext-sub';
+  modal.appendChild(sousTitre);
 
   // Nom du projet
   var fNom = cel('div', 'field');
@@ -421,8 +526,12 @@ function assureModalExtractionDest() {
 }
 
 function ouvrirModalExtractionDest() {
-  if (extGrumesSel.length === 0) { showError('Sélectionnez au moins une grume.'); return; }
+  if (extMode === 'produits') {
+    if (selectionProduits().length === 0) { showError('Choisissez au moins un produit.'); return; }
+  } else if (extGrumesSel.length === 0) { showError('Sélectionnez au moins une grume.'); return; }
   assureModalExtractionDest();
+  var sub = document.getElementById('modal-ext-sub');
+  if (sub) sub.textContent = extMode === 'produits' ? 'À qui vont ces produits ?' : 'À qui vont ces grumes ?';
   var nomEl  = document.getElementById('modal-ext-nom');
   var lieuEl = document.getElementById('modal-ext-lieu');
   if (nomEl)  nomEl.value  = extDraft.destination;
@@ -455,8 +564,10 @@ function construireContenuGrumeSelSheet() {
   // Les grumes déjà extraites sortent de la liste ; un lot entièrement
   // extrait disparaît. Le lot reste en base pour le bilan et l'historique.
   var extraites = clesGrumesExtraites();
+  var reservees = grumesADebiter();
   var lotsFiltrés = lots.filter(function (l) {
     if (!l.grumes || l.grumes.length === 0) return false;
+    if (reservees[l.id]) return false;
     if (extEssFiltre && l.essence !== extEssFiltre) return false;
     return l.grumes.some(function (g, gi) { return !extraites[l.id + '_' + gi]; });
   });
@@ -466,11 +577,11 @@ function construireContenuGrumeSelSheet() {
   extGrumesSel.forEach(function (g) { selState[g.key] = true; });
 
   if (lotsFiltrés.length === 0) {
-    content.appendChild(cel('div', 'ext-empty', 'Aucun lot disponible' + (extEssFiltre ? ' pour ' + extEssFiltre : '') + '.'));
+    content.appendChild(cel('div', 'ext-empty', 'Aucune grume disponible' + (extEssFiltre ? ' pour ' + extEssFiltre : '') + '.'));
   } else {
     lotsFiltrés.forEach(function (lot) {
       var hdr = cel('div', 'grume-sel-lot-header');
-      hdr.appendChild(cel('span', 'grume-sel-lot-nom', lot.nom || 'Lot sans nom'));
+      hdr.appendChild(cel('span', 'grume-sel-lot-nom', lot.nom || 'Grume sans nom'));
       hdr.appendChild(cel('span', 'grume-sel-lot-ess', lot.essence));
       content.appendChild(hdr);
 
@@ -493,7 +604,8 @@ function construireContenuGrumeSelSheet() {
 
         var info = cel('div', 'grume-sel-info');
         info.appendChild(cel('div', 'grume-sel-dims',
-          'L ' + l.toFixed(2) + ' m  ·  Ø ' + d + ' cm  ·  n°' + (gi + 1)));
+          'L ' + l.toFixed(2) + ' m  ·  Ø ' + d + ' cm'
+          + (lot.grumes.length > 1 ? '  ·  n°' + (gi + 1) : '')));
         item.appendChild(info);
 
         item.appendChild(cel('div', 'grume-sel-vol', v.toFixed(3) + ' m³'));
@@ -543,7 +655,7 @@ function confirmerSelectionGrumes(lotsFiltrés, selState) {
       extGrumesSel.push({
         key:      key,
         lotId:    lot.id,
-        lotNom:   lot.nom || 'Lot sans nom',
+        lotNom:   lot.nom || 'Grume sans nom',
         essence:  lot.essence,
         longueur: l,
         diametre: d,
@@ -577,43 +689,8 @@ function majSyntheseExtraction() {
   var volBrut = extGrumesSel.reduce(function (s, g) { return s + g.vol; }, 0);
   var syn = document.getElementById('ext-synthese');
   if (syn) syn.classList.toggle('hidden', volBrut === 0);
-  var elUtile = document.getElementById('ext-syn-utile');
-  var elDech  = document.getElementById('ext-syn-dech');
-  if (elUtile) elUtile.parentNode.classList.toggle('hidden', !extDebitActif);
-  if (elDech)  elDech.parentNode.classList.toggle('hidden', !extDebitActif);
-  majDebitExtraction();
-}
-
-function majDebitExtraction() {
-  var volBrut = extGrumesSel.reduce(function (s, g) { return s + g.vol; }, 0);
-  var elBrut  = document.getElementById('ext-syn-brut');
+  var elBrut = document.getElementById('ext-syn-brut');
   if (elBrut) elBrut.textContent = volBrut.toFixed(3);
-
-  var eEl = document.getElementById('ext-epaisseur');
-  var tEl = document.getElementById('ext-scie');
-  var rEl = document.getElementById('ext-rendement');
-  if (!eEl || !tEl || !rEl) return;
-
-  var e      = parseInt(eEl.value, 10);
-  var t      = parseInt(tEl.value, 10);
-  var r      = parseInt(rEl.value, 10) / 100;
-  var vUtile = volBrut * r * (e / (e + t));
-  var vDech  = volBrut - vUtile;
-
-  var elUtile = document.getElementById('ext-syn-utile');
-  var elDech  = document.getElementById('ext-syn-dech');
-  if (elUtile) elUtile.textContent = vUtile.toFixed(3);
-  if (elDech)  elDech.textContent  = vDech.toFixed(3);
-
-  var linEl = document.getElementById('ext-lineaire-val');
-  if (linEl) {
-    if (extDebitActif && e > 0) {
-      var lin = vUtile / (e / 1000 * 0.20);
-      linEl.textContent = lin.toFixed(1) + ' m';
-    } else {
-      linEl.textContent = '—';
-    }
-  }
 }
 
 async function confirmerExtractionDest() {
@@ -630,6 +707,8 @@ async function confirmerExtractionDest() {
   extDraft.destination    = destination;
   extDraft.communeInstall = communeInstall;
   extDraft.lieu           = lieu;
+
+  if (extMode === 'produits') { await confirmerExtractionProduits(); return; }
 
   var parEssence     = {};
   var clesParEssence = {};
@@ -679,8 +758,7 @@ async function confirmerExtractionDest() {
         commune:         communeInstall,
         contact:         '',
         notes:           extDraft.lieu ? 'Lieu : ' + extDraft.lieu : '',
-        cause_abattage:  '',
-        type_sortie:     extDebitActif ? 'debit' : 'grume',
+        type_sortie:     'grume brute',
         grumes_keys:     clesParEssence[ess],
         date:            now.toLocaleDateString('fr-FR'),
         date_iso:        now.toISOString()
@@ -722,6 +800,225 @@ async function confirmerExtractionDest() {
   }
 }
 
+// ─── Extraction de produits sciés (cas normal) ───────────────────────────
+// L'agent choisit les produits et le nombre de pièces, puis la destination.
+// La sortie ne touche pas au stock de grumes (volume 0, verrou serveur) :
+// le volume réel des pièces est rangé dans vol_produits.
+
+// Volume d'une pièce d'une ligne du stock produits
+function volumePiece(l) {
+  return l.restant > 0 ? (l.volumeRestant || 0) / l.restant : 0;
+}
+
+// Sélection en cours : [{ ligne, quantite }]
+function selectionProduits() {
+  var stock = {};
+  DuramenCore.getStockProduits().forEach(function (l) { stock[l.cle] = l; });
+  return Object.keys(extProduitsSel)
+    .filter(function (k) { return extProduitsSel[k] > 0 && stock[k]; })
+    .map(function (k) { return { ligne: stock[k], quantite: extProduitsSel[k] }; });
+}
+
+function afficherExtractionProduits(panel) {
+  var lignes = DuramenCore.getStockProduits();
+  var sec = cel('div', 'ext-section');
+  sec.appendChild(cel('div', 'ext-section-title', 'Produits à sortir'));
+
+  if (lignes.length === 0) {
+    sec.appendChild(cel('div', 'ext-empty',
+      'Aucun produit bois en stock. Les produits arrivent à la clôture d\'une campagne de sciage.'));
+    panel.appendChild(sec);
+    return;
+  }
+
+  var essences = [];
+  lignes.forEach(function (l) { if (essences.indexOf(l.essence) === -1) essences.push(l.essence); });
+  var liste = cel('div', 'ext-produits-liste');
+  if (essences.length > 1) {
+    var chips = cel('div', 'ext-essence-chips');
+    essences.sort().forEach(function (ess) {
+      var chip = cel('button', 'ext-chip', ess);
+      chip.type = 'button';
+      chip.dataset.ess = ess;
+      chip.onclick = function () {
+        extEssFiltre = (extEssFiltre === ess) ? null : ess;
+        chips.querySelectorAll('.ext-chip').forEach(function (c) {
+          c.classList.toggle('active', c.dataset.ess === extEssFiltre);
+        });
+        rendreListeProduitsExt(liste, lignes);
+      };
+      chips.appendChild(chip);
+    });
+    sec.appendChild(chips);
+  }
+  sec.appendChild(liste);
+  panel.appendChild(sec);
+  rendreListeProduitsExt(liste, lignes);
+
+  var synthese = cel('div', 'ext-synthese hidden');
+  synthese.id  = 'ext-synthese-produits';
+  [['ext-syn-pieces', 'pièces'], ['ext-syn-vol-prod', 'm³ de produits']].forEach(function (d) {
+    var item = cel('div', 'ext-syn-item');
+    var val  = cel('div', 'ext-syn-val', '—');
+    val.id   = d[0];
+    item.appendChild(val);
+    item.appendChild(cel('div', 'ext-syn-lbl', d[1]));
+    synthese.appendChild(item);
+  });
+  panel.appendChild(synthese);
+
+  var btnVal = cel('button', 'ext-valider-btn', 'Valider l\'extraction →');
+  btnVal.type    = 'button';
+  btnVal.onclick = ouvrirModalExtractionDest;
+  panel.appendChild(btnVal);
+}
+
+function rendreListeProduitsExt(liste, lignes) {
+  while (liste.firstChild) liste.removeChild(liste.firstChild);
+  lignes
+    .filter(function (l) { return !extEssFiltre || l.essence === extEssFiltre; })
+    .forEach(function (l) {
+      var card   = cel('div', 'histo-lot-card ext-produit-card');
+      var header = cel('div', 'histo-lot-header');
+      header.appendChild(cel('div', 'histo-lot-nom', l.essence + ' · ' + texteProduit(l)));
+      header.appendChild(cel('div', 'histo-lot-vol', (l.volumeRestant || 0).toFixed(3) + ' m³'));
+      card.appendChild(header);
+      card.appendChild(cel('div', 'histo-essence-meta', 'En stock : ' + l.restant
+        + (l.type === 'avive' ? ' pièce(s)' : ' planche(s)') + (l.grume_nom ? ' · grume ' + l.grume_nom : '')));
+      var badges = cel('div', 'histo-badges');
+      badges.appendChild(creerBadgeSechage(l.dateSecAir));
+      card.appendChild(badges);
+
+      // Nombre de pièces à sortir : − / saisie / + / tout
+      var qte = cel('div', 'ext-qte');
+      var bMoins = cel('button', 'btn btn-outline ext-qte-btn', '−');
+      var inp    = document.createElement('input');
+      var bPlus  = cel('button', 'btn btn-outline ext-qte-btn', '+');
+      var bTout  = cel('button', 'btn btn-outline ext-qte-tout', 'Tout');
+      [bMoins, bPlus, bTout].forEach(function (b) { b.type = 'button'; });
+      inp.type = 'number'; inp.min = '0'; inp.max = String(l.restant); inp.step = '1';
+      inp.inputMode = 'numeric';
+      inp.className = 'ext-qte-input';
+      inp.setAttribute('aria-label', 'Nombre de pièces à sortir');
+      inp.value = String(extProduitsSel[l.cle] || 0);
+      function fixer(v) {
+        v = Math.max(0, Math.min(l.restant, Math.floor(parseFloat(v) || 0)));
+        extProduitsSel[l.cle] = v;
+        inp.value = String(v);
+        card.classList.toggle('selected', v > 0);
+        majSyntheseProduits();
+      }
+      bMoins.onclick = function () { fixer((extProduitsSel[l.cle] || 0) - 1); };
+      bPlus.onclick  = function () { fixer((extProduitsSel[l.cle] || 0) + 1); };
+      bTout.onclick  = function () { fixer(l.restant); };
+      inp.onchange   = function () { fixer(inp.value); };
+      qte.appendChild(bMoins); qte.appendChild(inp); qte.appendChild(bPlus); qte.appendChild(bTout);
+      card.appendChild(qte);
+      card.classList.toggle('selected', (extProduitsSel[l.cle] || 0) > 0);
+      liste.appendChild(card);
+    });
+  majSyntheseProduits();
+}
+
+function majSyntheseProduits() {
+  var sel = selectionProduits();
+  var nb  = sel.reduce(function (s, x) { return s + x.quantite; }, 0);
+  var vol = sel.reduce(function (s, x) { return s + volumePiece(x.ligne) * x.quantite; }, 0);
+  var syn = document.getElementById('ext-synthese-produits');
+  if (syn) syn.classList.toggle('hidden', nb === 0);
+  var eN = document.getElementById('ext-syn-pieces');
+  var eV = document.getElementById('ext-syn-vol-prod');
+  if (eN) eN.textContent = String(nb);
+  if (eV) eV.textContent = vol.toFixed(3);
+}
+
+async function confirmerExtractionProduits() {
+  function verifier() {
+    return DuramenCore.validerSortieProduits(selectionProduits().map(function (x) {
+      return { cle: x.ligne.cle, quantite: x.quantite };
+    }));
+  }
+  var v = verifier();
+  if (!v.ok) { showError(v.erreur); return; }
+  try {
+    showLoading(true);
+    // Données fraîches : un autre agent a pu sortir ces produits entre-temps
+    await chargerDonnees();
+    v = verifier();
+    if (!v.ok) { showError('Le stock a changé entre-temps. ' + v.erreur); return; }
+
+    // Une ligne de sortie par essence (comme les sorties de grumes)
+    var parEss = {};
+    selectionProduits().forEach(function (x) {
+      (parEss[x.ligne.essence] = parEss[x.ligne.essence] || []).push({
+        cle: x.ligne.cle, quantite: x.quantite,
+        volume: arrondiM3(volumePiece(x.ligne) * x.quantite)
+      });
+    });
+    var now = new Date();
+    var nouvelles = Object.keys(parEss).map(function (ess) {
+      return {
+        id:           crypto.randomUUID(),
+        commune_code: communeConnectee.code,
+        essence:      ess,
+        volume:       0,
+        usage:        'Non défini',
+        destination:  extDraft.destination,
+        commune:      extDraft.communeInstall,
+        contact:      '',
+        notes:        extDraft.lieu ? 'Lieu : ' + extDraft.lieu : '',
+        type_sortie:  'produit',
+        produits:     parEss[ess],
+        vol_produits: arrondiM3(parEss[ess].reduce(function (s, p) { return s + p.volume; }, 0)),
+        date:         now.toLocaleDateString('fr-FR'),
+        date_iso:     now.toISOString()
+      };
+    });
+    // Envoi groupé : soit tout passe, soit rien
+    await sbInsert('extractions', nouvelles, { sansRetour: true });
+    extDraft       = { destination: '', communeInstall: '', lieu: '' };
+    extProduitsSel = {};
+    fermerModalExtractionDest();
+    stockEtat = 'produits';
+    await chargerDonnees();
+    afficherExtraction();
+    showToastSucces('Sortie de produits enregistrée.');
+  } catch (err) {
+    if (err.reseau) showError('Pas de réseau : la sortie se fait avec réseau.');
+    else if (/STOCK PRODUIT INSUFFISANT|PRODUIT INTROUVABLE/.test(err.message)) {
+      showError('Le stock de produits a changé entre-temps. Rien n\'a été enregistré.');
+      await chargerDonnees();
+      afficherExtraction();
+    } else showError('Erreur : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+// Dernières sorties de produits (onglet Stock, produits bois, ma commune)
+function creerListeSortiesProduits() {
+  var bloc = cel('div', '');
+  bloc.appendChild(cel('div', 'histo-section-title mt-16', 'Dernières sorties de produits'));
+  var liste = cel('div', 'histo-ext-list');
+  var sorties = extractions
+    .filter(function (e) { return e.type_sortie === 'produit'; })
+    .sort(function (a, b) { return (b.date_iso || '').localeCompare(a.date_iso || ''); })
+    .slice(0, 5);
+  if (sorties.length === 0) liste.appendChild(cel('div', 'ext-empty', 'Aucune sortie de produits.'));
+  sorties.forEach(function (ex) {
+    var nb = (ex.produits || []).reduce(function (s, p) { return s + (parseFloat(p.quantite) || 0); }, 0);
+    var item = cel('div', 'histo-ext-item');
+    item.appendChild(cel('span', 'histo-ext-essence', ex.essence || '—'));
+    item.appendChild(cel('span', 'histo-ext-vol', (parseFloat(ex.vol_produits) || 0).toFixed(3) + ' m³'));
+    item.appendChild(cel('span', 'histo-ext-type', nb + (nb > 1 ? ' pièces' : ' pièce')));
+    item.appendChild(cel('span', 'histo-ext-date', ex.date || ''));
+    if (ex.destination) item.appendChild(cel('div', 'histo-ext-dest', '→ ' + ex.destination));
+    liste.appendChild(item);
+  });
+  bloc.appendChild(liste);
+  return bloc;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // HISTORIQUE — Toggle Ma commune / Communauté
 // ═══════════════════════════════════════════════════════════════════════════
@@ -742,13 +1039,29 @@ function afficherHistorique() {
   if (!content) return;
   while (content.firstChild) content.removeChild(content.firstChild);
   if (histoVue === 'commune') {
-    rendreHistoriqueContenu(content, lots);
+    // Deux états du stock : grumes brutes, puis produits bois
+    content.appendChild(creerBasculeStock());
+    if (stockEtat === 'produits') {
+      rendreStockProduits(content, DuramenCore.getStockProduits(), false);
+      content.appendChild(creerListeSortiesProduits());
+      return;
+    }
+    var zone = cel('div', '');
+    content.appendChild(zone);
+    // Grumes encore en stock brut ; l'export garde toutes les grumes saisies
+    rendreHistoriqueContenu(zone, DuramenCore.getGrumesEnStock(),
+      { urgence: true, aDebiter: grumesADebiter(), exportData: lots });
+    // Campagnes de sciage : juste après le total du stock brut
+    var total = zone.querySelector('.histo-total-block');
+    var sectionCamp = creerSectionCampagnes();
+    if (total && total.nextSibling) zone.insertBefore(sectionCamp, total.nextSibling);
+    else zone.insertBefore(sectionCamp, zone.firstChild);
     // Bilan entrées / sorties à une date choisie — juste avant les boutons export
-    var exportRow = content.querySelector('.histo-export-row');
+    var exportRow = zone.querySelector('.histo-export-row');
     var bilan     = creerBilanBloc();
-    if (exportRow) { content.insertBefore(bilan, exportRow); } else { content.appendChild(bilan); }
+    if (exportRow) { zone.insertBefore(bilan, exportRow); } else { zone.appendChild(bilan); }
   } else {
-    afficherHistoriqueCommunaute(content);
+    afficherStockCommunaute(content);
   }
 }
 
@@ -796,7 +1109,9 @@ function creerBilanBloc() {
       return !jour || jour <= limite;
     }
     var lotsT = lots.filter(avantLimite);
-    var extsT = extractions.filter(avantLimite);
+    var extsT = extractions.filter(function (e) {
+      return avantLimite(e) && e.type_sortie !== 'produit';
+    });
     var entres = lotsT.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
     var sortis = extsT.reduce(function (s, e) { return s + (e.volume || 0); }, 0);
     vals[0].textContent = entres.toFixed(3);
@@ -817,7 +1132,7 @@ function creerBilanBloc() {
         item.appendChild(cel('span', 'histo-ext-essence', ex.essence || '—'));
         item.appendChild(cel('span', 'histo-ext-vol', (ex.volume || 0).toFixed(3) + ' m³'));
         item.appendChild(cel('span', 'histo-ext-type',
-          ex.type_sortie === 'debit' ? 'Débit' : 'Grume brute'));
+          ex.type_sortie === 'debit' ? 'Débit' : (ex.type_sortie === 'sciage' ? 'Sciage' : 'Grume brute')));
         item.appendChild(cel('span', 'histo-ext-date', ex.date || ''));
         if (ex.destination) item.appendChild(cel('div', 'histo-ext-dest', '→ ' + ex.destination));
         sortiesList.appendChild(item);
@@ -829,30 +1144,17 @@ function creerBilanBloc() {
   return bloc;
 }
 
-async function afficherHistoriqueCommunaute(content) {
-  var loading = cel('div', 'empty-state');
-  loading.appendChild(cel('p', '', 'Chargement des données du réseau…'));
-  content.appendChild(loading);
-  try {
-    // A12 : lots partagés lus par la fonction lots_partages(),
-    // qui ne renvoie jamais le code d'accès secret des communes.
-    var tousLots = await sbSelect('rpc/lots_partages', '');
-    while (content.firstChild) content.removeChild(content.firstChild);
-    rendreHistoriqueContenu(content, tousLots);
-  } catch (err) {
-    while (content.firstChild) content.removeChild(content.firstChild);
-    var errEl = cel('div', 'empty-state');
-    errEl.appendChild(cel('p', '', 'Erreur chargement réseau : ' + err.message));
-    content.appendChild(errEl);
-  }
-}
-
-function rendreHistoriqueContenu(container, lotsData) {
+// options.urgence    : liste complète triée par urgence de débit, avec badge
+// options.aDebiter   : id de grume → campagne ouverte (badge « À débiter »)
+// options.exportData : grumes à exporter (par défaut : celles affichées)
+function rendreHistoriqueContenu(container, lotsData, options) {
+  options = options || {};
+  var exportData = options.exportData || lotsData || [];
   if (!lotsData || lotsData.length === 0) {
     var es = cel('div', 'empty-state');
-    es.appendChild(cel('p', '', 'Aucun lot enregistré.'));
+    es.appendChild(cel('p', '', options.urgence ? 'Aucune grume en stock brut.' : 'Aucune grume enregistrée.'));
     container.appendChild(es);
-    container.appendChild(creerBoutonsExportHisto(lotsData || []));
+    container.appendChild(creerBoutonsExportHisto(exportData));
     return;
   }
 
@@ -871,7 +1173,7 @@ function rendreHistoriqueContenu(container, lotsData) {
 
   var itemLots = cel('div', '');
   itemLots.appendChild(cel('div', 'histo-total-lots', String(totalLots)));
-  itemLots.appendChild(cel('div', 'histo-total-unit', totalLots > 1 ? 'lots' : 'lot'));
+  itemLots.appendChild(cel('div', 'histo-total-unit', totalLots > 1 ? 'grumes' : 'grume'));
   bloc.appendChild(itemLots);
 
   container.appendChild(bloc);
@@ -902,7 +1204,7 @@ function rendreHistoriqueContenu(container, lotsData) {
       item.appendChild(top);
 
       item.appendChild(cel('div', 'histo-essence-meta',
-        d.lots + (d.lots > 1 ? ' lots' : ' lot') +
+        d.lots + (d.lots > 1 ? ' grumes' : ' grume') +
         (d.causes.length ? ' — ' + d.causes.join(', ') : '')
       ));
 
@@ -916,10 +1218,12 @@ function rendreHistoriqueContenu(container, lotsData) {
   container.appendChild(essList);
 
   // ── Lots récents ────────────────────────────────────────────────────
-  container.appendChild(cel('div', 'histo-section-title mt-16', 'Lots récents'));
+  container.appendChild(cel('div', 'histo-section-title mt-16',
+    options.urgence ? 'Grumes en stock — les plus urgentes d\'abord' : 'Grumes récentes'));
 
   var lotsList = cel('div', '');
-  lotsData.slice(0, 5).forEach(function (lot) {
+  var aAfficher = options.urgence ? grumesParUrgence(lotsData) : lotsData.slice(0, 5);
+  aAfficher.forEach(function (lot) {
     var card   = cel('div', 'histo-lot-card');
     var header = cel('div', 'histo-lot-header');
     header.appendChild(cel('div', 'histo-lot-nom', lot.nom || '—'));
@@ -930,12 +1234,17 @@ function rendreHistoriqueContenu(container, lotsData) {
     if (lot.commune) badges.appendChild(cel('span', 'histo-badge histo-badge-commune', lot.commune));
     if (lot.essence) badges.appendChild(cel('span', 'histo-badge histo-badge-essence', lot.essence));
     if (lot.cause)   badges.appendChild(cel('span', 'histo-badge histo-badge-cause',   lot.cause));
+    if (options.urgence) badges.appendChild(creerBadgeUrgence(lot));
+    if (options.aDebiter && options.aDebiter[lot.id]) {
+      badges.appendChild(cel('span', 'histo-badge badge-a-debiter',
+        'À débiter — ' + (options.aDebiter[lot.id].nom || 'campagne')));
+    }
     card.appendChild(badges);
     lotsList.appendChild(card);
   });
   container.appendChild(lotsList);
 
-  container.appendChild(creerBoutonsExportHisto(lotsData));
+  container.appendChild(creerBoutonsExportHisto(exportData));
 }
 
 function creerBoutonsExportHisto(lotsData) {
@@ -952,7 +1261,7 @@ function creerBoutonsExportHisto(lotsData) {
 }
 
 function exporterHistoriqueCSV(lotsData) {
-  if (!lotsData || lotsData.length === 0) { showError('Aucun lot à exporter.'); return; }
+  if (!lotsData || lotsData.length === 0) { showError('Aucune grume à exporter.'); return; }
   var h = ['Nom','Essence','Commune','Cause','Provenance','Annee','Usage',
            'Nb grumes','Vol. brut','Vol. utile','Vol. dechets','Nb planches','Lineaire','Date'];
   var r = lotsData.map(function (l) {
@@ -972,6 +1281,794 @@ function exporterHistoriqueCSV(lotsData) {
 
 function exporterHistoriquePDF() {
   window.print();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STOCK EN DEUX ÉTATS ET CAMPAGNE DE SCIAGE (feat/campagne-sciage)
+// Grumes brutes → [campagne de sciage] → produits bois.
+// La feuille de débit prépare le sciage ; la clôture enregistre les produits
+// réels. Statuts et dates de séchage sont calculés, jamais enregistrés.
+// ═══════════════════════════════════════════════════════════════════════════
+
+var stockEtat = 'brut';               // 'brut' (grumes) ou 'produits'
+var CLE_BROUILLON_CAMPAGNE = 'duramen_draft_campagne';
+var CLE_BROUILLON_CLOTURE  = 'duramen_draft_cloture';
+
+function formatDateFr(d) {
+  if (!d) return '—';
+  var x = new Date(d);
+  return isNaN(x) ? '—' : x.toLocaleDateString('fr-FR');
+}
+function formatNb(v, dec) {
+  return (parseFloat(v) || 0).toFixed(dec).replace('.', ',');
+}
+function lireJSONLocal(cle) {
+  try { return JSON.parse(localStorage.getItem(cle) || 'null'); } catch (e) { return null; }
+}
+
+// Suppression d'une ligne (campagne non clôturée)
+async function sbDelete(table, id) {
+  var entetes = Object.assign({}, sbH, { 'Prefer': 'return=minimal' });
+  var r = await requeteSupabase(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + encodeURIComponent(id),
+    { method: 'DELETE', headers: entetes }, DELAI_ENVOI_MS, table);
+  if (!r.res.ok) {
+    var err = new Error('Suppression ' + table + ': ' + r.res.status + ' ' + r.texte);
+    err.statut = r.res.status;
+    throw err;
+  }
+}
+
+// ─── Campagnes : état calculé ────────────────────────────────────────────
+// Une campagne est clôturée dès qu'un sciage y est rattaché.
+function campagneCloturee(c) {
+  return extractions.some(function (e) { return e.campagne_id === c.id; });
+}
+function campagnesOuvertes() {
+  return campagnes.filter(function (c) { return !campagneCloturee(c); });
+}
+// Grumes réservées par une campagne ouverte : id de grume → campagne
+function grumesADebiter() {
+  var map = {};
+  campagnesOuvertes().forEach(function (c) {
+    (c.lignes || []).forEach(function (l) { map[l.grume_id] = c; });
+  });
+  return map;
+}
+// Grumes en stock, de la plus urgente à la moins urgente
+function grumesParUrgence(liste) {
+  var now = new Date();
+  return liste.slice().sort(function (a, b) {
+    return DuramenCore.urgenceDebit(b, now).ratio - DuramenCore.urgenceDebit(a, now).ratio;
+  });
+}
+
+// ─── Badges ──────────────────────────────────────────────────────────────
+function creerBadgeUrgence(grume) {
+  var u = DuramenCore.urgenceDebit(grume);
+  var txt;
+  if (u.niveau === 'depasse')     txt = 'Délai de débit dépassé (' + formatDateFr(u.dateLimite) + ')';
+  else if (u.niveau === 'alerte') txt = 'Débit urgent — avant le ' + formatDateFr(u.dateLimite);
+  else                            txt = 'Débit avant le ' + formatDateFr(u.dateLimite);
+  return cel('span', 'histo-badge badge-urgence badge-urgence-' + u.niveau, txt);
+}
+function creerBadgeSechage(dateSec) {
+  var sec = new Date(dateSec) <= new Date();
+  return cel('span', 'histo-badge badge-sechage ' + (sec ? 'badge-sechage-sec' : 'badge-sechage-en-cours'),
+    sec ? 'Sec à l\'air' : 'En séchage — sec à l\'air le ' + formatDateFr(dateSec));
+}
+function texteDemande(l) {
+  var est = l.estimation_quantite ? ' · ~' + l.estimation_quantite
+    + (l.type === 'avive' ? ' pièces' : ' planches') : '';
+  if (l.type === 'avive') return 'Avivé · ' + l.epaisseur_mm + ' × ' + l.largeur_mm + ' mm' + est;
+  return 'Plot · ' + l.epaisseur_mm + ' mm' + est;
+}
+function texteProduit(p) {
+  var lon = formatNb(p.longueur_m, 2) + ' m';
+  if (p.type === 'avive') return 'Avivé ' + p.epaisseur_mm + ' × ' + p.largeur_mm + ' mm · ' + lon;
+  return 'Plot ' + p.epaisseur_mm + ' mm · ' + lon;
+}
+
+// ─── Bascule Grumes brutes / Produits bois ───────────────────────────────
+function creerBasculeStock() {
+  var bar = cel('div', 'histo-toggle-bar stock-etat-bar');
+  [['brut', 'Grumes brutes'], ['produits', 'Produits bois']].forEach(function (o) {
+    var b = cel('button', 'histo-toggle-btn' + (stockEtat === o[0] ? ' active' : ''), o[1]);
+    b.type    = 'button';
+    b.onclick = function () { stockEtat = o[0]; afficherHistorique(); };
+    bar.appendChild(b);
+  });
+  return bar;
+}
+
+// ─── Section « Campagnes de sciage » (stock brut, ma commune) ────────────
+function creerSectionCampagnes() {
+  var bloc = cel('div', 'sciage-section');
+  bloc.appendChild(cel('div', 'histo-section-title', 'Campagnes de sciage'));
+  var ouvertes = campagnesOuvertes();
+  if (ouvertes.length === 0) {
+    bloc.appendChild(cel('p', 'histo-essence-meta', 'Aucune campagne en préparation.'));
+  }
+  ouvertes.forEach(function (c) {
+    var card   = cel('div', 'histo-lot-card sciage-campagne-card');
+    var header = cel('div', 'histo-lot-header');
+    header.appendChild(cel('div', 'histo-lot-nom', c.nom || 'Campagne'));
+    var nb = (c.lignes || []).length;
+    header.appendChild(cel('div', 'histo-lot-vol', nb + (nb > 1 ? ' grumes' : ' grume')));
+    card.appendChild(header);
+    var acts = cel('div', 'sciage-campagne-actions');
+    var bFeuille = cel('button', 'btn btn-outline', 'Feuille de débit');
+    bFeuille.type = 'button';
+    bFeuille.onclick = function () { ouvrirFeuilleDebit(c); };
+    var bClot = cel('button', 'btn btn-primary', 'Clôturer');
+    bClot.type = 'button';
+    bClot.onclick = function () { ouvrirCloture(c); };
+    var bSup = cel('button', 'btn btn-outline sciage-btn-supprimer', 'Supprimer');
+    bSup.type = 'button';
+    bSup.onclick = function () { supprimerCampagne(c); };
+    acts.appendChild(bFeuille);
+    acts.appendChild(bClot);
+    acts.appendChild(bSup);
+    card.appendChild(acts);
+    bloc.appendChild(card);
+  });
+  var bNew = cel('button', 'btn btn-primary sciage-btn-nouvelle', '+ Préparer une campagne de sciage');
+  bNew.type    = 'button';
+  bNew.onclick = ouvrirPreparationCampagne;
+  bloc.appendChild(bNew);
+  return bloc;
+}
+
+async function supprimerCampagne(c) {
+  if (!confirm('Supprimer la campagne « ' + (c.nom || '') + ' » ?\nLes grumes restent en stock brut.')) return;
+  try {
+    showLoading(true);
+    await sbDelete('campagnes', c.id);
+    await chargerDonnees();
+    showToastSucces('Campagne supprimée.');
+  } catch (err) {
+    if (err.reseau) showError('Pas de réseau : la suppression se fait avec réseau.');
+    else if (/23503/.test(err.message)) showError('Cette campagne est déjà clôturée : elle ne peut plus être supprimée.');
+    else showError('Erreur suppression : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ─── Stock produits (ma commune ou métropole) ────────────────────────────
+// lignes : format de DuramenCore.getStockProduits(), ou de produits_partages()
+// ramené au même format par normaliserProduitsPartages().
+function rendreStockProduits(container, lignes, partage) {
+  var total = lignes.reduce(function (s, l) { return s + (l.volumeRestant || 0); }, 0);
+  var nbPieces = lignes.reduce(function (s, l) { return s + (l.restant || 0); }, 0);
+
+  var bloc = cel('div', 'histo-total-block');
+  var iVol = cel('div', '');
+  iVol.appendChild(cel('div', 'histo-total-vol', total.toFixed(3)));
+  iVol.appendChild(cel('div', 'histo-total-unit', 'm³ de produits'));
+  bloc.appendChild(iVol);
+  bloc.appendChild(cel('div', 'histo-total-divider'));
+  var iNb = cel('div', '');
+  iNb.appendChild(cel('div', 'histo-total-lots', String(nbPieces)));
+  iNb.appendChild(cel('div', 'histo-total-unit', nbPieces > 1 ? 'pièces' : 'pièce'));
+  bloc.appendChild(iNb);
+  container.appendChild(bloc);
+
+  if (lignes.length === 0) {
+    var es = cel('div', 'empty-state');
+    es.appendChild(cel('p', '', 'Aucun produit bois en stock. Les produits arrivent à la clôture d\'une campagne de sciage.'));
+    container.appendChild(es);
+    return;
+  }
+
+  var parEss = {};
+  lignes.forEach(function (l) {
+    var e = l.essence || 'Autre';
+    (parEss[e] = parEss[e] || []).push(l);
+  });
+  Object.keys(parEss).sort().forEach(function (ess) {
+    var vol = parEss[ess].reduce(function (s, l) { return s + (l.volumeRestant || 0); }, 0);
+    container.appendChild(cel('div', 'histo-section-title mt-16', ess + ' — ' + vol.toFixed(3) + ' m³'));
+    parEss[ess]
+      .sort(function (a, b) { return new Date(a.dateSecAir) - new Date(b.dateSecAir); })
+      .forEach(function (l) {
+        var card   = cel('div', 'histo-lot-card produit-card');
+        var header = cel('div', 'histo-lot-header');
+        header.appendChild(cel('div', 'histo-lot-nom', texteProduit(l)));
+        header.appendChild(cel('div', 'histo-lot-vol', (l.volumeRestant || 0).toFixed(3) + ' m³'));
+        card.appendChild(header);
+        var unite = l.type === 'avive' ? ' pièces' : ' planches';
+        card.appendChild(cel('div', 'histo-essence-meta',
+          l.restant + ' sur ' + l.quantite + unite + ' · scié le ' + formatDateFr(l.dateSciage)
+          + (l.grume_nom ? ' · grume ' + l.grume_nom : '')));
+        var badges = cel('div', 'histo-badges');
+        if (partage && l.commune) badges.appendChild(cel('span', 'histo-badge histo-badge-commune', l.commune));
+        badges.appendChild(creerBadgeSechage(l.dateSecAir));
+        card.appendChild(badges);
+        container.appendChild(card);
+      });
+  });
+}
+
+function normaliserProduitsPartages(rows) {
+  return (rows || []).map(function (r) {
+    var p = { type: r.type, epaisseur_mm: r.epaisseur_mm, largeur_mm: r.largeur_mm };
+    return {
+      cle: r.cle, commune: r.commune, essence: r.essence, type: r.type,
+      epaisseur_mm: r.epaisseur_mm, largeur_mm: r.largeur_mm, longueur_m: r.longueur_m,
+      quantite: parseFloat(r.quantite) || 0, restant: parseFloat(r.quantite_restante) || 0,
+      volumeRestant: parseFloat(r.volume_restant) || 0,
+      dateSciage: r.date_sciage, dateSecAir: DuramenCore.dateSecAir(r.date_sciage, p)
+    };
+  });
+}
+
+async function afficherStockCommunaute(content) {
+  content.appendChild(creerBasculeStock());
+  var zone = cel('div', '');
+  var loading = cel('div', 'empty-state');
+  loading.appendChild(cel('p', '', 'Chargement des données de la métropole…'));
+  zone.appendChild(loading);
+  content.appendChild(zone);
+  try {
+    var rows = await sbSelect(stockEtat === 'produits' ? 'rpc/produits_partages' : 'rpc/grumes_en_stock_partagees', '');
+    while (zone.firstChild) zone.removeChild(zone.firstChild);
+    if (stockEtat === 'produits') rendreStockProduits(zone, normaliserProduitsPartages(rows), true);
+    else rendreHistoriqueContenu(zone, rows, { urgence: true });
+  } catch (err) {
+    while (zone.firstChild) zone.removeChild(zone.firstChild);
+    var errEl = cel('div', 'empty-state');
+    errEl.appendChild(cel('p', '', 'Erreur chargement métropole : ' + err.message));
+    zone.appendChild(errEl);
+  }
+}
+
+// ═══ Préparation d'une campagne (feuille de débit) ════════════════════════
+var campDraft = null;
+
+function nouveauCampDraft() {
+  var d = new Date();
+  return { date_prevue: d.toISOString().slice(0, 10), choix: {} };
+}
+function sauverCampDraft() {
+  try { localStorage.setItem(CLE_BROUILLON_CAMPAGNE, JSON.stringify(campDraft)); } catch (e) {}
+}
+
+function ouvrirPreparationCampagne() {
+  campDraft = lireJSONLocal(CLE_BROUILLON_CAMPAGNE) || nouveauCampDraft();
+  var bg = document.getElementById('modal-campagne-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+  bg = cel('div', 'extract-modal-bg open');
+  bg.id = 'modal-campagne-bg';
+  var modal = cel('div', 'extract-modal sciage-modal');
+  var closeBtn = cel('button', 'modal-close', '✕');
+  closeBtn.type = 'button';
+  closeBtn.onclick = fermerPreparationCampagne;
+  modal.appendChild(closeBtn);
+  modal.appendChild(cel('h2', '', 'Préparer une campagne de sciage'));
+  modal.appendChild(cel('p', 'modal-sub', 'Choisissez les grumes et le débit demandé. Les plus urgentes sont en haut.'));
+
+  // Seule la date est demandée : le nom de la campagne en découle
+  [['date_prevue', 'Date prévue du sciage', 'date']].forEach(function (f) {
+    var fld = cel('div', 'field');
+    var lab = cel('label', '', f[1]);
+    lab.htmlFor = 'camp-' + f[0];
+    var inp = document.createElement('input');
+    inp.type = f[2];
+    inp.id   = 'camp-' + f[0];
+    inp.autocomplete = 'off';
+    inp.value = campDraft[f[0]] || '';
+    inp.oninput = function () { campDraft[f[0]] = inp.value; sauverCampDraft(); };
+    fld.appendChild(lab);
+    fld.appendChild(inp);
+    modal.appendChild(fld);
+  });
+
+  modal.appendChild(cel('div', 'histo-section-title mt-16', 'Grumes en stock'));
+  var reservees = grumesADebiter();
+  var dispo = grumesParUrgence(DuramenCore.getGrumesEnStock()).filter(function (g) { return !reservees[g.id]; });
+  // Le brouillon ne garde que les grumes encore disponibles
+  Object.keys(campDraft.choix).forEach(function (id) {
+    if (!dispo.some(function (g) { return g.id === id; })) delete campDraft.choix[id];
+  });
+  if (dispo.length === 0) {
+    modal.appendChild(cel('p', 'histo-essence-meta', 'Aucune grume disponible : elles sont toutes déjà dans une campagne.'));
+  }
+  dispo.forEach(function (g) { modal.appendChild(creerLigneChoixDebit(g)); });
+
+  var resume = cel('div', 'sciage-resume');
+  resume.id = 'camp-resume';
+  modal.appendChild(resume);
+
+  var acts = cel('div', 'flex-end');
+  var bAnn = cel('button', 'btn btn-outline', 'Effacer');
+  bAnn.type = 'button';
+  bAnn.onclick = function () {
+    if (!confirm('Effacer la préparation en cours ?')) return;
+    try { localStorage.removeItem(CLE_BROUILLON_CAMPAGNE); } catch (e) {}
+    ouvrirPreparationCampagne();
+  };
+  var bOk = cel('button', 'btn btn-primary', 'Enregistrer la campagne');
+  bOk.type = 'button';
+  bOk.onclick = enregistrerCampagne;
+  acts.appendChild(bAnn);
+  acts.appendChild(bOk);
+  modal.appendChild(acts);
+
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+  majResumeCampagne();
+}
+
+function fermerPreparationCampagne() {
+  var bg = document.getElementById('modal-campagne-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+}
+
+// Une grume : case à cocher, puis plot (épaisseur standard) ou avivé (section libre)
+function creerLigneChoixDebit(g) {
+  var m   = DuramenCore.mesuresGrume(g);
+  var row = cel('div', 'histo-lot-card sciage-grume-row');
+
+  var lab = cel('label', 'sciage-grume-check');
+  var cb  = document.createElement('input');
+  cb.type    = 'checkbox';
+  cb.checked = !!campDraft.choix[g.id];
+  lab.appendChild(cb);
+  lab.appendChild(cel('span', 'histo-lot-nom', (g.nom || '—') + ' · ' + (g.essence || '')));
+  row.appendChild(lab);
+  row.appendChild(cel('div', 'histo-essence-meta',
+    formatNb(m.longueur, 2) + ' m × ' + m.diametre + ' cm · ' + (g.vol_utile || 0).toFixed(3) + ' m³'));
+  var badges = cel('div', 'histo-badges');
+  badges.appendChild(creerBadgeUrgence(g));
+  row.appendChild(badges);
+
+  var zone = cel('div', 'sciage-choix' + (cb.checked ? '' : ' hidden'));
+  row.appendChild(zone);
+
+  function rendreChoix() {
+    while (zone.firstChild) zone.removeChild(zone.firstChild);
+    var ch = campDraft.choix[g.id];
+    if (!ch) return;
+
+    var types = cel('div', 'histo-toggle-bar sciage-type-bar');
+    [['plot', 'Plot'], ['avive', 'Avivé']].forEach(function (t) {
+      var b = cel('button', 'histo-toggle-btn' + (ch.type === t[0] ? ' active' : ''), t[1]);
+      b.type = 'button';
+      b.onclick = function () {
+        ch.type = t[0];
+        if (t[0] === 'plot' && DuramenCore.EPAISSEURS_PLOT.indexOf(ch.epaisseur_mm) === -1) ch.epaisseur_mm = 27;
+        sauverCampDraft(); rendreChoix(); majResumeCampagne();
+      };
+      types.appendChild(b);
+    });
+    zone.appendChild(types);
+
+    var est = cel('div', 'sciage-estimation');
+    function majEst() {
+      var r = DuramenCore.estimerDebit(g, ch);
+      est.textContent = r.quantite > 0
+        ? '≈ ' + r.quantite + (ch.type === 'avive' ? ' pièces' : ' planches') + ' · ' + r.volume.toFixed(3) + ' m³ (estimation)'
+        : 'Indiquez les cotes pour obtenir une estimation.';
+    }
+
+    if (ch.type === 'plot') {
+      var fE = cel('div', 'field');
+      fE.appendChild(cel('label', '', 'Épaisseur des planches'));
+      var sel = document.createElement('select');
+      DuramenCore.EPAISSEURS_PLOT.forEach(function (e) {
+        var o = document.createElement('option');
+        o.value = e; o.textContent = e + ' mm';
+        if (e === ch.epaisseur_mm) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.onchange = function () { ch.epaisseur_mm = parseInt(sel.value, 10); sauverCampDraft(); majEst(); };
+      fE.appendChild(sel);
+      zone.appendChild(fE);
+    } else {
+      [['epaisseur_mm', 'Épaisseur (mm)'], ['largeur_mm', 'Largeur (mm)']].forEach(function (f) {
+        var fld = cel('div', 'field');
+        fld.appendChild(cel('label', '', f[1]));
+        var inp = document.createElement('input');
+        inp.type = 'number'; inp.min = '5'; inp.max = '500'; inp.inputMode = 'numeric';
+        inp.value = ch[f[0]] || '';
+        inp.oninput = function () { ch[f[0]] = parseInt(inp.value, 10) || 0; sauverCampDraft(); majEst(); };
+        fld.appendChild(inp);
+        zone.appendChild(fld);
+      });
+    }
+    zone.appendChild(est);
+    majEst();
+  }
+
+  cb.onchange = function () {
+    if (cb.checked) campDraft.choix[g.id] = campDraft.choix[g.id] || { type: 'plot', epaisseur_mm: 27, largeur_mm: 0 };
+    else delete campDraft.choix[g.id];
+    zone.classList.toggle('hidden', !cb.checked);
+    sauverCampDraft(); rendreChoix(); majResumeCampagne();
+  };
+  rendreChoix();
+  return row;
+}
+
+function majResumeCampagne() {
+  var el = document.getElementById('camp-resume');
+  if (!el || !campDraft) return;
+  var n = Object.keys(campDraft.choix).length;
+  el.textContent = n === 0 ? 'Aucune grume choisie.' : n + (n > 1 ? ' grumes choisies' : ' grume choisie');
+}
+
+async function enregistrerCampagne() {
+  var ids = Object.keys(campDraft.choix);
+  if (ids.length === 0) { showError('Choisissez au moins une grume.'); return; }
+  var lignes = [];
+  for (var i = 0; i < ids.length; i++) {
+    var g  = lots.find(function (l) { return l.id === ids[i]; });
+    var ch = campDraft.choix[ids[i]];
+    if (!g) continue;
+    if (!(ch.epaisseur_mm > 0) || (ch.type === 'avive' && !(ch.largeur_mm > 0))) {
+      showError('Grume ' + g.nom + ' : indiquez l\'épaisseur' + (ch.type === 'avive' ? ' et la largeur.' : '.'));
+      return;
+    }
+    var m   = DuramenCore.mesuresGrume(g);
+    var est = DuramenCore.estimerDebit(g, ch);
+    lignes.push({
+      grume_id: g.id, cle: g.id + '_0', nom: g.nom, essence: g.essence,
+      longueur: m.longueur, diametre: m.diametre, vol: g.vol_utile || 0,
+      type: ch.type, epaisseur_mm: ch.epaisseur_mm, largeur_mm: ch.type === 'avive' ? ch.largeur_mm : null,
+      estimation_quantite: est.quantite, estimation_volume: arrondiM3(est.volume)
+    });
+  }
+  // Ordre de la feuille de débit : les plus urgentes d'abord
+  var ordre = grumesParUrgence(lots).map(function (g) { return g.id; });
+  lignes.sort(function (a, b) { return ordre.indexOf(a.grume_id) - ordre.indexOf(b.grume_id); });
+
+  var campagne = {
+    id:           crypto.randomUUID(),
+    commune_code: communeConnectee.code,
+    nom:          'Campagne du ' + formatDateFr(campDraft.date_prevue || new Date()),
+    date_prevue:  campDraft.date_prevue || null,
+    scieur:       '',
+    lignes:       lignes,
+    date_iso:     new Date().toISOString()
+  };
+  try {
+    showLoading(true);
+    await sbInsert('campagnes', campagne, { sansRetour: true });
+    try { localStorage.removeItem(CLE_BROUILLON_CAMPAGNE); } catch (e) {}
+    fermerPreparationCampagne();
+    stockEtat = 'brut';
+    await chargerDonnees();
+    showToastSucces('Campagne enregistrée : ' + lignes.length + (lignes.length > 1 ? ' grumes à débiter.' : ' grume à débiter.'));
+  } catch (err) {
+    if (err.reseau) showError('Pas de réseau : la campagne s\'enregistre avec réseau. Votre préparation est gardée.');
+    else showError('Erreur enregistrement : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ═══ Feuille de débit imprimable ═══════════════════════════════════════════
+// Colonne « Demandé » remplie, colonne « Réalisé » vide pour le scieur.
+function construireFeuilleDebit(c) {
+  var f = cel('div', 'feuille-debit');
+  f.appendChild(cel('h2', '', 'Feuille de débit — ' + (c.nom || 'Campagne')));
+  f.appendChild(cel('p', '', (communeConnectee ? communeConnectee.nom : '') + ' · Date prévue : '
+    + formatDateFr(c.date_prevue) + ' · Scieur : ' + (c.scieur || '________________')));
+  var table = document.createElement('table');
+  table.className = 'feuille-table';
+  var thead = document.createElement('thead');
+  var trh   = document.createElement('tr');
+  ['N°', 'Essence', 'Long.', 'Diam.', 'Demandé', 'Réalisé'].forEach(function (h) {
+    trh.appendChild(cel('th', '', h));
+  });
+  thead.appendChild(trh);
+  table.appendChild(thead);
+  var tbody = document.createElement('tbody');
+  (c.lignes || []).forEach(function (l) {
+    var tr = document.createElement('tr');
+    [l.nom, l.essence, formatNb(l.longueur, 2) + ' m', l.diametre + ' cm', texteDemande(l),
+     '☐ Conforme   ☐ Écart : ____________'].forEach(function (v) { tr.appendChild(cel('td', '', v)); });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  f.appendChild(table);
+  f.appendChild(cel('p', 'feuille-pied', 'Date du sciage : ____________     Signature du scieur : ____________'));
+  return f;
+}
+
+function ouvrirFeuilleDebit(c) {
+  var bg = document.getElementById('modal-feuille-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+  bg = cel('div', 'extract-modal-bg open');
+  bg.id = 'modal-feuille-bg';
+  var modal = cel('div', 'extract-modal sciage-modal');
+  var closeBtn = cel('button', 'modal-close', '✕');
+  closeBtn.type = 'button';
+  closeBtn.onclick = function () { bg.parentNode.removeChild(bg); };
+  modal.appendChild(closeBtn);
+  modal.appendChild(construireFeuilleDebit(c));
+  var acts = cel('div', 'flex-end');
+  var bFerm = cel('button', 'btn btn-outline', 'Fermer');
+  bFerm.type = 'button';
+  bFerm.onclick = closeBtn.onclick;
+  var bImp = cel('button', 'btn btn-primary', 'Imprimer');
+  bImp.type = 'button';
+  bImp.onclick = function () { imprimerFeuilleDebit(c); };
+  acts.appendChild(bFerm);
+  acts.appendChild(bImp);
+  modal.appendChild(acts);
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+}
+
+// Impression : seule la feuille reste visible le temps de l'impression
+// (classe « hidden » existante), puis la page revient à l'identique.
+function imprimerFeuilleDebit(c) {
+  var feuille = construireFeuilleDebit(c);
+  feuille.classList.add('feuille-impression');
+  var masques = [];
+  Array.prototype.forEach.call(document.body.children, function (el) {
+    if (!el.classList.contains('hidden')) { el.classList.add('hidden'); masques.push(el); }
+  });
+  document.body.appendChild(feuille);
+  var fini = false;
+  function restaurer() {
+    if (fini) return;
+    fini = true;
+    if (feuille.parentNode) feuille.parentNode.removeChild(feuille);
+    masques.forEach(function (el) { el.classList.remove('hidden'); });
+  }
+  window.addEventListener('afterprint', restaurer, { once: true });
+  window.print();
+  setTimeout(restaurer, 1000);
+}
+
+// ═══ Clôture d'une campagne : saisie du réalisé ═══════════════════════════
+// La colonne « Réalisé » est pré-remplie avec le demandé : on ne corrige
+// que les écarts. Un seul envoi : tout passe ou rien.
+var clotDraft = null;
+
+function produitDepuisDemande(l) {
+  return {
+    type: l.type, epaisseur_mm: l.epaisseur_mm,
+    largeur_mm: l.type === 'avive' ? l.largeur_mm : null,
+    longueur_m: l.longueur, quantite: l.estimation_quantite || 0
+  };
+}
+function sauverClotDraft() {
+  try { localStorage.setItem(CLE_BROUILLON_CLOTURE, JSON.stringify(clotDraft)); } catch (e) {}
+}
+
+function ouvrirCloture(c) {
+  var d = lireJSONLocal(CLE_BROUILLON_CLOTURE);
+  if (!d || d.campagne_id !== c.id) {
+    d = { campagne_id: c.id, grumes: {} };
+    (c.lignes || []).forEach(function (l) {
+      d.grumes[l.grume_id] = { sciee: true, produits: [produitDepuisDemande(l)] };
+    });
+  }
+  clotDraft = d;
+
+  var bg = document.getElementById('modal-cloture-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+  bg = cel('div', 'extract-modal-bg open');
+  bg.id = 'modal-cloture-bg';
+  var modal = cel('div', 'extract-modal sciage-modal');
+  var closeBtn = cel('button', 'modal-close', '✕');
+  closeBtn.type = 'button';
+  closeBtn.onclick = fermerCloture;
+  modal.appendChild(closeBtn);
+  modal.appendChild(cel('h2', '', 'Clôturer — ' + (c.nom || 'Campagne')));
+  modal.appendChild(cel('p', 'modal-sub',
+    'Le réalisé est pré-rempli avec le demandé. Corrigez seulement les écarts, puis validez.'));
+
+  var sorties = {};
+  extractions.forEach(function (e) { (e.grumes_keys || []).forEach(function (k) { sorties[k] = true; }); });
+
+  (c.lignes || []).forEach(function (l) {
+    var g = lots.find(function (x) { return x.id === l.grume_id; });
+    var card = cel('div', 'histo-lot-card sciage-cloture-grume');
+    card.appendChild(cel('div', 'histo-lot-nom', (l.nom || '—') + ' · ' + (l.essence || '')
+      + ' · ' + formatNb(l.longueur, 2) + ' m × ' + l.diametre + ' cm'));
+    card.appendChild(cel('div', 'histo-essence-meta', 'Demandé : ' + texteDemande(l)));
+    if (!g || sorties[l.grume_id + '_0']) {
+      delete clotDraft.grumes[l.grume_id];
+      card.appendChild(cel('div', 'info-box', 'Grume déjà sortie du stock : elle est ignorée.'));
+      modal.appendChild(card);
+      return;
+    }
+    if (!clotDraft.grumes[l.grume_id]) clotDraft.grumes[l.grume_id] = { sciee: true, produits: [produitDepuisDemande(l)] };
+    card.appendChild(creerSaisieRealise(g, clotDraft.grumes[l.grume_id]));
+    modal.appendChild(card);
+  });
+  sauverClotDraft();
+
+  var acts = cel('div', 'flex-end');
+  var bRet = cel('button', 'btn btn-outline', '← Retour');
+  bRet.type = 'button';
+  bRet.onclick = fermerCloture;
+  var bOk = cel('button', 'btn btn-primary', 'Valider la clôture');
+  bOk.type = 'button';
+  bOk.onclick = function () { validerCloture(c); };
+  acts.appendChild(bRet);
+  acts.appendChild(bOk);
+  modal.appendChild(acts);
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+}
+
+function fermerCloture() {
+  var bg = document.getElementById('modal-cloture-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+}
+
+// Saisie du réalisé d'une grume : sciée ou non, puis ses produits
+function creerSaisieRealise(g, etat) {
+  var zone = cel('div', 'sciage-realise');
+
+  var lab = cel('label', 'sciage-grume-check');
+  var cb  = document.createElement('input');
+  cb.type    = 'checkbox';
+  cb.checked = etat.sciee;
+  lab.appendChild(cb);
+  lab.appendChild(cel('span', '', 'Grume sciée'));
+  zone.appendChild(lab);
+
+  var liste = cel('div', 'sciage-produits' + (etat.sciee ? '' : ' hidden'));
+  zone.appendChild(liste);
+  var note = cel('div', 'histo-essence-meta' + (etat.sciee ? ' hidden' : ''),
+    'Non sciée : la grume reste en stock brut.');
+  zone.appendChild(note);
+
+  cb.onchange = function () {
+    etat.sciee = cb.checked;
+    liste.classList.toggle('hidden', !cb.checked);
+    note.classList.toggle('hidden', cb.checked);
+    sauverClotDraft();
+  };
+
+  function rendre() {
+    while (liste.firstChild) liste.removeChild(liste.firstChild);
+    etat.produits.forEach(function (p, i) {
+      var ligne = cel('div', 'sciage-produit-ligne');
+      var sel = document.createElement('select');
+      [['plot', 'Plot'], ['avive', 'Avivé']].forEach(function (t) {
+        var o = document.createElement('option');
+        o.value = t[0]; o.textContent = t[1];
+        if (p.type === t[0]) o.selected = true;
+        sel.appendChild(o);
+      });
+      var fT = cel('div', 'field');
+      fT.appendChild(cel('label', '', 'Type'));
+      fT.appendChild(sel);
+      ligne.appendChild(fT);
+
+      var vol = cel('div', 'sciage-estimation');
+      function majVol() {
+        vol.textContent = DuramenCore.volumeProduit(p, g).toFixed(3) + ' m³';
+      }
+      var champs = [['epaisseur_mm', 'Épaisseur (mm)'], ['largeur_mm', 'Largeur (mm)'],
+                    ['longueur_m', 'Longueur (m)'], ['quantite', 'Quantité']];
+      champs.forEach(function (f) {
+        var fld = cel('div', 'field' + (f[0] === 'largeur_mm' && p.type !== 'avive' ? ' hidden' : ''));
+        fld.appendChild(cel('label', '', f[1]));
+        var inp = document.createElement('input');
+        inp.type = 'number';
+        inp.min  = '0';
+        inp.step = f[0] === 'longueur_m' ? '0.05' : '1';
+        inp.inputMode = f[0] === 'longueur_m' ? 'decimal' : 'numeric';
+        inp.value = (p[f[0]] === null || p[f[0]] === undefined) ? '' : p[f[0]];
+        inp.oninput = function () {
+          p[f[0]] = parseFloat(String(inp.value).replace(',', '.')) || 0;
+          sauverClotDraft(); majVol();
+        };
+        fld.appendChild(inp);
+        ligne.appendChild(fld);
+      });
+      sel.onchange = function () { p.type = sel.value; sauverClotDraft(); rendre(); };
+
+      ligne.appendChild(vol);
+      var bSup = cel('button', 'btn btn-outline sciage-btn-retirer', '✕ Retirer');
+      bSup.type = 'button';
+      bSup.onclick = function () { etat.produits.splice(i, 1); sauverClotDraft(); rendre(); };
+      ligne.appendChild(bSup);
+      liste.appendChild(ligne);
+      majVol();
+    });
+    var bAdd = cel('button', 'btn btn-outline sciage-btn-ajouter', '+ Ajouter un produit');
+    bAdd.type = 'button';
+    bAdd.onclick = function () {
+      var m = DuramenCore.mesuresGrume(g);
+      etat.produits.push({ type: 'avive', epaisseur_mm: 27, largeur_mm: 150, longueur_m: m.longueur, quantite: 0 });
+      sauverClotDraft(); rendre();
+    };
+    liste.appendChild(bAdd);
+  }
+  rendre();
+  return zone;
+}
+
+function produitValide(p) {
+  return p.quantite > 0 && p.epaisseur_mm > 0 && p.longueur_m > 0 && (p.type !== 'avive' || p.largeur_mm > 0);
+}
+
+async function validerCloture(c) {
+  if (!navigator.onLine) { showError('Pas de réseau : la clôture se fait avec réseau. Votre saisie est gardée.'); return; }
+  try {
+    showLoading(true);
+    // Données fraîches : une grume a pu sortir entre-temps
+    await chargerDonnees();
+    if (campagneCloturee(c)) { showError('Cette campagne a déjà été clôturée.'); fermerCloture(); return; }
+    var sorties = {};
+    extractions.forEach(function (e) { (e.grumes_keys || []).forEach(function (k) { sorties[k] = true; }); });
+
+    var now = new Date();
+    var lignesEnvoi = [];
+    var nbProduits = 0, nbNonSciees = 0;
+    var ids = Object.keys(clotDraft.grumes);
+    for (var i = 0; i < ids.length; i++) {
+      var etat = clotDraft.grumes[ids[i]];
+      var g    = lots.find(function (x) { return x.id === ids[i]; });
+      if (!g || sorties[ids[i] + '_0']) {
+        showError('Une grume de la campagne vient de sortir du stock. Rouvrez la clôture pour vérifier.');
+        return;
+      }
+      if (!etat.sciee) { nbNonSciees++; continue; }
+      var invalide = etat.produits.find(function (p) { return p.quantite > 0 && !produitValide(p); });
+      if (invalide) { showError('Grume ' + g.nom + ' : un produit a des cotes incomplètes.'); return; }
+      var produits = etat.produits.filter(produitValide).map(function (p) {
+        return {
+          type: p.type, epaisseur_mm: p.epaisseur_mm,
+          largeur_mm: p.type === 'avive' ? p.largeur_mm : null,
+          longueur_m: p.longueur_m, quantite: p.quantite,
+          volume: arrondiM3(DuramenCore.volumeProduit(p, g)),
+          grume_nom: g.nom
+        };
+      });
+      nbProduits += produits.reduce(function (s, p) { return s + p.quantite; }, 0);
+      lignesEnvoi.push({
+        id:           crypto.randomUUID(),
+        commune_code: communeConnectee.code,
+        essence:      g.essence,
+        volume:       arrondiM3(g.vol_utile || 0),
+        usage:        'Sciage',
+        destination:  c.nom || 'Campagne de sciage',
+        commune:      communeConnectee.nom,
+        contact:      '',
+        notes:        produits.length ? '' : 'Aucun produit récupéré',
+        type_sortie:  'sciage',
+        grumes_keys:  [g.id + '_0'],
+        produits:     produits,
+        vol_produits: arrondiM3(produits.reduce(function (s, p) { return s + p.volume; }, 0)),
+        campagne_id:  c.id,
+        date:         now.toLocaleDateString('fr-FR'),
+        date_iso:     now.toISOString()
+      });
+    }
+    if (lignesEnvoi.length === 0) {
+      showError('Aucune grume sciée. Si le sciage n\'a pas eu lieu, supprimez la campagne.');
+      return;
+    }
+    showLoading(false);
+    if (!confirm('Clôturer la campagne ?\n' + lignesEnvoi.length + ' grume(s) sciée(s) → ' + nbProduits
+      + ' pièce(s) en stock produits.' + (nbNonSciees ? '\n' + nbNonSciees + ' grume(s) non sciée(s) restent en stock brut.' : '')
+      + '\nLa clôture est définitive.')) return;
+    showLoading(true);
+    // Envoi groupé : soit toutes les grumes passent, soit aucune
+    await sbInsert('extractions', lignesEnvoi, { sansRetour: true });
+    try { localStorage.removeItem(CLE_BROUILLON_CLOTURE); } catch (e) {}
+    fermerCloture();
+    stockEtat = 'produits';
+    await chargerDonnees();
+    showToastSucces('Campagne clôturée : ' + nbProduits + ' pièce(s) en stock produits.');
+  } catch (err) {
+    if (err.reseau) showError('Pas de réseau : la clôture n\'a pas été envoyée. Votre saisie est gardée.');
+    else if (/GRUME DÉJÀ SORTIE/.test(err.message)) showError('Une grume de la campagne est déjà sortie du stock. Rien n\'a été enregistré.');
+    else if (/STOCK INSUFFISANT/.test(err.message)) showError('Le stock a changé entre-temps. Rien n\'a été enregistré.');
+    else showError('Erreur clôture : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
 }
 
 // ─── Header stats ─────────────────────────────────────────────────────────
@@ -1070,7 +2167,7 @@ function ouvrirApp() {
   var sv = document.createElement('strong'); sv.id = 'hs-vol'; sv.textContent = '--'; hr.appendChild(sv);
   hr.appendChild(document.createTextNode(' m3 - '));
   var sl = document.createElement('strong'); sl.id = 'hs-lots'; sl.textContent = '--'; hr.appendChild(sl);
-  hr.appendChild(document.createTextNode(' lots · '));
+  hr.appendChild(document.createTextNode(' grumes · '));
   var se = document.createElement('strong'); se.id = 'hs-essences'; se.textContent = '--'; hr.appendChild(se);
   hr.appendChild(document.createTextNode(' essences'));
   hr.appendChild(document.createElement('br'));
@@ -1078,10 +2175,13 @@ function ouvrirApp() {
   var btnCommune = document.getElementById('histo-btn-commune');
   if (btnCommune) btnCommune.textContent = communeConnectee.nom;
   var btnCommunaute = document.getElementById('histo-btn-communaute');
-  if (btnCommunaute) btnCommunaute.textContent = 'Nantes Métropole';
+  if (btnCommunaute) btnCommunaute.textContent = 'métropole';
   initialiserPanelSaisie();
   captureGPS();
   chargerDonnees();
+  // Envoi de ce qui attend sur le téléphone ; si quelque chose est parti,
+  // on recharge le stock pour l'y faire apparaître.
+  envoyerFileEnvoi().then(function (nb) { if (nb) chargerDonnees({ silencieux: true }); });
   demarrerRafraichissement();
   mettreAJourAccueil();
   if (window.innerWidth <= 600) {
@@ -1216,7 +2316,7 @@ function creerCarteGrume(idx) {
   card.dataset.grumeIdx = String(idx);
 
   var dims = cel('div', 'grume-summary-dims');
-  dims.textContent = 'L ' + g.longueur.toFixed(2) + ' m  ·  Ø ' + g.diametre + ' cm  ·  ×' + g.quantite;
+  dims.textContent = 'L ' + g.longueur.toFixed(2) + ' m  ·  Ø ' + g.diametre + ' cm';
   card.appendChild(dims);
 
   var right = cel('div', 'grume-summary-right');
@@ -1226,7 +2326,7 @@ function creerCarteGrume(idx) {
 
   var del = cel('button', 'grume-summary-del', '×');
   del.type    = 'button';
-  del.title   = 'Supprimer cette ligne';
+  del.title   = 'Supprimer ces mesures';
   del.onclick = function () { nouvSupprimerLigne(idx); };
   right.appendChild(del);
 
@@ -1242,6 +2342,8 @@ function nouvRendreGrumes() {
   nouvGrumes.forEach(function (g, idx) { liste.appendChild(creerCarteGrume(idx)); });
   var syn = document.getElementById('saisie-synthese');
   if (syn) syn.classList.toggle('hidden', nouvGrumes.length === 0);
+  var add = document.getElementById('saisie-add-btn');
+  if (add) add.classList.toggle('hidden', nouvGrumes.length > 0);
   nouvRendreSynthese();
 }
 
@@ -1352,32 +2454,6 @@ function construireContenuGrumeSheet() {
     majVolSheet();
   };
 
-  // Quantité
-  var rowQ = cel('div', 'grume-sheet-row');
-  rowQ.appendChild(cel('div', 'grume-sheet-label', 'Quantité'));
-  var qtyW = cel('div', 'qty-ctrl');
-  var btnM = cel('button', 'qty-btn', '−');
-  btnM.type = 'button';
-  var qNum = cel('span', 'qty-num', String(grumeDraft.quantite));
-  var btnP = cel('button', 'qty-btn', '+');
-  btnP.type = 'button';
-  btnM.onclick = function () {
-    if (grumeDraft.quantite <= 1) return;
-    grumeDraft.quantite--;
-    qNum.textContent = String(grumeDraft.quantite);
-    majVolSheet();
-  };
-  btnP.onclick = function () {
-    grumeDraft.quantite++;
-    qNum.textContent = String(grumeDraft.quantite);
-    majVolSheet();
-  };
-  qtyW.appendChild(btnM);
-  qtyW.appendChild(qNum);
-  qtyW.appendChild(btnP);
-  rowQ.appendChild(qtyW);
-  content.appendChild(rowQ);
-
   // Volume calculé
   var volEl = cel('div', 'grume-sheet-vol', '— m³');
   volEl.id = 'grume-sheet-vol';
@@ -1408,33 +2484,20 @@ function enregistrerGrumeDraft() {
   var diam = grumeDraft.methode === 'circonf'
     ? Math.round(grumeDraft.circonf / Math.PI)
     : grumeDraft.diametre;
-  nouvGrumes.push({ longueur: grumeDraft.longueur, diametre: diam, quantite: grumeDraft.quantite });
-  var idx   = nouvGrumes.length - 1;
-  var liste = document.getElementById('saisie-grumes-liste');
-  if (liste) {
-    var card = creerCarteGrume(idx);
-    liste.appendChild(card);
-    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-  var syn = document.getElementById('saisie-synthese');
-  if (syn) syn.classList.remove('hidden');
-  nouvRendreSynthese();
+  // Une saisie = une grume : les nouvelles mesures remplacent les précédentes
+  nouvGrumes = [{ longueur: grumeDraft.longueur, diametre: diam, quantite: 1 }];
+  nouvRendreGrumes();
   nouvSauverBrouillon();
   fermerGrumeSheet();
 }
 
 // ─── Barre de synthèse ────────────────────────────────────────────────────
 function nouvRendreSynthese() {
-  var pieces = nouvGrumes.reduce(function (s, g) { return s + g.quantite; }, 0);
   var volume = nouvGrumes.reduce(function (s, g) {
     return s + calcVol(g.diametre, g.longueur) * g.quantite;
   }, 0);
-  var elP = document.getElementById('synth-pieces');
   var elV = document.getElementById('synth-vol');
-  var elL = document.getElementById('synth-lignes');
-  if (elP) elP.textContent = pieces;
   if (elV) elV.textContent = volume.toFixed(3);
-  if (elL) elL.textContent = nouvGrumes.length;
 }
 
 // ─── Annuler avec confirmation ────────────────────────────────────────────
@@ -1475,7 +2538,9 @@ function nouvValiderAnnee() {
   nouvSauverBrouillon();
 }
 
-// ─── Modal "Nommer le lot" ────────────────────────────────────────────────
+// ─── Modal "Nommer la grume" ──────────────────────────────────────────────
+// Nom = préfixe de la commune + tiret + numéro à 4 chiffres tapé par l'agent
+// (ex. VER-0001). Toutes les grumes sont visibles des autres communes.
 function assureModalNommer() {
   if (document.getElementById('modal-nommer-bg')) return;
 
@@ -1487,37 +2552,29 @@ function assureModalNommer() {
   closeBtn.onclick = nouvFermerModal;
   modal.appendChild(closeBtn);
 
-  modal.appendChild(cel('h2', '', 'Nommer le lot'));
-  modal.appendChild(cel('p', 'modal-sub', 'Donnez un nom pour retrouver ce lot facilement.'));
+  modal.appendChild(cel('h2', '', 'Nommer la grume'));
+  var apercu = cel('p', 'modal-sub', '');
+  apercu.id  = 'modal-nom-apercu';
+  modal.appendChild(apercu);
 
   var fNom  = cel('div', 'field');
-  var lNom  = cel('label', '', 'Nom du lot');
+  var lNom  = cel('label', '', 'Numéro (4 chiffres)');
   lNom.htmlFor = 'modal-nom-input';
   var iNom  = document.createElement('input');
-  iNom.type = 'text';
-  iNom.id   = 'modal-nom-input';
+  iNom.type      = 'text';
+  iNom.id        = 'modal-nom-input';
+  iNom.inputMode = 'numeric';
+  iNom.maxLength = 4;
   iNom.autocomplete = 'off';
-  iNom.placeholder  = 'Ex : Chênes bord du chemin de la Haie…';
+  iNom.placeholder  = '0000';
+  iNom.addEventListener('input', function () {
+    iNom.value = iNom.value.replace(/\D/g, '').slice(0, 4);
+    majApercuNomGrume();
+  });
   iNom.addEventListener('keydown', function (e) { if (e.key === 'Enter') nouvConfirmer(); });
   fNom.appendChild(lNom);
   fNom.appendChild(iNom);
   modal.appendChild(fNom);
-
-  var pWrap = cel('div', 'partage-toggle-wrap');
-  var pLbl  = cel('div', 'partage-toggle-label');
-  var pTxt  = cel('strong', '', 'Partager avec toutes les communes');
-  var pSub  = cel('small', '', 'Les autres communes pourront consulter ce lot.');
-  pLbl.appendChild(pTxt);
-  pLbl.appendChild(pSub);
-  var tSwitch = cel('label', 'toggle-switch');
-  var tInp    = document.createElement('input');
-  tInp.type   = 'checkbox';
-  tInp.id     = 'modal-partage';
-  tSwitch.appendChild(tInp);
-  tSwitch.appendChild(cel('span', 'toggle-slider'));
-  pWrap.appendChild(pLbl);
-  pWrap.appendChild(tSwitch);
-  modal.appendChild(pWrap);
 
   var acts   = cel('div', 'flex-end');
   var btnRet = cel('button', 'btn btn-outline', '← Retour');
@@ -1535,17 +2592,27 @@ function assureModalNommer() {
   document.body.appendChild(bg);
 }
 
+// Préfixe de la commune connectée, suivi du tiret : « VER- »
+function prefixeNomGrume() {
+  return DuramenCore.prefixeCommune(communeConnectee ? communeConnectee.nom : '') + '-';
+}
+
+function majApercuNomGrume() {
+  var inp = document.getElementById('modal-nom-input');
+  var el  = document.getElementById('modal-nom-apercu');
+  if (!el) return;
+  var num = inp ? inp.value : '';
+  el.textContent = 'Nom : ' + prefixeNomGrume() + (num + '____').slice(0, 4);
+}
+
 function nouvOuvrirModal() {
   var essEl = document.getElementById('saisie-essence');
-  if (!essEl || !essEl.value) { showError('Choisissez une essence avant de nommer le lot.'); return; }
-  if (nouvGrumes.length === 0) { showError('Ajoutez au moins une grume avant de nommer le lot.'); return; }
+  if (!essEl || !essEl.value) { showError('Choisissez une essence avant de nommer la grume.'); return; }
+  if (nouvGrumes.length === 0) { showError('Saisissez les mesures avant de nommer la grume.'); return; }
   document.getElementById('modal-nommer-bg').classList.add('open');
   var inp = document.getElementById('modal-nom-input');
   if (inp) { inp.value = ''; inp.focus(); }
-  // Jamais de partage par défaut (mentions légales) : la modale est réutilisée
-  // d'un lot à l'autre, la case doit repartir décochée.
-  var ptg = document.getElementById('modal-partage');
-  if (ptg) ptg.checked = false;
+  majApercuNomGrume();
 }
 function nouvFermerModal() {
   var bg = document.getElementById('modal-nommer-bg');
@@ -1558,7 +2625,6 @@ async function nouvConfirmer() {
   var proEl = document.getElementById('saisie-provenance');
   var cauEl = document.getElementById('saisie-cause');
   var nomEl = document.getElementById('modal-nom-input');
-  var ptgEl = document.getElementById('modal-partage');
 
   if (!essEl || !essEl.value) { showError('Essence manquante.'); return; }
   if (!proEl || !proEl.value) { showError('Provenance manquante.'); return; }
@@ -1567,8 +2633,15 @@ async function nouvConfirmer() {
   var essence    = essEl.value;
   var provenance = proEl.value;
   var cause      = cauEl.value;
-  var nom        = (nomEl && nomEl.value.trim()) ? nomEl.value.trim() : (essence + ' — ' + communeConnectee.nom);
-  var partage    = ptgEl ? ptgEl.checked : false;
+  var numero     = nomEl ? nomEl.value.trim() : '';
+  if (!/^\d{4}$/.test(numero)) { showError('Le numéro doit faire 4 chiffres (ex. 0001).'); return; }
+  var nom        = prefixeNomGrume() + numero;
+  if (lots.some(function (l) { return l.nom === nom; })
+      || fileEnvoiCommune().some(function (it) { return it.table === 'grumes' && it.data.nom === nom; })) {
+    showError('Le numéro ' + nom + ' existe déjà. Vérifiez l\'étiquette de la grume : erreur de saisie ou grume déjà enregistrée.'); return;
+  }
+  // Toutes les grumes sont visibles des autres communes
+  var partage    = true;
 
   // Expansion des lignes : quantité → grumes individuelles
   var grumesFlat = [];
@@ -1609,12 +2682,23 @@ async function nouvConfirmer() {
 
   try {
     showLoading(true);
-    await sbInsert('lots', lot);
-    await chargerDonnees();
+    // Pas de réseau (ou réseau trop faible) : la grume est gardée sur le
+    // téléphone et partira toute seule au retour du réseau.
+    var envoye = true;
+    try {
+      await sbInsert('grumes', lot);
+    } catch (errEnvoi) {
+      if (!errEnvoi.reseau) throw errEnvoi;
+      ajouterFileEnvoi('grumes', lot);
+      envoye = false;
+    }
+    if (envoye) await chargerDonnees();
     nouvFermerModal();
     effacerBrouillonSaisie();
     // Toast de confirmation
-    var toast = cel('div', 'toast-succes', '"' + nom + '" sauvegardé — ' + volBrut.toFixed(3) + ' m³');
+    var toast = cel('div', 'toast-succes', envoye
+      ? '"' + nom + '" sauvegardé — ' + volBrut.toFixed(3) + ' m³'
+      : '"' + nom + '" gardé sur le téléphone — envoi automatique au retour du réseau');
     document.body.appendChild(toast);
     setTimeout(function () {
       toast.classList.add('hidden');
@@ -1627,7 +2711,12 @@ async function nouvConfirmer() {
     initialiserPanelSaisie();
     captureGPS();
   } catch (err) {
-    showError('Erreur sauvegarde : ' + err.message);
+    // Numéro déjà en base : erreur de saisie ou grume déjà enregistrée
+    if (/grumes_nom_unique|duplicate key/.test(err.message)) {
+      showError('Le numéro ' + nom + ' existe déjà. Vérifiez l\'étiquette de la grume : erreur de saisie ou grume déjà enregistrée.');
+    } else {
+      showError('Erreur sauvegarde : ' + err.message);
+    }
   } finally {
     showLoading(false);
   }
@@ -1677,7 +2766,7 @@ function nouvRestaurerBrouillon() {
       var valEl = document.querySelector('.saisie-annee-val');
       if (valEl) valEl.textContent = nouvAnnee;
     }
-    nouvGrumes = aGrumes ? d.grumes : [];
+    nouvGrumes = aGrumes ? [Object.assign({}, d.grumes[0], { quantite: 1 })] : [];
     nouvRendreGrumes();
     saisieEnCours = true;
     showToastSucces('Saisie précédente restaurée.');
@@ -1749,28 +2838,24 @@ function initialiserPanelSaisie() {
 
   // ── Sélects : essence / provenance / cause ──────────────────────────
   var selGrid = cel('div', 'saisie-selects');
-  selGrid.appendChild(creerSelectSaisie('saisie-essence', 'Essence *', [
-    ['', '— Choisir —'],
-    ['Aulne', 'Aulne'], ['Châtaignier', 'Châtaignier'], ['Chêne', 'Chêne'],
-    ['Cyprès', 'Cyprès'], ['Douglas', 'Douglas'], ['Épicéa', 'Épicéa'],
-    ['Frêne', 'Frêne'], ['Hêtre', 'Hêtre'], ['Mélèze', 'Mélèze'],
-    ['Merisier', 'Merisier'], ['Noyer', 'Noyer'], ['Peuplier', 'Peuplier'],
-    ['Pin maritime', 'Pin maritime'], ['Pin sylvestre', 'Pin sylvestre'],
-    ['Platane', 'Platane'], ['Robinier (Acacia)', 'Robinier (Acacia)'],
-    ['Séquoia', 'Séquoia'], ['Tilleul', 'Tilleul'], ['Autre', 'Autre']
-  ]));
+  // Essences : ordre de présence sur le territoire (défini dans core.js)
+  selGrid.appendChild(creerSelectSaisie('saisie-essence', 'Essence *',
+    [['', '— Choisir —']].concat(DuramenCore.ESSENCES_ORDRE.map(function (e) { return [e, e]; }))
+  ));
   selGrid.appendChild(creerSelectSaisie('saisie-provenance', 'Provenance *', [
     ['', '— Choisir —'],
     ['Alignement', 'Alignement urbain'], ['Bosquet', 'Bosquet'],
-    ['Forêt', 'Forêt'], ['Haie bocagère', 'Haie bocagère'], ['Parc', 'Parc municipal']
+    ['Forêt', 'Forêt'], ['Haie bocagère', 'Haie bocagère'], ['Parc', 'Parc municipal'],
+    ['Autre', 'Autre']
   ]));
   selGrid.appendChild(creerSelectSaisie('saisie-cause', "Cause d'abattage *", [
     ['', '— Choisir —'],
     ['Coupe sanitaire', 'Coupe sanitaire'],
     ['Intempérie', 'Intempérie (chablis, neige…)'],
-    ['Entretien', 'Entretien courant'],
     ['Aménagement', 'Aménagement urbain'],
-    ['Plantation', 'Renouvellement plantation']
+    ['Coupe sécuritaire', 'Coupe sécuritaire'],
+    ['Gestion durable', 'Gestion durable'],
+    ['Autre', 'Autre']
   ]));
   panel.appendChild(selGrid);
 
@@ -1778,9 +2863,10 @@ function initialiserPanelSaisie() {
   var section = cel('div', 'saisie-grumes-section');
 
   var gHead  = cel('div', 'saisie-grumes-header');
-  gHead.appendChild(cel('div', 'saisie-grumes-title', 'Grumes'));
-  var gAddBt = cel('button', 'saisie-add-btn', '+ Ajouter une grume');
+  gHead.appendChild(cel('div', 'saisie-grumes-title', 'Mesures de la grume'));
+  var gAddBt = cel('button', 'saisie-add-btn', '+ Saisir les mesures');
   gAddBt.type    = 'button';
+  gAddBt.id      = 'saisie-add-btn';
   gAddBt.onclick = ouvrirGrumeSheet;
   gHead.appendChild(gAddBt);
   section.appendChild(gHead);
@@ -1789,13 +2875,11 @@ function initialiserPanelSaisie() {
   liste.id  = 'saisie-grumes-liste';
   section.appendChild(liste);
 
-  // Barre de synthèse — masquée jusqu'à la première grume
+  // Barre de synthèse — masquée jusqu'à la saisie des mesures
   var synthese = cel('div', 'saisie-synthese hidden');
   synthese.id  = 'saisie-synthese';
   [
-    { id: 'synth-pieces', lbl: 'pièces' },
-    { id: 'synth-vol',    lbl: 'm³ bruts' },
-    { id: 'synth-lignes', lbl: 'lignes' }
+    { id: 'synth-vol',    lbl: 'm³ bruts' }
   ].forEach(function (s) {
     var item = cel('div', 'saisie-synth-item');
     var val  = cel('div', 'saisie-synth-val', '—');
@@ -1812,7 +2896,7 @@ function initialiserPanelSaisie() {
   var btnAnn  = cel('button', 'saisie-btn saisie-btn-annuler', 'Annuler');
   btnAnn.type    = 'button';
   btnAnn.onclick = nouvAnnuler;
-  var btnNom  = cel('button', 'saisie-btn saisie-btn-nommer', 'Nommer le lot →');
+  var btnNom  = cel('button', 'saisie-btn saisie-btn-nommer', 'Nommer la grume →');
   btnNom.type    = 'button';
   btnNom.onclick = nouvOuvrirModal;
   actions.appendChild(btnAnn);
@@ -1846,18 +2930,29 @@ async function envoyerTicket() {
   var msg = document.getElementById('feedback-message');
   if (!feedbackTypeSelectionne) { showError('Choisissez un type de retour.'); return; }
   if (!msg || !msg.value.trim()) { showError('Le message ne peut pas être vide.'); return; }
+  var ticket = {
+    id: crypto.randomUUID(),
+    commune_code: communeConnectee.code,
+    commune: communeConnectee.nom,
+    type: feedbackTypeSelectionne,
+    message: msg.value.trim()
+  };
   try {
     showLoading(true);
-    await sbInsert('feedbacks', {
-      id: crypto.randomUUID(),
-      commune_code: communeConnectee.code,
-      commune: communeConnectee.nom,
-      type: feedbackTypeSelectionne,
-      message: msg.value.trim()
-    });
+    // sansRetour : la table feedbacks n'autorise pas la relecture
+    var envoye = true;
+    try {
+      await sbInsert('feedbacks', ticket, { sansRetour: true });
+    } catch (errEnvoi) {
+      if (!errEnvoi.reseau) throw errEnvoi;
+      ajouterFileEnvoi('feedbacks', ticket, { sansRetour: true });
+      envoye = false;
+    }
     showLoading(false);
     effacerTicket();
-    showToastSucces('Ticket envoyé. Merci pour votre retour !');
+    showToastSucces(envoye
+      ? 'Ticket envoyé. Merci pour votre retour !'
+      : 'Ticket gardé sur le téléphone — envoi automatique au retour du réseau.');
     retourAccueil();
   } catch(e) {
     showLoading(false);
@@ -1889,7 +2984,8 @@ var refreshTimer = null;
 function demarrerRafraichissement() {
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(function() {
-    if (communeConnectee) chargerDonnees();
+    if (!communeConnectee) return;
+    envoyerFileEnvoi().then(function () { chargerDonnees({ silencieux: true }); });
   }, 120000); // 120 000 ms = 2 minutes
 }
 

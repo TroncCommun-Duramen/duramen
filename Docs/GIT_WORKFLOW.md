@@ -54,6 +54,34 @@ git config --global user.name "TroncCommun-Duramen"
 
 ---
 
+## Revenir à la version précédente en cas de gros bug
+
+Avant chaque grosse mise à jour, une branche de sauvegarde garde la version d'avant. On peut y revenir à tout moment.
+
+| Branche de sauvegarde | Version gardée |
+|-----------|----------------|
+| `sauvegarde/avant-fusion-2026-11-03` | `main` au 31 oct. 2026, avant grumes / campagne de sciage / envoi hors ligne |
+
+**Le plus simple — demander à Claude :**
+> « Annule la fusion du 3 novembre : reviens à la branche de sauvegarde `sauvegarde/avant-fusion-2026-11-03`. »
+
+**À la main :**
+```bash
+git checkout main
+git pull
+git log --merges --oneline -3        # repérer le commit « Merge … feat/campagne-sciage »
+git revert -m 1 <numéro du commit de fusion>
+# puis incrémenter le cache dans sw.js (ex. duramen-v53 → duramen-v54)
+git commit -am "fix(sw): cache incrémenté après retour en arrière"
+git push
+```
+
+`git revert` ajoute un commit qui annule la fusion. Rien n'est effacé : on peut refaire la fusion plus tard.
+
+**Côté Supabase :** l'ancienne version fonctionne avec la base actuelle grâce à la passerelle (vue `lots`, fonction `lots_partages()`). Ne pas la supprimer tant que la nouvelle version n'est pas validée.
+
+---
+
 ## Éditeur de fusion Git
 
 Configuré sur **nano**. Si Git ouvre un éditeur lors d'un merge :

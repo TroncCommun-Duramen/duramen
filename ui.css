@@ -468,33 +468,6 @@ select {
   border-radius: var(--border-radius-pill);
 }
 
-/* ─── PARTAGE COMMUNE ─── */
-.partage-toggle-wrap {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px;
-  background: var(--washi); border: var(--border-thin);
-  border-radius: var(--border-radius-sm); margin-top: 16px;
-  gap: 16px; flex-wrap: wrap;
-}
-.partage-toggle-label { font-size: 0.82rem; color: var(--sumi); line-height: 1.5; }
-.partage-toggle-label strong { font-weight: var(--font-weight-medium); display: block; font-size: 0.88rem; }
-.partage-toggle-label small { color: var(--cendre); font-size: 0.72rem; }
-.toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-  position: absolute; inset: 0;
-  background: var(--pierre); border-radius: var(--border-radius-card);
-  cursor: pointer; transition: background 0.2s;
-}
-.toggle-slider::after {
-  content: ''; position: absolute;
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--washi); top: 3px; left: 3px;
-  transition: transform 0.2s;
-}
-.toggle-switch input:checked + .toggle-slider { background: var(--indigo); }
-.toggle-switch input:checked + .toggle-slider::after { transform: translateX(20px); }
-
 /* ─── MENTIONS LÉGALES ─── */
 #panel-mentions {
   max-width: 760px; margin: 0 auto; padding: 32px 20px;
@@ -543,7 +516,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .ec-chataignier  { background: #7a5c2e; }
 .ec-douglas      { background: #3d6e4a; }
 .ec-meleze       { background: #e07b30; }
-.ec-pin-s        { background: #9B8040; }
+
 .ec-pin-m        { background: #c49a30; }
 .ec-epicea       { background: #4A9059; }
 .ec-peuplier     { background: #78c850; }
@@ -555,6 +528,9 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .ec-cypres       { background: #4e7a4e; }
 .ec-platane      { background: #85a855; }
 .ec-tilleul      { background: #b5cc44; }
+.ec-chene-rouge  { background: var(--ec-chene-rouge); }
+.ec-chene-marais { background: var(--ec-chene-marais); }
+.ec-cedre        { background: var(--ec-cedre); }
 .ec-autre        { background: #8a9f74; }
 
 /* ─── TOAST ERREUR ─── */
@@ -969,68 +945,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 .saisie-add-btn:hover { opacity: 0.85; }
 
-/* ─── Carte grume ─── */
-.saisie-grume-card {
-  background: var(--neige);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-card);
-  padding: 14px 16px;
-  margin-bottom: 10px;
-}
-.saisie-grume-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.saisie-grume-vol {
-  font-size: 1.1rem;
-  font-weight: var(--font-weight-semibold);
-  color: var(--indigo);
-  letter-spacing: -0.02em;
-}
-.saisie-grume-del {
-  background: none;
-  border: 1px solid var(--rouge);
-  border-radius: var(--border-radius-md);
-  color: var(--rouge);
-  font-size: 1rem;
-  line-height: 1;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-}
-.saisie-grume-del:hover { background: var(--rouge); color: var(--washi); }
-
-.saisie-grume-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  align-items: start;
-}
-
-.saisie-grume-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-.saisie-col-label {
-  font-size: 9px;
-  font-weight: var(--font-weight-medium);
-  color: var(--cendre);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  text-align: center;
-  line-height: 1.3;
-}
-
 /* ─── Drum picker (molette de défilement) ─── */
 .drum-wrap {
   position: relative;
@@ -1092,47 +1006,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   font-weight: var(--font-weight-semibold);
   color: var(--sumi);
   white-space: nowrap;
-  font-family: var(--font-body);
-}
-
-/* ─── Contrôle quantité ─── */
-.saisie-col-qty { justify-content: flex-start; padding-top: 0; }
-.qty-ctrl {
-  display: flex;
-  align-items: center;
-  border: var(--border-thin);
-  border-radius: var(--border-radius-card);
-  overflow: hidden;
-  background: var(--washi);
-}
-.qty-btn {
-  background: var(--neige);
-  border: none;
-  width: 34px;
-  height: 40px;
-  font-size: 1.1rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--sumi);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.1s;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-}
-.qty-btn:active { background: var(--brume); }
-.qty-num {
-  min-width: 32px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: var(--font-weight-semibold);
-  color: var(--sumi);
-  border-left: var(--border-thin);
-  border-right: var(--border-thin);
   font-family: var(--font-body);
 }
 
@@ -1729,72 +1602,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   letter-spacing: 0.12em;
   margin-bottom: 14px;
 }
-.ext-debit-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.ext-debit-toggle {
-  width: 100%;
-  height: 44px;
-  padding: 0 12px;
-  background: var(--washi);
-  border: 1.5px solid var(--pierre);
-  border-radius: var(--border-radius-btn);
-  color: var(--sumi);
-  font-family: var(--font-body);
-  font-size: 0.88rem;
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.ext-debit-toggle.active {
-  background: var(--indigo);
-  border-color: var(--indigo);
-  color: var(--washi);
-}
-.ext-debit-sliders { padding-top: 4px; }
-.ext-formula-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-.ext-lineaire-box {
-  background: var(--indigo);
-  color: var(--washi);
-  border-radius: var(--border-radius-inner);
-  padding: 10px 14px;
-  margin-left: auto;
-}
-.ext-lineaire-lbl {
-  font-family: var(--font-body);
-  font-size: 0.55rem;
-  font-weight: var(--font-weight-regular);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.75;
-  margin-bottom: 3px;
-}
-.ext-lineaire-val {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: var(--font-weight-semibold);
-  line-height: 1;
-}
-.ext-label {
-  display: block;
-  font-family: var(--font-body);
-  font-size: 0.62rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--cendre);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 6px;
-}
+
 /* Chips essences */
 .ext-essence-chips {
   display: flex;
@@ -1862,83 +1670,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   padding: 4px 0;
-}
-
-/* Sliders débit */
-.ext-slider-row { margin-bottom: 16px; }
-.ext-slider-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-.ext-slider-val {
-  font-family: var(--font-body);
-  font-size: 0.88rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--indigo);
-}
-.ext-slider {
-  width: 100%;
-  height: 4px;
-  background: var(--brume);
-  border-radius: var(--border-radius-bar);
-  outline: none;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-}
-.ext-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--indigo);
-  cursor: pointer;
-}
-.ext-slider::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--indigo);
-  cursor: pointer;
-  border: none;
-}
-
-/* Lien formule */
-.ext-formula-link {
-  background: transparent;
-  border: none;
-  color: var(--indigo);
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: var(--font-weight-regular);
-  cursor: pointer;
-  padding: 4px 0;
-  text-decoration: underline;
-  margin-top: 4px;
-  display: inline-block;
-}
-.ext-formula-zone {
-  background: var(--neige);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-md);
-  padding: 12px 14px;
-  margin-top: 10px;
-}
-.ext-formula-text {
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--sumi);
-  margin: 0 0 6px;
-}
-.ext-formula-detail {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  font-weight: var(--font-weight-regular);
-  color: var(--cendre);
-  margin: 0;
 }
 
 /* Barre de synthèse */
@@ -2124,3 +1855,393 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ════════════════════════════════════════════
+   CAMPAGNE DE SCIAGE · STOCK PRODUITS · FEUILLE DE DÉBIT
+════════════════════════════════════════════ */
+
+/* ─── Badges d'urgence de débit ─── */
+.badge-urgence,
+.badge-a-debiter,
+.badge-sechage { line-height: 1.4; padding: 3px 8px; }
+.badge-urgence-ok {                 /* date calculée par l'app */
+  background: var(--indigo-clair);
+  color: var(--indigo);
+  border: 1px solid var(--indigo);
+}
+.badge-urgence-alerte {             /* noir sur orange : panneau d'alerte */
+  background: var(--orange);
+  color: var(--sumi);
+  border: 1px solid var(--orange);
+  font-weight: var(--font-weight-semibold);
+}
+.badge-urgence-depasse {
+  background: var(--rouge);
+  color: var(--washi);
+  border: 1px solid var(--rouge);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ─── Badges de statut ─── */
+.badge-a-debiter {
+  background: var(--sumi);
+  color: var(--washi);
+  border: 1px solid var(--sumi);
+}
+.badge-sechage-en-cours {
+  background: var(--washi);
+  color: var(--sumi);
+  border: 1px dashed var(--sumi);
+}
+.badge-sechage-sec {
+  background: var(--vert);
+  color: var(--sumi);
+  border: 1px solid var(--vert);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ─── Bascules Grumes brutes / Produits bois · Produits / Grume brute ─── */
+.stock-etat-bar,
+.ext-mode-bar {
+  width: 100%;
+  margin-bottom: 18px;
+}
+.stock-etat-bar .histo-toggle-btn,
+.ext-mode-bar .histo-toggle-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 0.85rem;
+}
+
+/* ─── Section Campagnes de sciage ─── */
+.sciage-section { margin-bottom: 28px; }
+.sciage-campagne-card { border-left: 3px solid var(--sumi); }
+.sciage-campagne-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.sciage-campagne-actions .btn {
+  flex: 1 1 auto;
+  min-height: 44px;
+  justify-content: center;
+  font-size: 0.68rem;
+}
+.sciage-campagne-actions .btn-outline {
+  border: var(--border-filled);
+  border-radius: var(--border-radius-md);
+  color: var(--sumi);
+}
+.sciage-campagne-actions .sciage-btn-supprimer {
+  flex: 0 1 auto;
+  border-color: var(--rouge);
+  color: var(--rouge);
+}
+.sciage-btn-nouvelle {
+  width: 100%;
+  min-height: 56px;
+  justify-content: center;
+  margin-top: 8px;
+  border-radius: var(--border-radius-card);
+  font-size: 0.72rem;
+}
+
+/* ─── Modales sciage (préparation, feuille, clôture) ─── */
+.sciage-modal { max-width: 640px; }
+.sciage-modal .flex-end .btn {
+  min-height: 44px;
+  justify-content: center;
+}
+.sciage-modal .flex-end .btn-outline {
+  border: var(--border-filled);
+  border-radius: var(--border-radius-md);
+  color: var(--sumi);
+}
+.sciage-modal > .field { margin-bottom: 16px; }
+
+/* ─── Préparation : une ligne par grume ─── */
+.sciage-grume-row { background: var(--washi); }
+.sciage-grume-row:has(.sciage-grume-check input:checked) {
+  background: var(--neige);
+  border-color: var(--sumi);
+}
+.sciage-grume-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.sciage-grume-check input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--sumi);
+  cursor: pointer;
+}
+.sciage-grume-check span {
+  font-size: 0.95rem;
+  color: var(--sumi);
+}
+.sciage-grume-row .histo-essence-meta { margin: 2px 0 8px 34px; }
+.sciage-grume-row .histo-badges { margin-left: 34px; }
+.sciage-choix {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: var(--border-thin);
+}
+.sciage-type-bar {
+  width: 100%;
+  margin-bottom: 0;
+}
+.sciage-type-bar .histo-toggle-btn {
+  flex: 1;
+  min-height: 44px;
+  font-size: 0.85rem;
+}
+
+/* Valeur calculée par l'app (estimation, volume) */
+.sciage-estimation {
+  background: var(--indigo-clair);
+  color: var(--indigo);
+  border-left: 3px solid var(--indigo);
+  border-radius: 0 var(--border-radius-inner) var(--border-radius-inner) 0;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
+}
+.sciage-resume {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--neige);
+  border: var(--border-thin);
+  border-radius: var(--border-radius-card);
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--sumi);
+}
+
+/* ─── Clôture : saisie du réalisé ─── */
+.sciage-cloture-grume { margin-bottom: 12px; }
+.sciage-cloture-grume > .histo-lot-nom { font-size: 0.95rem; }
+.sciage-cloture-grume .info-box { margin: 10px 0 0; }
+.sciage-realise {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: var(--border-thin);
+}
+.sciage-produits {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+.sciage-produit-ligne {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+  background: var(--washi);
+  border: var(--border-field);
+  border-radius: var(--border-radius-inner);
+}
+.sciage-produit-ligne .field { min-width: 0; }
+.sciage-produit-ligne .field input,
+.sciage-produit-ligne .field select { width: 100%; min-width: 0; }
+.sciage-produit-ligne .sciage-estimation,
+.sciage-produit-ligne .sciage-btn-retirer { grid-column: 1 / -1; }
+.sciage-btn-retirer {
+  justify-self: end;
+  min-height: 44px;
+  justify-content: center;
+  color: var(--rouge);
+}
+.sciage-btn-retirer:hover { color: var(--rouge); }
+.sciage-btn-ajouter {
+  width: 100%;
+  min-height: 44px;
+  justify-content: center;
+  border: 1px dashed var(--sumi);
+  border-radius: var(--border-radius-inner);
+  color: var(--sumi);
+}
+
+/* ─── Stock produits ─── */
+.produit-card { border-left: 3px solid var(--vert); }
+
+/* ─── Extraction : produits sciés ─── */
+.ext-produits-liste {
+  display: grid;
+  gap: 8px;
+}
+.ext-produits-liste .ext-produit-card { margin-bottom: 0; }
+.ext-produit-card { transition: border-color 0.15s, background 0.15s; }
+.ext-produit-card.selected {
+  background: var(--washi);
+  border: 1.5px solid var(--sumi);
+}
+.ext-qte {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.ext-qte-btn,
+.ext-qte-tout {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  justify-content: center;
+  background: var(--washi);
+  border: var(--border-filled);
+  border-radius: var(--border-radius-btn);
+  color: var(--sumi);
+  -webkit-tap-highlight-color: transparent;
+}
+.ext-qte-btn {
+  width: 44px;
+  font-size: 1.3rem;
+  letter-spacing: 0;
+}
+.ext-qte-tout {
+  margin-left: auto;
+  padding: 0 16px;
+  font-size: 0.72rem;
+}
+.ext-qte-btn:active,
+.ext-qte-tout:active { background: var(--brume); }
+.ext-qte-input {
+  width: 72px;
+  height: 44px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 1rem;                 /* 16px : évite le zoom iOS */
+  font-weight: var(--font-weight-semibold);
+  color: var(--sumi);
+  background: var(--washi);
+  border: var(--border-field);
+  border-radius: var(--border-radius-btn);
+  outline: none;
+  -moz-appearance: textfield;
+}
+.ext-qte-input::-webkit-outer-spin-button,
+.ext-qte-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.ext-qte-input:focus { border: var(--border-active); }
+
+/* ─── Feuille de débit (à l'écran) ─── */
+.feuille-debit { overflow-x: auto; }
+.feuille-debit h2 { margin-bottom: 6px; }
+.feuille-debit > p {
+  font-size: 0.88rem;
+  color: var(--sumi);
+  margin-bottom: 14px;
+}
+.feuille-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.feuille-table th,
+.feuille-table td {
+  border: 1px solid var(--pierre);
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+  color: var(--sumi);
+}
+.feuille-table th,
+.feuille-table td:nth-child(1),
+.feuille-table td:nth-child(3),
+.feuille-table td:nth-child(4) { white-space: nowrap; }
+.feuille-table th {
+  background: var(--neige);
+  font-weight: var(--font-weight-semibold);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.feuille-debit > p.feuille-pied {
+  white-space: pre-wrap;
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+/* ─── Feuille de débit imprimée (A4, noir sur blanc) ─── */
+@media print {
+  @page { size: A4 portrait; margin: 14mm; }
+  html, body {
+    background: var(--print-papier);
+    color: var(--print-encre);
+    min-height: 0;
+  }
+  .feuille-impression {
+    width: 100%;
+    padding: 0 1px;
+    overflow: visible;
+    font-family: var(--font-body);
+    font-size: 11pt;
+    line-height: 1.4;
+    color: var(--print-encre);
+    background: var(--print-papier);
+  }
+  .feuille-impression h2 {
+    font-size: 16pt;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0;
+    margin: 0 0 4pt;
+    color: var(--print-encre);
+  }
+  .feuille-impression > p {
+    font-size: 11pt;
+    margin: 0 0 10pt;
+    color: var(--print-encre);
+  }
+  .feuille-impression .feuille-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 10pt;
+  }
+  /* Largeurs fixes : N°, Essence, Long., Diam., Demandé, Réalisé */
+  .feuille-impression .feuille-table th:nth-child(1) { width: 14%; }
+  .feuille-impression .feuille-table th:nth-child(2) { width: 15%; }
+  .feuille-impression .feuille-table th:nth-child(3) { width: 9%; }
+  .feuille-impression .feuille-table th:nth-child(4) { width: 9%; }
+  .feuille-impression .feuille-table th:nth-child(5) { width: 25%; }
+  .feuille-impression .feuille-table th:nth-child(6) { width: 28%; }
+  .feuille-impression .feuille-table th,
+  .feuille-impression .feuille-table td {
+    border: 1px solid var(--print-encre);
+    padding: 6pt 5pt;
+    color: var(--print-encre);
+    background: var(--print-papier);
+  }
+  .feuille-impression .feuille-table th {
+    font-size: 9pt;
+    font-weight: var(--font-weight-semibold);
+    border-bottom-width: 2px;
+  }
+  .feuille-impression .feuille-table td { height: 26pt; }
+  .feuille-impression thead { display: table-header-group; }
+  .feuille-impression tr { page-break-inside: avoid; break-inside: avoid; }
+  .feuille-impression > p.feuille-pied {
+    margin-top: 24pt;
+    font-size: 11pt;
+    color: var(--print-encre);
+  }
+}
+
+/* Mobile : un peu plus de place pour les modales sciage */
+@media (max-width: 600px) {
+  .sciage-modal { padding: 22px 16px; max-height: 92vh; }
+}
