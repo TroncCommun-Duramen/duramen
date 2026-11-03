@@ -468,33 +468,6 @@ select {
   border-radius: var(--border-radius-pill);
 }
 
-/* ─── PARTAGE COMMUNE ─── */
-.partage-toggle-wrap {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px;
-  background: var(--washi); border: var(--border-thin);
-  border-radius: var(--border-radius-sm); margin-top: 16px;
-  gap: 16px; flex-wrap: wrap;
-}
-.partage-toggle-label { font-size: 0.82rem; color: var(--sumi); line-height: 1.5; }
-.partage-toggle-label strong { font-weight: var(--font-weight-medium); display: block; font-size: 0.88rem; }
-.partage-toggle-label small { color: var(--cendre); font-size: 0.72rem; }
-.toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-  position: absolute; inset: 0;
-  background: var(--pierre); border-radius: var(--border-radius-card);
-  cursor: pointer; transition: background 0.2s;
-}
-.toggle-slider::after {
-  content: ''; position: absolute;
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--washi); top: 3px; left: 3px;
-  transition: transform 0.2s;
-}
-.toggle-switch input:checked + .toggle-slider { background: var(--indigo); }
-.toggle-switch input:checked + .toggle-slider::after { transform: translateX(20px); }
-
 /* ─── MENTIONS LÉGALES ─── */
 #panel-mentions {
   max-width: 760px; margin: 0 auto; padding: 32px 20px;
@@ -543,7 +516,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .ec-chataignier  { background: #7a5c2e; }
 .ec-douglas      { background: #3d6e4a; }
 .ec-meleze       { background: #e07b30; }
-.ec-pin-s        { background: #9B8040; }
+
 .ec-pin-m        { background: #c49a30; }
 .ec-epicea       { background: #4A9059; }
 .ec-peuplier     { background: #78c850; }
@@ -972,68 +945,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 .saisie-add-btn:hover { opacity: 0.85; }
 
-/* ─── Carte grume ─── */
-.saisie-grume-card {
-  background: var(--neige);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-card);
-  padding: 14px 16px;
-  margin-bottom: 10px;
-}
-.saisie-grume-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.saisie-grume-vol {
-  font-size: 1.1rem;
-  font-weight: var(--font-weight-semibold);
-  color: var(--indigo);
-  letter-spacing: -0.02em;
-}
-.saisie-grume-del {
-  background: none;
-  border: 1px solid var(--rouge);
-  border-radius: var(--border-radius-md);
-  color: var(--rouge);
-  font-size: 1rem;
-  line-height: 1;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-}
-.saisie-grume-del:hover { background: var(--rouge); color: var(--washi); }
-
-.saisie-grume-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  align-items: start;
-}
-
-.saisie-grume-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-.saisie-col-label {
-  font-size: 9px;
-  font-weight: var(--font-weight-medium);
-  color: var(--cendre);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  text-align: center;
-  line-height: 1.3;
-}
-
 /* ─── Drum picker (molette de défilement) ─── */
 .drum-wrap {
   position: relative;
@@ -1095,47 +1006,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   font-weight: var(--font-weight-semibold);
   color: var(--sumi);
   white-space: nowrap;
-  font-family: var(--font-body);
-}
-
-/* ─── Contrôle quantité ─── */
-.saisie-col-qty { justify-content: flex-start; padding-top: 0; }
-.qty-ctrl {
-  display: flex;
-  align-items: center;
-  border: var(--border-thin);
-  border-radius: var(--border-radius-card);
-  overflow: hidden;
-  background: var(--washi);
-}
-.qty-btn {
-  background: var(--neige);
-  border: none;
-  width: 34px;
-  height: 40px;
-  font-size: 1.1rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--sumi);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.1s;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-}
-.qty-btn:active { background: var(--brume); }
-.qty-num {
-  min-width: 32px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: var(--font-weight-semibold);
-  color: var(--sumi);
-  border-left: var(--border-thin);
-  border-right: var(--border-thin);
   font-family: var(--font-body);
 }
 
@@ -1732,72 +1602,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   letter-spacing: 0.12em;
   margin-bottom: 14px;
 }
-.ext-debit-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.ext-debit-toggle {
-  width: 100%;
-  height: 44px;
-  padding: 0 12px;
-  background: var(--washi);
-  border: 1.5px solid var(--pierre);
-  border-radius: var(--border-radius-btn);
-  color: var(--sumi);
-  font-family: var(--font-body);
-  font-size: 0.88rem;
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.ext-debit-toggle.active {
-  background: var(--indigo);
-  border-color: var(--indigo);
-  color: var(--washi);
-}
-.ext-debit-sliders { padding-top: 4px; }
-.ext-formula-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-.ext-lineaire-box {
-  background: var(--indigo);
-  color: var(--washi);
-  border-radius: var(--border-radius-inner);
-  padding: 10px 14px;
-  margin-left: auto;
-}
-.ext-lineaire-lbl {
-  font-family: var(--font-body);
-  font-size: 0.55rem;
-  font-weight: var(--font-weight-regular);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.75;
-  margin-bottom: 3px;
-}
-.ext-lineaire-val {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: var(--font-weight-semibold);
-  line-height: 1;
-}
-.ext-label {
-  display: block;
-  font-family: var(--font-body);
-  font-size: 0.62rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--cendre);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 6px;
-}
+
 /* Chips essences */
 .ext-essence-chips {
   display: flex;
@@ -1865,83 +1670,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   padding: 4px 0;
-}
-
-/* Sliders débit */
-.ext-slider-row { margin-bottom: 16px; }
-.ext-slider-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-.ext-slider-val {
-  font-family: var(--font-body);
-  font-size: 0.88rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--indigo);
-}
-.ext-slider {
-  width: 100%;
-  height: 4px;
-  background: var(--brume);
-  border-radius: var(--border-radius-bar);
-  outline: none;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-}
-.ext-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--indigo);
-  cursor: pointer;
-}
-.ext-slider::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--indigo);
-  cursor: pointer;
-  border: none;
-}
-
-/* Lien formule */
-.ext-formula-link {
-  background: transparent;
-  border: none;
-  color: var(--indigo);
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: var(--font-weight-regular);
-  cursor: pointer;
-  padding: 4px 0;
-  text-decoration: underline;
-  margin-top: 4px;
-  display: inline-block;
-}
-.ext-formula-zone {
-  background: var(--neige);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-md);
-  padding: 12px 14px;
-  margin-top: 10px;
-}
-.ext-formula-text {
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--sumi);
-  margin: 0 0 6px;
-}
-.ext-formula-detail {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  font-weight: var(--font-weight-regular);
-  color: var(--cendre);
-  margin: 0;
 }
 
 /* Barre de synthèse */
@@ -2126,7 +1854,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   margin-top: 16px;
   -webkit-tap-highlight-color: transparent;
 }
-
 
 /* ════════════════════════════════════════════
    CAMPAGNE DE SCIAGE · STOCK PRODUITS · FEUILLE DE DÉBIT
