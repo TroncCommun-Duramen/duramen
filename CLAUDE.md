@@ -32,7 +32,7 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 
 **Tables Supabase existantes :**
 
-- `lots` — lots de bois (grumes, volumes, commune_code, partage)
+- `grumes` — une ligne par grume (nom VER-0000, essence, volumes, commune_code). Ex-`lots`, renommée le 3 nov. 2026
 - `extractions` — sorties de stock par essence
 - `codes_acces` — authentification par code commune
 

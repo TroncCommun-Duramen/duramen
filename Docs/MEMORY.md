@@ -6,7 +6,21 @@
 
 ---
 
-## Session 2 juillet 2026 (soir) — A6, A10 et brouillon fusionnés dans main ✅
+## Session 3 novembre 2026 — Le lot devient la grume (branche `feat/grumes`)
+
+Décisions du porteur :
+- **Une saisie = une grume.** Plus de quantité ni de lignes multiples. Le modèle garde le tableau `grumes` (1 élément) : l'extraction par clé `id_0` reste valable.
+- **Nom de grume** : préfixe commune + tiret + 4 chiffres tapés par l'agent (`VER-0001`). Préfixes dans `core.js` (`PREFIXES_COMMUNES`). Fixés par le porteur : VER, BOU (Bouguenais), NAN, ORV, SEB, NM. Les autres : 3 lettres sans article ni « Saint » (BOA = Bouaye, HER = Saint-Herblain…). Nom unique par commune (index `grumes_nom_unique`).
+- **Partage automatique** : toutes les grumes sont visibles des autres communes (`grumes_partagees()`, communes de test exclues). Bouton « Partager » supprimé.
+- **Nouvelle commune « Nantes Métropole »** (code NM-…). Le stock partagé s'appelle désormais « métropole ».
+- **Extraction = débit en planches uniquement**, trait de scie 3 mm et rendement 50 % fixes (`DuramenCore.TRAIT_SCIE_MM`, `RENDEMENT_GEOM`).
+- Essences : Chêne, Chêne rouge, Frêne, Platane, Pin, Chêne des marais, Cèdre, puis ordre alphabétique (`DuramenCore.ESSENCES_ORDRE`).
+
+Supabase : table renommée `grumes`. Une **passerelle temporaire** (vue `lots` + fonction `lots_partages()`) garde la version en ligne fonctionnelle jusqu'à la fusion. Colonne `extractions.cause_abattage` gardée jusqu'à la fusion (la version en ligne l'envoie encore).
+
+Tests : saisie, doublon, extraction, vue métropole testés dans un navigateur (Supabase simulé, colonnes vérifiées), puis envois rejoués en SQL avec le rôle public et l'en-tête commune (RLS, verrou de stock, index unique : OK), annulés ensuite. Base toujours vide.
+
+ — A6, A10 et brouillon fusionnés dans main ✅
 
 Trois branches testées en local, validées par le porteur sur téléphone, puis fusionnées le soir même (branches supprimées) :
 
