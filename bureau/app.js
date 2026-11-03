@@ -196,7 +196,7 @@ function bMettreAJourFooter() {
   var volM  = bLotsMetro.reduce(function(s, l) { return s + (l.vol_utile || 0); }, 0);
   var labels = { commune: 'Commune — ' + (bCommune ? bCommune.nom : ''), metropole: 'métropole', export: 'Export', feedback: 'Ticket retour' };
   document.getElementById('b-footer-gauche').textContent  = 'Feuille ' + n + ' sur 4 · ' + (labels[bOnglet] || '');
-  document.getElementById('b-footer-droite').textContent  = 'Stock : ' + vol.toFixed(1) + ' m³ · Métropole : ' + volM.toFixed(1) + ' m³';
+  document.getElementById('b-footer-droite').textContent  = 'Stock : ' + vol.toFixed(1) + ' m³ · métropole : ' + volM.toFixed(1) + ' m³';
 }
 
 // ═══════════ NAVIGATION ═══════════
@@ -320,7 +320,7 @@ function bAfficherTableLots() {
   // Ligne header
   var trH = document.createElement('tr');
   trH.className = 'b-tr-header';
-  ['', 'Grumes actives — ' + bCommune.nom, '', '', '', ''].forEach(function(t, i) {
+  ['', 'Grumes en stock — ' + bCommune.nom, '', '', '', ''].forEach(function(t, i) {
     var td = document.createElement('td'); td.colSpan = i === 1 ? 5 : 1; td.textContent = t; trH.appendChild(td);
   });
   tbody.appendChild(trH);

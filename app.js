@@ -1712,7 +1712,6 @@ function initialiserPanelSaisie() {
     ['Coupe sanitaire', 'Coupe sanitaire'],
     ['Intempérie', 'Intempérie (chablis, neige…)'],
     ['Aménagement', 'Aménagement urbain'],
-    ['Plantation', 'Renouvellement plantation'],
     ['Coupe sécuritaire', 'Coupe sécuritaire'],
     ['Gestion durable', 'Gestion durable'],
     ['Autre', 'Autre']
