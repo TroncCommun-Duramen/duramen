@@ -1235,8 +1235,6 @@ function creerSectionCampagnes() {
     var nb = (c.lignes || []).length;
     header.appendChild(cel('div', 'histo-lot-vol', nb + (nb > 1 ? ' grumes' : ' grume')));
     card.appendChild(header);
-    card.appendChild(cel('div', 'histo-essence-meta',
-      'Prévue le ' + formatDateFr(c.date_prevue) + (c.scieur ? ' · Scieur : ' + c.scieur : '')));
     var acts = cel('div', 'sciage-campagne-actions');
     var bFeuille = cel('button', 'btn btn-outline', 'Feuille de débit');
     bFeuille.type = 'button';
@@ -1369,8 +1367,7 @@ var campDraft = null;
 
 function nouveauCampDraft() {
   var d = new Date();
-  return { nom: 'Campagne du ' + d.toLocaleDateString('fr-FR'), date_prevue: d.toISOString().slice(0, 10),
-           scieur: '', choix: {} };
+  return { date_prevue: d.toISOString().slice(0, 10), choix: {} };
 }
 function sauverCampDraft() {
   try { localStorage.setItem(CLE_BROUILLON_CAMPAGNE, JSON.stringify(campDraft)); } catch (e) {}
@@ -1390,8 +1387,8 @@ function ouvrirPreparationCampagne() {
   modal.appendChild(cel('h2', '', 'Préparer une campagne de sciage'));
   modal.appendChild(cel('p', 'modal-sub', 'Choisissez les grumes et le débit demandé. Les plus urgentes sont en haut.'));
 
-  [['nom', 'Nom de la campagne', 'text'], ['date_prevue', 'Date prévue', 'date'],
-   ['scieur', 'Scieur (optionnel)', 'text']].forEach(function (f) {
+  // Seule la date est demandée : le nom de la campagne en découle
+  [['date_prevue', 'Date prévue du sciage', 'date']].forEach(function (f) {
     var fld = cel('div', 'field');
     var lab = cel('label', '', f[1]);
     lab.htmlFor = 'camp-' + f[0];
@@ -1568,9 +1565,9 @@ async function enregistrerCampagne() {
   var campagne = {
     id:           crypto.randomUUID(),
     commune_code: communeConnectee.code,
-    nom:          (campDraft.nom || '').trim() || nouveauCampDraft().nom,
+    nom:          'Campagne du ' + formatDateFr(campDraft.date_prevue || new Date()),
     date_prevue:  campDraft.date_prevue || null,
-    scieur:       (campDraft.scieur || '').trim(),
+    scieur:       '',
     lignes:       lignes,
     date_iso:     new Date().toISOString()
   };
