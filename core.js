@@ -191,6 +191,172 @@ var DuramenCore = (function () {
     return { ok: true, erreur: '' };
   }
 
+
+  // ═══ Campagne de sciage et stock produits (ajouts du 3 nov. 2026) ═══════
+  // Ajouts uniquement : aucune fonction figée n'est modifiée.
+
+  // Durée maximale de stockage en grume avant débit, en jours.
+  // Source : tableau FIBOIS « De l'Arbre à la Planche » (< 1 mois, < 6 mois,
+  // < 1 an). Essence absente du tableau ou non déterminée : 1 mois, par prudence.
+  var DUREE_MAX_GRUME_JOURS = {
+    'Aulne': 30, 'Cèdre': 182, 'Charme': 30, 'Châtaignier': 365, 'Chêne': 365,
+    'Chêne des marais': 30, 'Chêne rouge': 182, 'Douglas': 182, 'Érable': 30,
+    'Frêne': 30, 'Hêtre': 30, 'Marronnier': 30, 'Merisier': 182, 'Noyer': 182,
+    'Peuplier': 30, 'Pin': 30, 'Platane': 30, 'Robinier (Acacia)': 365,
+    'Tilleul': 30
+  };
+  var DUREE_MAX_GRUME_DEFAUT = 30;
+
+  // Badge orange à partir de 75 % du délai écoulé, rouge au-delà du délai
+  var SEUIL_ALERTE_DEBIT = 0.75;
+
+  // Épaisseurs standard d'un débit en plot, en mm
+  var EPAISSEURS_PLOT = [27, 41, 54, 65, 80];
+
+  // Séchage à l'air : 1 an par cm de la plus petite cote (décision du porteur).
+  // Information seulement : un produit en séchage peut être sorti.
+  var SECHAGE_ANS_PAR_CM = 1;
+
+  var JOUR_MS = 86400000;
+
+  function dureeMaxGrume(essence) {
+    return DUREE_MAX_GRUME_JOURS[essence] || DUREE_MAX_GRUME_DEFAUT;
+  }
+
+  // Longueur (m) et diamètre (cm) d'une grume enregistrée
+  function mesuresGrume(grume) {
+    var m = (grume && grume.grumes && grume.grumes[0]) || {};
+    return { longueur: parseFloat(m.longueur) || 0, diametre: parseFloat(m.diametre) || 0 };
+  }
+
+  // Urgence de débit d'une grume, à partir de sa date de saisie.
+  // Retourne { niveau: 'ok' | 'alerte' | 'depasse', dateLimite, joursRestants }
+  function urgenceDebit(grume, maintenant) {
+    var now    = maintenant ? new Date(maintenant) : new Date();
+    var jours  = dureeMaxGrume(grume.essence);
+    var debut  = new Date(grume.date_iso || grume.created_at || now);
+    var limite = new Date(debut.getTime() + jours * JOUR_MS);
+    var ratio  = (now - debut) / (jours * JOUR_MS);
+    return {
+      niveau:        ratio >= 1 ? 'depasse' : (ratio >= SEUIL_ALERTE_DEBIT ? 'alerte' : 'ok'),
+      dateLimite:    limite,
+      joursRestants: Math.ceil((limite - now) / JOUR_MS),
+      ratio:         ratio
+    };
+  }
+
+  // Estimation d'un débit demandé (approximation pour la feuille de débit).
+  // choix = { type: 'plot' | 'avive', epaisseur_mm, largeur_mm (avivé) }
+  // Plot   : nombre de planches = diamètre ÷ (épaisseur + trait de scie)
+  // Avivé  : volume utile (rendement 50 %) ÷ volume d'une pièce
+  // Retourne { quantite, volume } (volume en m³)
+  function estimerDebit(grume, choix) {
+    var m = mesuresGrume(grume);
+    var e = parseFloat(choix && choix.epaisseur_mm) || 0;
+    var t = TRAIT_SCIE_MM;
+    if (e <= 0 || m.diametre <= 0 || m.longueur <= 0) return { quantite: 0, volume: 0 };
+    var vBrut  = Math.PI * Math.pow(m.diametre / 200, 2) * m.longueur;
+    var vUtile = vBrut * RENDEMENT_GEOM * (e / (e + t));
+    if (choix.type === 'avive') {
+      var l = parseFloat(choix.largeur_mm) || 0;
+      if (l <= 0) return { quantite: 0, volume: 0 };
+      var vPiece = (e / 1000) * (l / 1000) * m.longueur;
+      var q = Math.floor(vUtile / vPiece);
+      return { quantite: q, volume: q * vPiece };
+    }
+    return { quantite: Math.floor(m.diametre / ((e + t) / 10)), volume: vUtile };
+  }
+
+  // Volume (m³) d'un produit réellement obtenu.
+  // produit = { type, epaisseur_mm, largeur_mm, longueur_m, quantite }
+  // Avivé : épaisseur × largeur × longueur × quantité.
+  // Plot  : largeur des planches variable → volume moyen d'une planche du
+  //         plot estimé, × quantité réelle, ramené à la longueur réelle.
+  function volumeProduit(produit, grume) {
+    var q = parseFloat(produit.quantite) || 0;
+    var e = parseFloat(produit.epaisseur_mm) || 0;
+    var L = parseFloat(produit.longueur_m) || 0;
+    if (q <= 0 || e <= 0 || L <= 0) return 0;
+    if (produit.type === 'avive') {
+      return q * (e / 1000) * ((parseFloat(produit.largeur_mm) || 0) / 1000) * L;
+    }
+    var m   = mesuresGrume(grume);
+    var est = estimerDebit(grume, { type: 'plot', epaisseur_mm: e });
+    if (!est.quantite || m.longueur <= 0) return 0;
+    return est.volume / est.quantite * q * (L / m.longueur);
+  }
+
+  // Plus petite cote d'un produit, en mm (c'est elle qui fixe le séchage)
+  function plusPetiteCote(produit) {
+    var e = parseFloat(produit.epaisseur_mm) || 0;
+    var l = parseFloat(produit.largeur_mm) || 0;
+    return (produit.type === 'avive' && l > 0) ? Math.min(e, l) : e;
+  }
+
+  // Date à partir de laquelle un produit est « sec à l'air »
+  function dateSecAir(dateSciage, produit) {
+    var cm = plusPetiteCote(produit) / 10;
+    return new Date(new Date(dateSciage).getTime() + cm * SECHAGE_ANS_PAR_CM * 365.25 * JOUR_MS);
+  }
+
+  // Clés des grumes déjà sorties du stock (sciage, grume brute, débit)
+  function clesGrumesSorties() {
+    var extsData = (typeof extractions !== 'undefined') ? extractions : [];
+    var cles = {};
+    extsData.forEach(function (ex) {
+      (ex.grumes_keys || []).forEach(function (k) { cles[k] = true; });
+    });
+    return cles;
+  }
+
+  // Grumes encore en stock brut (au moins une grume du lot non sortie)
+  function getGrumesEnStock() {
+    var lotsData = (typeof lots !== 'undefined') ? lots : [];
+    var sorties  = clesGrumesSorties();
+    return lotsData.filter(function (l) {
+      if (!l.grumes || l.grumes.length === 0) return false;
+      return l.grumes.some(function (g, gi) { return !sorties[l.id + '_' + gi]; });
+    });
+  }
+
+  // Stock produits : lignes issues des sciages, moins les sorties de produits.
+  // Clé d'un produit = id de l'extraction « sciage » + '_' + position.
+  function getStockProduits() {
+    var extsData = (typeof extractions !== 'undefined') ? extractions : [];
+    var sortis = {};
+    extsData.forEach(function (ex) {
+      if (ex.type_sortie !== 'produit' || !Array.isArray(ex.produits)) return;
+      ex.produits.forEach(function (s) {
+        sortis[s.cle] = (sortis[s.cle] || 0) + (parseFloat(s.quantite) || 0);
+      });
+    });
+    var lignes = [];
+    extsData.forEach(function (ex) {
+      if (ex.type_sortie !== 'sciage' || !Array.isArray(ex.produits)) return;
+      ex.produits.forEach(function (p, i) {
+        var cle   = ex.id + '_' + i;
+        var q     = parseFloat(p.quantite) || 0;
+        var reste = q - (sortis[cle] || 0);
+        if (reste <= 0) return;
+        lignes.push({
+          cle:           cle,
+          essence:       ex.essence,
+          grume_nom:     p.grume_nom || '',
+          type:          p.type,
+          epaisseur_mm:  p.epaisseur_mm,
+          largeur_mm:    p.largeur_mm,
+          longueur_m:    p.longueur_m,
+          quantite:      q,
+          restant:       reste,
+          volumeRestant: q > 0 ? (parseFloat(p.volume) || 0) * reste / q : 0,
+          dateSciage:    ex.date_iso,
+          dateSecAir:    dateSecAir(ex.date_iso, p)
+        });
+      });
+    });
+    return lignes;
+  }
+
   // ─── API publique ─────────────────────────────────────────────────────────
   return {
     ESSENCES_INFO:   ESSENCES_INFO,
@@ -198,6 +364,18 @@ var DuramenCore = (function () {
     TRAIT_SCIE_MM:   TRAIT_SCIE_MM,
     RENDEMENT_GEOM:  RENDEMENT_GEOM,
     prefixeCommune:  prefixeCommune,
+    EPAISSEURS_PLOT:    EPAISSEURS_PLOT,
+    SEUIL_ALERTE_DEBIT: SEUIL_ALERTE_DEBIT,
+    SECHAGE_ANS_PAR_CM: SECHAGE_ANS_PAR_CM,
+    dureeMaxGrume:      dureeMaxGrume,
+    mesuresGrume:       mesuresGrume,
+    urgenceDebit:       urgenceDebit,
+    estimerDebit:       estimerDebit,
+    volumeProduit:      volumeProduit,
+    plusPetiteCote:     plusPetiteCote,
+    dateSecAir:         dateSecAir,
+    getGrumesEnStock:   getGrumesEnStock,
+    getStockProduits:   getStockProduits,
     calculerVolumes: calculerVolumes,
     getStock:        getStock,
     getHistorique:   getHistorique,

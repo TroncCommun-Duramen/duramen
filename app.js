@@ -68,7 +68,7 @@ async function sbInsert(table, data, options) {
   return r.texte ? JSON.parse(r.texte) : [];
 }
 // ═══════════ DONNEES ═══════════
-var lots = [], extractions = [];
+var lots = [], extractions = [], campagnes = [];
 
 // ESSENCES_INFO est dans core.js → DuramenCore.ESSENCES_INFO
 
@@ -272,6 +272,7 @@ async function chargerDonnees(options) {
   try {
     var rawLots = await sbSelect('grumes', 'commune_code=eq.' + code + '&order=created_at.desc');
     var rawExt  = await sbSelect('extractions', 'commune_code=eq.' + code + '&order=created_at.desc');
+    var rawCamp = await sbSelect('campagnes', 'commune_code=eq.' + code + '&order=created_at.desc');
     lots = rawLots.map(function (l) {
       return Object.assign({}, l, {
         volBrut:    l.vol_brut    || 0,
@@ -284,8 +285,10 @@ async function chargerDonnees(options) {
       });
     });
     extractions = rawExt;
+    campagnes   = rawCamp;
     localStorage.setItem('duramen_lots_cache',        JSON.stringify(lots));
     localStorage.setItem('duramen_extractions_cache', JSON.stringify(extractions));
+    localStorage.setItem('duramen_campagnes_cache',   JSON.stringify(campagnes));
     mettreAJourHeaderStats();
     mettreAJourAccueil();
     afficherHistorique();
@@ -299,6 +302,7 @@ async function chargerDonnees(options) {
     if (cachedLots) {
       lots        = JSON.parse(cachedLots);
       extractions = cachedExt ? JSON.parse(cachedExt) : [];
+      campagnes   = lireJSONLocal('duramen_campagnes_cache') || [];
       mettreAJourHeaderStats();
       mettreAJourAccueil();
       afficherHistorique();
@@ -876,13 +880,28 @@ function afficherHistorique() {
   if (!content) return;
   while (content.firstChild) content.removeChild(content.firstChild);
   if (histoVue === 'commune') {
-    rendreHistoriqueContenu(content, lots);
+    // Deux états du stock : grumes brutes, puis produits bois
+    content.appendChild(creerBasculeStock());
+    if (stockEtat === 'produits') {
+      rendreStockProduits(content, DuramenCore.getStockProduits(), false);
+      return;
+    }
+    var zone = cel('div', '');
+    content.appendChild(zone);
+    // Grumes encore en stock brut ; l'export garde toutes les grumes saisies
+    rendreHistoriqueContenu(zone, DuramenCore.getGrumesEnStock(),
+      { urgence: true, aDebiter: grumesADebiter(), exportData: lots });
+    // Campagnes de sciage : juste après le total du stock brut
+    var total = zone.querySelector('.histo-total-block');
+    var sectionCamp = creerSectionCampagnes();
+    if (total && total.nextSibling) zone.insertBefore(sectionCamp, total.nextSibling);
+    else zone.insertBefore(sectionCamp, zone.firstChild);
     // Bilan entrées / sorties à une date choisie — juste avant les boutons export
-    var exportRow = content.querySelector('.histo-export-row');
+    var exportRow = zone.querySelector('.histo-export-row');
     var bilan     = creerBilanBloc();
-    if (exportRow) { content.insertBefore(bilan, exportRow); } else { content.appendChild(bilan); }
+    if (exportRow) { zone.insertBefore(bilan, exportRow); } else { zone.appendChild(bilan); }
   } else {
-    afficherHistoriqueCommunaute(content);
+    afficherStockCommunaute(content);
   }
 }
 
@@ -930,7 +949,9 @@ function creerBilanBloc() {
       return !jour || jour <= limite;
     }
     var lotsT = lots.filter(avantLimite);
-    var extsT = extractions.filter(avantLimite);
+    var extsT = extractions.filter(function (e) {
+      return avantLimite(e) && e.type_sortie !== 'produit';
+    });
     var entres = lotsT.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
     var sortis = extsT.reduce(function (s, e) { return s + (e.volume || 0); }, 0);
     vals[0].textContent = entres.toFixed(3);
@@ -951,7 +972,7 @@ function creerBilanBloc() {
         item.appendChild(cel('span', 'histo-ext-essence', ex.essence || '—'));
         item.appendChild(cel('span', 'histo-ext-vol', (ex.volume || 0).toFixed(3) + ' m³'));
         item.appendChild(cel('span', 'histo-ext-type',
-          ex.type_sortie === 'debit' ? 'Débit' : 'Grume brute'));
+          ex.type_sortie === 'debit' ? 'Débit' : (ex.type_sortie === 'sciage' ? 'Sciage' : 'Grume brute')));
         item.appendChild(cel('span', 'histo-ext-date', ex.date || ''));
         if (ex.destination) item.appendChild(cel('div', 'histo-ext-dest', '→ ' + ex.destination));
         sortiesList.appendChild(item);
@@ -963,30 +984,17 @@ function creerBilanBloc() {
   return bloc;
 }
 
-async function afficherHistoriqueCommunaute(content) {
-  var loading = cel('div', 'empty-state');
-  loading.appendChild(cel('p', '', 'Chargement des données du réseau…'));
-  content.appendChild(loading);
-  try {
-    // Grumes de toutes les communes, lues par la fonction grumes_partagees(),
-    // qui ne renvoie jamais le code d'accès secret des communes.
-    var tousLots = await sbSelect('rpc/grumes_partagees', '');
-    while (content.firstChild) content.removeChild(content.firstChild);
-    rendreHistoriqueContenu(content, tousLots);
-  } catch (err) {
-    while (content.firstChild) content.removeChild(content.firstChild);
-    var errEl = cel('div', 'empty-state');
-    errEl.appendChild(cel('p', '', 'Erreur chargement réseau : ' + err.message));
-    content.appendChild(errEl);
-  }
-}
-
-function rendreHistoriqueContenu(container, lotsData) {
+// options.urgence    : liste complète triée par urgence de débit, avec badge
+// options.aDebiter   : id de grume → campagne ouverte (badge « À débiter »)
+// options.exportData : grumes à exporter (par défaut : celles affichées)
+function rendreHistoriqueContenu(container, lotsData, options) {
+  options = options || {};
+  var exportData = options.exportData || lotsData || [];
   if (!lotsData || lotsData.length === 0) {
     var es = cel('div', 'empty-state');
-    es.appendChild(cel('p', '', 'Aucune grume enregistrée.'));
+    es.appendChild(cel('p', '', options.urgence ? 'Aucune grume en stock brut.' : 'Aucune grume enregistrée.'));
     container.appendChild(es);
-    container.appendChild(creerBoutonsExportHisto(lotsData || []));
+    container.appendChild(creerBoutonsExportHisto(exportData));
     return;
   }
 
@@ -1050,10 +1058,12 @@ function rendreHistoriqueContenu(container, lotsData) {
   container.appendChild(essList);
 
   // ── Lots récents ────────────────────────────────────────────────────
-  container.appendChild(cel('div', 'histo-section-title mt-16', 'Grumes récentes'));
+  container.appendChild(cel('div', 'histo-section-title mt-16',
+    options.urgence ? 'Grumes en stock — les plus urgentes d\'abord' : 'Grumes récentes'));
 
   var lotsList = cel('div', '');
-  lotsData.slice(0, 5).forEach(function (lot) {
+  var aAfficher = options.urgence ? grumesParUrgence(lotsData) : lotsData.slice(0, 5);
+  aAfficher.forEach(function (lot) {
     var card   = cel('div', 'histo-lot-card');
     var header = cel('div', 'histo-lot-header');
     header.appendChild(cel('div', 'histo-lot-nom', lot.nom || '—'));
@@ -1064,12 +1074,17 @@ function rendreHistoriqueContenu(container, lotsData) {
     if (lot.commune) badges.appendChild(cel('span', 'histo-badge histo-badge-commune', lot.commune));
     if (lot.essence) badges.appendChild(cel('span', 'histo-badge histo-badge-essence', lot.essence));
     if (lot.cause)   badges.appendChild(cel('span', 'histo-badge histo-badge-cause',   lot.cause));
+    if (options.urgence) badges.appendChild(creerBadgeUrgence(lot));
+    if (options.aDebiter && options.aDebiter[lot.id]) {
+      badges.appendChild(cel('span', 'histo-badge badge-a-debiter',
+        'À débiter — ' + (options.aDebiter[lot.id].nom || 'campagne')));
+    }
     card.appendChild(badges);
     lotsList.appendChild(card);
   });
   container.appendChild(lotsList);
 
-  container.appendChild(creerBoutonsExportHisto(lotsData));
+  container.appendChild(creerBoutonsExportHisto(exportData));
 }
 
 function creerBoutonsExportHisto(lotsData) {
@@ -1106,6 +1121,797 @@ function exporterHistoriqueCSV(lotsData) {
 
 function exporterHistoriquePDF() {
   window.print();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STOCK EN DEUX ÉTATS ET CAMPAGNE DE SCIAGE (feat/campagne-sciage)
+// Grumes brutes → [campagne de sciage] → produits bois.
+// La feuille de débit prépare le sciage ; la clôture enregistre les produits
+// réels. Statuts et dates de séchage sont calculés, jamais enregistrés.
+// ═══════════════════════════════════════════════════════════════════════════
+
+var stockEtat = 'brut';               // 'brut' (grumes) ou 'produits'
+var CLE_BROUILLON_CAMPAGNE = 'duramen_draft_campagne';
+var CLE_BROUILLON_CLOTURE  = 'duramen_draft_cloture';
+
+function formatDateFr(d) {
+  if (!d) return '—';
+  var x = new Date(d);
+  return isNaN(x) ? '—' : x.toLocaleDateString('fr-FR');
+}
+function formatNb(v, dec) {
+  return (parseFloat(v) || 0).toFixed(dec).replace('.', ',');
+}
+function lireJSONLocal(cle) {
+  try { return JSON.parse(localStorage.getItem(cle) || 'null'); } catch (e) { return null; }
+}
+
+// Suppression d'une ligne (campagne non clôturée)
+async function sbDelete(table, id) {
+  var entetes = Object.assign({}, sbH, { 'Prefer': 'return=minimal' });
+  var r = await requeteSupabase(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + encodeURIComponent(id),
+    { method: 'DELETE', headers: entetes }, DELAI_ENVOI_MS, table);
+  if (!r.res.ok) {
+    var err = new Error('Suppression ' + table + ': ' + r.res.status + ' ' + r.texte);
+    err.statut = r.res.status;
+    throw err;
+  }
+}
+
+// ─── Campagnes : état calculé ────────────────────────────────────────────
+// Une campagne est clôturée dès qu'un sciage y est rattaché.
+function campagneCloturee(c) {
+  return extractions.some(function (e) { return e.campagne_id === c.id; });
+}
+function campagnesOuvertes() {
+  return campagnes.filter(function (c) { return !campagneCloturee(c); });
+}
+// Grumes réservées par une campagne ouverte : id de grume → campagne
+function grumesADebiter() {
+  var map = {};
+  campagnesOuvertes().forEach(function (c) {
+    (c.lignes || []).forEach(function (l) { map[l.grume_id] = c; });
+  });
+  return map;
+}
+// Grumes en stock, de la plus urgente à la moins urgente
+function grumesParUrgence(liste) {
+  var now = new Date();
+  return liste.slice().sort(function (a, b) {
+    return DuramenCore.urgenceDebit(b, now).ratio - DuramenCore.urgenceDebit(a, now).ratio;
+  });
+}
+
+// ─── Badges ──────────────────────────────────────────────────────────────
+function creerBadgeUrgence(grume) {
+  var u = DuramenCore.urgenceDebit(grume);
+  var txt;
+  if (u.niveau === 'depasse')     txt = 'Délai de débit dépassé (' + formatDateFr(u.dateLimite) + ')';
+  else if (u.niveau === 'alerte') txt = 'Débit urgent — avant le ' + formatDateFr(u.dateLimite);
+  else                            txt = 'Débit avant le ' + formatDateFr(u.dateLimite);
+  return cel('span', 'histo-badge badge-urgence badge-urgence-' + u.niveau, txt);
+}
+function creerBadgeSechage(dateSec) {
+  var sec = new Date(dateSec) <= new Date();
+  return cel('span', 'histo-badge badge-sechage ' + (sec ? 'badge-sechage-sec' : 'badge-sechage-en-cours'),
+    sec ? 'Sec à l\'air' : 'En séchage — sec à l\'air le ' + formatDateFr(dateSec));
+}
+function texteDemande(l) {
+  var est = l.estimation_quantite ? ' · ~' + l.estimation_quantite
+    + (l.type === 'avive' ? ' pièces' : ' planches') : '';
+  if (l.type === 'avive') return 'Avivé · ' + l.epaisseur_mm + ' × ' + l.largeur_mm + ' mm' + est;
+  return 'Plot · ' + l.epaisseur_mm + ' mm' + est;
+}
+function texteProduit(p) {
+  var lon = formatNb(p.longueur_m, 2) + ' m';
+  if (p.type === 'avive') return 'Avivé ' + p.epaisseur_mm + ' × ' + p.largeur_mm + ' mm · ' + lon;
+  return 'Plot ' + p.epaisseur_mm + ' mm · ' + lon;
+}
+
+// ─── Bascule Grumes brutes / Produits bois ───────────────────────────────
+function creerBasculeStock() {
+  var bar = cel('div', 'histo-toggle-bar stock-etat-bar');
+  [['brut', 'Grumes brutes'], ['produits', 'Produits bois']].forEach(function (o) {
+    var b = cel('button', 'histo-toggle-btn' + (stockEtat === o[0] ? ' active' : ''), o[1]);
+    b.type    = 'button';
+    b.onclick = function () { stockEtat = o[0]; afficherHistorique(); };
+    bar.appendChild(b);
+  });
+  return bar;
+}
+
+// ─── Section « Campagnes de sciage » (stock brut, ma commune) ────────────
+function creerSectionCampagnes() {
+  var bloc = cel('div', 'sciage-section');
+  bloc.appendChild(cel('div', 'histo-section-title', 'Campagnes de sciage'));
+  var ouvertes = campagnesOuvertes();
+  if (ouvertes.length === 0) {
+    bloc.appendChild(cel('p', 'histo-essence-meta', 'Aucune campagne en préparation.'));
+  }
+  ouvertes.forEach(function (c) {
+    var card   = cel('div', 'histo-lot-card sciage-campagne-card');
+    var header = cel('div', 'histo-lot-header');
+    header.appendChild(cel('div', 'histo-lot-nom', c.nom || 'Campagne'));
+    var nb = (c.lignes || []).length;
+    header.appendChild(cel('div', 'histo-lot-vol', nb + (nb > 1 ? ' grumes' : ' grume')));
+    card.appendChild(header);
+    card.appendChild(cel('div', 'histo-essence-meta',
+      'Prévue le ' + formatDateFr(c.date_prevue) + (c.scieur ? ' · Scieur : ' + c.scieur : '')));
+    var acts = cel('div', 'sciage-campagne-actions');
+    var bFeuille = cel('button', 'btn btn-outline', 'Feuille de débit');
+    bFeuille.type = 'button';
+    bFeuille.onclick = function () { ouvrirFeuilleDebit(c); };
+    var bClot = cel('button', 'btn btn-primary', 'Clôturer');
+    bClot.type = 'button';
+    bClot.onclick = function () { ouvrirCloture(c); };
+    var bSup = cel('button', 'btn btn-outline sciage-btn-supprimer', 'Supprimer');
+    bSup.type = 'button';
+    bSup.onclick = function () { supprimerCampagne(c); };
+    acts.appendChild(bFeuille);
+    acts.appendChild(bClot);
+    acts.appendChild(bSup);
+    card.appendChild(acts);
+    bloc.appendChild(card);
+  });
+  var bNew = cel('button', 'btn btn-primary sciage-btn-nouvelle', '+ Préparer une campagne de sciage');
+  bNew.type    = 'button';
+  bNew.onclick = ouvrirPreparationCampagne;
+  bloc.appendChild(bNew);
+  return bloc;
+}
+
+async function supprimerCampagne(c) {
+  if (!confirm('Supprimer la campagne « ' + (c.nom || '') + ' » ?\nLes grumes restent en stock brut.')) return;
+  try {
+    showLoading(true);
+    await sbDelete('campagnes', c.id);
+    await chargerDonnees();
+    showToastSucces('Campagne supprimée.');
+  } catch (err) {
+    if (err.reseau) showError('Pas de réseau : la suppression se fait avec réseau.');
+    else if (/23503/.test(err.message)) showError('Cette campagne est déjà clôturée : elle ne peut plus être supprimée.');
+    else showError('Erreur suppression : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ─── Stock produits (ma commune ou métropole) ────────────────────────────
+// lignes : format de DuramenCore.getStockProduits(), ou de produits_partages()
+// ramené au même format par normaliserProduitsPartages().
+function rendreStockProduits(container, lignes, partage) {
+  var total = lignes.reduce(function (s, l) { return s + (l.volumeRestant || 0); }, 0);
+  var nbPieces = lignes.reduce(function (s, l) { return s + (l.restant || 0); }, 0);
+
+  var bloc = cel('div', 'histo-total-block');
+  var iVol = cel('div', '');
+  iVol.appendChild(cel('div', 'histo-total-vol', total.toFixed(3)));
+  iVol.appendChild(cel('div', 'histo-total-unit', 'm³ de produits'));
+  bloc.appendChild(iVol);
+  bloc.appendChild(cel('div', 'histo-total-divider'));
+  var iNb = cel('div', '');
+  iNb.appendChild(cel('div', 'histo-total-lots', String(nbPieces)));
+  iNb.appendChild(cel('div', 'histo-total-unit', nbPieces > 1 ? 'pièces' : 'pièce'));
+  bloc.appendChild(iNb);
+  container.appendChild(bloc);
+
+  if (lignes.length === 0) {
+    var es = cel('div', 'empty-state');
+    es.appendChild(cel('p', '', 'Aucun produit bois en stock. Les produits arrivent à la clôture d\'une campagne de sciage.'));
+    container.appendChild(es);
+    return;
+  }
+
+  var parEss = {};
+  lignes.forEach(function (l) {
+    var e = l.essence || 'Autre';
+    (parEss[e] = parEss[e] || []).push(l);
+  });
+  Object.keys(parEss).sort().forEach(function (ess) {
+    var vol = parEss[ess].reduce(function (s, l) { return s + (l.volumeRestant || 0); }, 0);
+    container.appendChild(cel('div', 'histo-section-title mt-16', ess + ' — ' + vol.toFixed(3) + ' m³'));
+    parEss[ess]
+      .sort(function (a, b) { return new Date(a.dateSecAir) - new Date(b.dateSecAir); })
+      .forEach(function (l) {
+        var card   = cel('div', 'histo-lot-card produit-card');
+        var header = cel('div', 'histo-lot-header');
+        header.appendChild(cel('div', 'histo-lot-nom', texteProduit(l)));
+        header.appendChild(cel('div', 'histo-lot-vol', (l.volumeRestant || 0).toFixed(3) + ' m³'));
+        card.appendChild(header);
+        var unite = l.type === 'avive' ? ' pièces' : ' planches';
+        card.appendChild(cel('div', 'histo-essence-meta',
+          l.restant + ' sur ' + l.quantite + unite + ' · scié le ' + formatDateFr(l.dateSciage)
+          + (l.grume_nom ? ' · grume ' + l.grume_nom : '')));
+        var badges = cel('div', 'histo-badges');
+        if (partage && l.commune) badges.appendChild(cel('span', 'histo-badge histo-badge-commune', l.commune));
+        badges.appendChild(creerBadgeSechage(l.dateSecAir));
+        card.appendChild(badges);
+        container.appendChild(card);
+      });
+  });
+}
+
+function normaliserProduitsPartages(rows) {
+  return (rows || []).map(function (r) {
+    var p = { type: r.type, epaisseur_mm: r.epaisseur_mm, largeur_mm: r.largeur_mm };
+    return {
+      cle: r.cle, commune: r.commune, essence: r.essence, type: r.type,
+      epaisseur_mm: r.epaisseur_mm, largeur_mm: r.largeur_mm, longueur_m: r.longueur_m,
+      quantite: parseFloat(r.quantite) || 0, restant: parseFloat(r.quantite_restante) || 0,
+      volumeRestant: parseFloat(r.volume_restant) || 0,
+      dateSciage: r.date_sciage, dateSecAir: DuramenCore.dateSecAir(r.date_sciage, p)
+    };
+  });
+}
+
+async function afficherStockCommunaute(content) {
+  content.appendChild(creerBasculeStock());
+  var zone = cel('div', '');
+  var loading = cel('div', 'empty-state');
+  loading.appendChild(cel('p', '', 'Chargement des données de la métropole…'));
+  zone.appendChild(loading);
+  content.appendChild(zone);
+  try {
+    var rows = await sbSelect(stockEtat === 'produits' ? 'rpc/produits_partages' : 'rpc/grumes_en_stock_partagees', '');
+    while (zone.firstChild) zone.removeChild(zone.firstChild);
+    if (stockEtat === 'produits') rendreStockProduits(zone, normaliserProduitsPartages(rows), true);
+    else rendreHistoriqueContenu(zone, rows, { urgence: true });
+  } catch (err) {
+    while (zone.firstChild) zone.removeChild(zone.firstChild);
+    var errEl = cel('div', 'empty-state');
+    errEl.appendChild(cel('p', '', 'Erreur chargement métropole : ' + err.message));
+    zone.appendChild(errEl);
+  }
+}
+
+// ═══ Préparation d'une campagne (feuille de débit) ════════════════════════
+var campDraft = null;
+
+function nouveauCampDraft() {
+  var d = new Date();
+  return { nom: 'Campagne du ' + d.toLocaleDateString('fr-FR'), date_prevue: d.toISOString().slice(0, 10),
+           scieur: '', choix: {} };
+}
+function sauverCampDraft() {
+  try { localStorage.setItem(CLE_BROUILLON_CAMPAGNE, JSON.stringify(campDraft)); } catch (e) {}
+}
+
+function ouvrirPreparationCampagne() {
+  campDraft = lireJSONLocal(CLE_BROUILLON_CAMPAGNE) || nouveauCampDraft();
+  var bg = document.getElementById('modal-campagne-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+  bg = cel('div', 'extract-modal-bg open');
+  bg.id = 'modal-campagne-bg';
+  var modal = cel('div', 'extract-modal sciage-modal');
+  var closeBtn = cel('button', 'modal-close', '✕');
+  closeBtn.type = 'button';
+  closeBtn.onclick = fermerPreparationCampagne;
+  modal.appendChild(closeBtn);
+  modal.appendChild(cel('h2', '', 'Préparer une campagne de sciage'));
+  modal.appendChild(cel('p', 'modal-sub', 'Choisissez les grumes et le débit demandé. Les plus urgentes sont en haut.'));
+
+  [['nom', 'Nom de la campagne', 'text'], ['date_prevue', 'Date prévue', 'date'],
+   ['scieur', 'Scieur (optionnel)', 'text']].forEach(function (f) {
+    var fld = cel('div', 'field');
+    var lab = cel('label', '', f[1]);
+    lab.htmlFor = 'camp-' + f[0];
+    var inp = document.createElement('input');
+    inp.type = f[2];
+    inp.id   = 'camp-' + f[0];
+    inp.autocomplete = 'off';
+    inp.value = campDraft[f[0]] || '';
+    inp.oninput = function () { campDraft[f[0]] = inp.value; sauverCampDraft(); };
+    fld.appendChild(lab);
+    fld.appendChild(inp);
+    modal.appendChild(fld);
+  });
+
+  modal.appendChild(cel('div', 'histo-section-title mt-16', 'Grumes en stock'));
+  var reservees = grumesADebiter();
+  var dispo = grumesParUrgence(DuramenCore.getGrumesEnStock()).filter(function (g) { return !reservees[g.id]; });
+  // Le brouillon ne garde que les grumes encore disponibles
+  Object.keys(campDraft.choix).forEach(function (id) {
+    if (!dispo.some(function (g) { return g.id === id; })) delete campDraft.choix[id];
+  });
+  if (dispo.length === 0) {
+    modal.appendChild(cel('p', 'histo-essence-meta', 'Aucune grume disponible : elles sont toutes déjà dans une campagne.'));
+  }
+  dispo.forEach(function (g) { modal.appendChild(creerLigneChoixDebit(g)); });
+
+  var resume = cel('div', 'sciage-resume');
+  resume.id = 'camp-resume';
+  modal.appendChild(resume);
+
+  var acts = cel('div', 'flex-end');
+  var bAnn = cel('button', 'btn btn-outline', 'Effacer');
+  bAnn.type = 'button';
+  bAnn.onclick = function () {
+    if (!confirm('Effacer la préparation en cours ?')) return;
+    try { localStorage.removeItem(CLE_BROUILLON_CAMPAGNE); } catch (e) {}
+    ouvrirPreparationCampagne();
+  };
+  var bOk = cel('button', 'btn btn-primary', 'Enregistrer la campagne');
+  bOk.type = 'button';
+  bOk.onclick = enregistrerCampagne;
+  acts.appendChild(bAnn);
+  acts.appendChild(bOk);
+  modal.appendChild(acts);
+
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+  majResumeCampagne();
+}
+
+function fermerPreparationCampagne() {
+  var bg = document.getElementById('modal-campagne-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+}
+
+// Une grume : case à cocher, puis plot (épaisseur standard) ou avivé (section libre)
+function creerLigneChoixDebit(g) {
+  var m   = DuramenCore.mesuresGrume(g);
+  var row = cel('div', 'histo-lot-card sciage-grume-row');
+
+  var lab = cel('label', 'sciage-grume-check');
+  var cb  = document.createElement('input');
+  cb.type    = 'checkbox';
+  cb.checked = !!campDraft.choix[g.id];
+  lab.appendChild(cb);
+  lab.appendChild(cel('span', 'histo-lot-nom', (g.nom || '—') + ' · ' + (g.essence || '')));
+  row.appendChild(lab);
+  row.appendChild(cel('div', 'histo-essence-meta',
+    formatNb(m.longueur, 2) + ' m × ' + m.diametre + ' cm · ' + (g.vol_utile || 0).toFixed(3) + ' m³'));
+  var badges = cel('div', 'histo-badges');
+  badges.appendChild(creerBadgeUrgence(g));
+  row.appendChild(badges);
+
+  var zone = cel('div', 'sciage-choix' + (cb.checked ? '' : ' hidden'));
+  row.appendChild(zone);
+
+  function rendreChoix() {
+    while (zone.firstChild) zone.removeChild(zone.firstChild);
+    var ch = campDraft.choix[g.id];
+    if (!ch) return;
+
+    var types = cel('div', 'histo-toggle-bar sciage-type-bar');
+    [['plot', 'Plot'], ['avive', 'Avivé']].forEach(function (t) {
+      var b = cel('button', 'histo-toggle-btn' + (ch.type === t[0] ? ' active' : ''), t[1]);
+      b.type = 'button';
+      b.onclick = function () {
+        ch.type = t[0];
+        if (t[0] === 'plot' && DuramenCore.EPAISSEURS_PLOT.indexOf(ch.epaisseur_mm) === -1) ch.epaisseur_mm = 27;
+        sauverCampDraft(); rendreChoix(); majResumeCampagne();
+      };
+      types.appendChild(b);
+    });
+    zone.appendChild(types);
+
+    var est = cel('div', 'sciage-estimation');
+    function majEst() {
+      var r = DuramenCore.estimerDebit(g, ch);
+      est.textContent = r.quantite > 0
+        ? '≈ ' + r.quantite + (ch.type === 'avive' ? ' pièces' : ' planches') + ' · ' + r.volume.toFixed(3) + ' m³ (estimation)'
+        : 'Indiquez les cotes pour obtenir une estimation.';
+    }
+
+    if (ch.type === 'plot') {
+      var fE = cel('div', 'field');
+      fE.appendChild(cel('label', '', 'Épaisseur des planches'));
+      var sel = document.createElement('select');
+      DuramenCore.EPAISSEURS_PLOT.forEach(function (e) {
+        var o = document.createElement('option');
+        o.value = e; o.textContent = e + ' mm';
+        if (e === ch.epaisseur_mm) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.onchange = function () { ch.epaisseur_mm = parseInt(sel.value, 10); sauverCampDraft(); majEst(); };
+      fE.appendChild(sel);
+      zone.appendChild(fE);
+    } else {
+      [['epaisseur_mm', 'Épaisseur (mm)'], ['largeur_mm', 'Largeur (mm)']].forEach(function (f) {
+        var fld = cel('div', 'field');
+        fld.appendChild(cel('label', '', f[1]));
+        var inp = document.createElement('input');
+        inp.type = 'number'; inp.min = '5'; inp.max = '500'; inp.inputMode = 'numeric';
+        inp.value = ch[f[0]] || '';
+        inp.oninput = function () { ch[f[0]] = parseInt(inp.value, 10) || 0; sauverCampDraft(); majEst(); };
+        fld.appendChild(inp);
+        zone.appendChild(fld);
+      });
+    }
+    zone.appendChild(est);
+    majEst();
+  }
+
+  cb.onchange = function () {
+    if (cb.checked) campDraft.choix[g.id] = campDraft.choix[g.id] || { type: 'plot', epaisseur_mm: 27, largeur_mm: 0 };
+    else delete campDraft.choix[g.id];
+    zone.classList.toggle('hidden', !cb.checked);
+    sauverCampDraft(); rendreChoix(); majResumeCampagne();
+  };
+  rendreChoix();
+  return row;
+}
+
+function majResumeCampagne() {
+  var el = document.getElementById('camp-resume');
+  if (!el || !campDraft) return;
+  var n = Object.keys(campDraft.choix).length;
+  el.textContent = n === 0 ? 'Aucune grume choisie.' : n + (n > 1 ? ' grumes choisies' : ' grume choisie');
+}
+
+async function enregistrerCampagne() {
+  var ids = Object.keys(campDraft.choix);
+  if (ids.length === 0) { showError('Choisissez au moins une grume.'); return; }
+  var lignes = [];
+  for (var i = 0; i < ids.length; i++) {
+    var g  = lots.find(function (l) { return l.id === ids[i]; });
+    var ch = campDraft.choix[ids[i]];
+    if (!g) continue;
+    if (!(ch.epaisseur_mm > 0) || (ch.type === 'avive' && !(ch.largeur_mm > 0))) {
+      showError('Grume ' + g.nom + ' : indiquez l\'épaisseur' + (ch.type === 'avive' ? ' et la largeur.' : '.'));
+      return;
+    }
+    var m   = DuramenCore.mesuresGrume(g);
+    var est = DuramenCore.estimerDebit(g, ch);
+    lignes.push({
+      grume_id: g.id, cle: g.id + '_0', nom: g.nom, essence: g.essence,
+      longueur: m.longueur, diametre: m.diametre, vol: g.vol_utile || 0,
+      type: ch.type, epaisseur_mm: ch.epaisseur_mm, largeur_mm: ch.type === 'avive' ? ch.largeur_mm : null,
+      estimation_quantite: est.quantite, estimation_volume: arrondiM3(est.volume)
+    });
+  }
+  // Ordre de la feuille de débit : les plus urgentes d'abord
+  var ordre = grumesParUrgence(lots).map(function (g) { return g.id; });
+  lignes.sort(function (a, b) { return ordre.indexOf(a.grume_id) - ordre.indexOf(b.grume_id); });
+
+  var campagne = {
+    id:           crypto.randomUUID(),
+    commune_code: communeConnectee.code,
+    nom:          (campDraft.nom || '').trim() || nouveauCampDraft().nom,
+    date_prevue:  campDraft.date_prevue || null,
+    scieur:       (campDraft.scieur || '').trim(),
+    lignes:       lignes,
+    date_iso:     new Date().toISOString()
+  };
+  try {
+    showLoading(true);
+    await sbInsert('campagnes', campagne, { sansRetour: true });
+    try { localStorage.removeItem(CLE_BROUILLON_CAMPAGNE); } catch (e) {}
+    fermerPreparationCampagne();
+    stockEtat = 'brut';
+    await chargerDonnees();
+    showToastSucces('Campagne enregistrée : ' + lignes.length + (lignes.length > 1 ? ' grumes à débiter.' : ' grume à débiter.'));
+  } catch (err) {
+    if (err.reseau) showError('Pas de réseau : la campagne s\'enregistre avec réseau. Votre préparation est gardée.');
+    else showError('Erreur enregistrement : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ═══ Feuille de débit imprimable ═══════════════════════════════════════════
+// Colonne « Demandé » remplie, colonne « Réalisé » vide pour le scieur.
+function construireFeuilleDebit(c) {
+  var f = cel('div', 'feuille-debit');
+  f.appendChild(cel('h2', '', 'Feuille de débit — ' + (c.nom || 'Campagne')));
+  f.appendChild(cel('p', '', (communeConnectee ? communeConnectee.nom : '') + ' · Date prévue : '
+    + formatDateFr(c.date_prevue) + ' · Scieur : ' + (c.scieur || '________________')));
+  var table = document.createElement('table');
+  table.className = 'feuille-table';
+  var thead = document.createElement('thead');
+  var trh   = document.createElement('tr');
+  ['N°', 'Essence', 'Long.', 'Diam.', 'Demandé', 'Réalisé'].forEach(function (h) {
+    trh.appendChild(cel('th', '', h));
+  });
+  thead.appendChild(trh);
+  table.appendChild(thead);
+  var tbody = document.createElement('tbody');
+  (c.lignes || []).forEach(function (l) {
+    var tr = document.createElement('tr');
+    [l.nom, l.essence, formatNb(l.longueur, 2) + ' m', l.diametre + ' cm', texteDemande(l),
+     '☐ Conforme   ☐ Écart : ____________'].forEach(function (v) { tr.appendChild(cel('td', '', v)); });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  f.appendChild(table);
+  f.appendChild(cel('p', 'feuille-pied', 'Date du sciage : ____________     Signature du scieur : ____________'));
+  return f;
+}
+
+function ouvrirFeuilleDebit(c) {
+  var bg = document.getElementById('modal-feuille-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+  bg = cel('div', 'extract-modal-bg open');
+  bg.id = 'modal-feuille-bg';
+  var modal = cel('div', 'extract-modal sciage-modal');
+  var closeBtn = cel('button', 'modal-close', '✕');
+  closeBtn.type = 'button';
+  closeBtn.onclick = function () { bg.parentNode.removeChild(bg); };
+  modal.appendChild(closeBtn);
+  modal.appendChild(construireFeuilleDebit(c));
+  var acts = cel('div', 'flex-end');
+  var bFerm = cel('button', 'btn btn-outline', 'Fermer');
+  bFerm.type = 'button';
+  bFerm.onclick = closeBtn.onclick;
+  var bImp = cel('button', 'btn btn-primary', 'Imprimer');
+  bImp.type = 'button';
+  bImp.onclick = function () { imprimerFeuilleDebit(c); };
+  acts.appendChild(bFerm);
+  acts.appendChild(bImp);
+  modal.appendChild(acts);
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+}
+
+// Impression : seule la feuille reste visible le temps de l'impression
+// (classe « hidden » existante), puis la page revient à l'identique.
+function imprimerFeuilleDebit(c) {
+  var feuille = construireFeuilleDebit(c);
+  feuille.classList.add('feuille-impression');
+  var masques = [];
+  Array.prototype.forEach.call(document.body.children, function (el) {
+    if (!el.classList.contains('hidden')) { el.classList.add('hidden'); masques.push(el); }
+  });
+  document.body.appendChild(feuille);
+  var fini = false;
+  function restaurer() {
+    if (fini) return;
+    fini = true;
+    if (feuille.parentNode) feuille.parentNode.removeChild(feuille);
+    masques.forEach(function (el) { el.classList.remove('hidden'); });
+  }
+  window.addEventListener('afterprint', restaurer, { once: true });
+  window.print();
+  setTimeout(restaurer, 1000);
+}
+
+// ═══ Clôture d'une campagne : saisie du réalisé ═══════════════════════════
+// La colonne « Réalisé » est pré-remplie avec le demandé : on ne corrige
+// que les écarts. Un seul envoi : tout passe ou rien.
+var clotDraft = null;
+
+function produitDepuisDemande(l) {
+  return {
+    type: l.type, epaisseur_mm: l.epaisseur_mm,
+    largeur_mm: l.type === 'avive' ? l.largeur_mm : null,
+    longueur_m: l.longueur, quantite: l.estimation_quantite || 0
+  };
+}
+function sauverClotDraft() {
+  try { localStorage.setItem(CLE_BROUILLON_CLOTURE, JSON.stringify(clotDraft)); } catch (e) {}
+}
+
+function ouvrirCloture(c) {
+  var d = lireJSONLocal(CLE_BROUILLON_CLOTURE);
+  if (!d || d.campagne_id !== c.id) {
+    d = { campagne_id: c.id, grumes: {} };
+    (c.lignes || []).forEach(function (l) {
+      d.grumes[l.grume_id] = { sciee: true, produits: [produitDepuisDemande(l)] };
+    });
+  }
+  clotDraft = d;
+
+  var bg = document.getElementById('modal-cloture-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+  bg = cel('div', 'extract-modal-bg open');
+  bg.id = 'modal-cloture-bg';
+  var modal = cel('div', 'extract-modal sciage-modal');
+  var closeBtn = cel('button', 'modal-close', '✕');
+  closeBtn.type = 'button';
+  closeBtn.onclick = fermerCloture;
+  modal.appendChild(closeBtn);
+  modal.appendChild(cel('h2', '', 'Clôturer — ' + (c.nom || 'Campagne')));
+  modal.appendChild(cel('p', 'modal-sub',
+    'Le réalisé est pré-rempli avec le demandé. Corrigez seulement les écarts, puis validez.'));
+
+  var sorties = {};
+  extractions.forEach(function (e) { (e.grumes_keys || []).forEach(function (k) { sorties[k] = true; }); });
+
+  (c.lignes || []).forEach(function (l) {
+    var g = lots.find(function (x) { return x.id === l.grume_id; });
+    var card = cel('div', 'histo-lot-card sciage-cloture-grume');
+    card.appendChild(cel('div', 'histo-lot-nom', (l.nom || '—') + ' · ' + (l.essence || '')
+      + ' · ' + formatNb(l.longueur, 2) + ' m × ' + l.diametre + ' cm'));
+    card.appendChild(cel('div', 'histo-essence-meta', 'Demandé : ' + texteDemande(l)));
+    if (!g || sorties[l.grume_id + '_0']) {
+      delete clotDraft.grumes[l.grume_id];
+      card.appendChild(cel('div', 'info-box', 'Grume déjà sortie du stock : elle est ignorée.'));
+      modal.appendChild(card);
+      return;
+    }
+    if (!clotDraft.grumes[l.grume_id]) clotDraft.grumes[l.grume_id] = { sciee: true, produits: [produitDepuisDemande(l)] };
+    card.appendChild(creerSaisieRealise(g, clotDraft.grumes[l.grume_id]));
+    modal.appendChild(card);
+  });
+  sauverClotDraft();
+
+  var acts = cel('div', 'flex-end');
+  var bRet = cel('button', 'btn btn-outline', '← Retour');
+  bRet.type = 'button';
+  bRet.onclick = fermerCloture;
+  var bOk = cel('button', 'btn btn-primary', 'Valider la clôture');
+  bOk.type = 'button';
+  bOk.onclick = function () { validerCloture(c); };
+  acts.appendChild(bRet);
+  acts.appendChild(bOk);
+  modal.appendChild(acts);
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+}
+
+function fermerCloture() {
+  var bg = document.getElementById('modal-cloture-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+}
+
+// Saisie du réalisé d'une grume : sciée ou non, puis ses produits
+function creerSaisieRealise(g, etat) {
+  var zone = cel('div', 'sciage-realise');
+
+  var lab = cel('label', 'sciage-grume-check');
+  var cb  = document.createElement('input');
+  cb.type    = 'checkbox';
+  cb.checked = etat.sciee;
+  lab.appendChild(cb);
+  lab.appendChild(cel('span', '', 'Grume sciée'));
+  zone.appendChild(lab);
+
+  var liste = cel('div', 'sciage-produits' + (etat.sciee ? '' : ' hidden'));
+  zone.appendChild(liste);
+  var note = cel('div', 'histo-essence-meta' + (etat.sciee ? ' hidden' : ''),
+    'Non sciée : la grume reste en stock brut.');
+  zone.appendChild(note);
+
+  cb.onchange = function () {
+    etat.sciee = cb.checked;
+    liste.classList.toggle('hidden', !cb.checked);
+    note.classList.toggle('hidden', cb.checked);
+    sauverClotDraft();
+  };
+
+  function rendre() {
+    while (liste.firstChild) liste.removeChild(liste.firstChild);
+    etat.produits.forEach(function (p, i) {
+      var ligne = cel('div', 'sciage-produit-ligne');
+      var sel = document.createElement('select');
+      [['plot', 'Plot'], ['avive', 'Avivé']].forEach(function (t) {
+        var o = document.createElement('option');
+        o.value = t[0]; o.textContent = t[1];
+        if (p.type === t[0]) o.selected = true;
+        sel.appendChild(o);
+      });
+      var fT = cel('div', 'field');
+      fT.appendChild(cel('label', '', 'Type'));
+      fT.appendChild(sel);
+      ligne.appendChild(fT);
+
+      var vol = cel('div', 'sciage-estimation');
+      function majVol() {
+        vol.textContent = DuramenCore.volumeProduit(p, g).toFixed(3) + ' m³';
+      }
+      var champs = [['epaisseur_mm', 'Épaisseur (mm)'], ['largeur_mm', 'Largeur (mm)'],
+                    ['longueur_m', 'Longueur (m)'], ['quantite', 'Quantité']];
+      champs.forEach(function (f) {
+        var fld = cel('div', 'field' + (f[0] === 'largeur_mm' && p.type !== 'avive' ? ' hidden' : ''));
+        fld.appendChild(cel('label', '', f[1]));
+        var inp = document.createElement('input');
+        inp.type = 'number';
+        inp.min  = '0';
+        inp.step = f[0] === 'longueur_m' ? '0.05' : '1';
+        inp.inputMode = f[0] === 'longueur_m' ? 'decimal' : 'numeric';
+        inp.value = (p[f[0]] === null || p[f[0]] === undefined) ? '' : p[f[0]];
+        inp.oninput = function () {
+          p[f[0]] = parseFloat(String(inp.value).replace(',', '.')) || 0;
+          sauverClotDraft(); majVol();
+        };
+        fld.appendChild(inp);
+        ligne.appendChild(fld);
+      });
+      sel.onchange = function () { p.type = sel.value; sauverClotDraft(); rendre(); };
+
+      ligne.appendChild(vol);
+      var bSup = cel('button', 'btn btn-outline sciage-btn-retirer', '✕ Retirer');
+      bSup.type = 'button';
+      bSup.onclick = function () { etat.produits.splice(i, 1); sauverClotDraft(); rendre(); };
+      ligne.appendChild(bSup);
+      liste.appendChild(ligne);
+      majVol();
+    });
+    var bAdd = cel('button', 'btn btn-outline sciage-btn-ajouter', '+ Ajouter un produit');
+    bAdd.type = 'button';
+    bAdd.onclick = function () {
+      var m = DuramenCore.mesuresGrume(g);
+      etat.produits.push({ type: 'avive', epaisseur_mm: 27, largeur_mm: 150, longueur_m: m.longueur, quantite: 0 });
+      sauverClotDraft(); rendre();
+    };
+    liste.appendChild(bAdd);
+  }
+  rendre();
+  return zone;
+}
+
+function produitValide(p) {
+  return p.quantite > 0 && p.epaisseur_mm > 0 && p.longueur_m > 0 && (p.type !== 'avive' || p.largeur_mm > 0);
+}
+
+async function validerCloture(c) {
+  if (!navigator.onLine) { showError('Pas de réseau : la clôture se fait avec réseau. Votre saisie est gardée.'); return; }
+  try {
+    showLoading(true);
+    // Données fraîches : une grume a pu sortir entre-temps
+    await chargerDonnees();
+    if (campagneCloturee(c)) { showError('Cette campagne a déjà été clôturée.'); fermerCloture(); return; }
+    var sorties = {};
+    extractions.forEach(function (e) { (e.grumes_keys || []).forEach(function (k) { sorties[k] = true; }); });
+
+    var now = new Date();
+    var lignesEnvoi = [];
+    var nbProduits = 0, nbNonSciees = 0;
+    var ids = Object.keys(clotDraft.grumes);
+    for (var i = 0; i < ids.length; i++) {
+      var etat = clotDraft.grumes[ids[i]];
+      var g    = lots.find(function (x) { return x.id === ids[i]; });
+      if (!g || sorties[ids[i] + '_0']) {
+        showError('Une grume de la campagne vient de sortir du stock. Rouvrez la clôture pour vérifier.');
+        return;
+      }
+      if (!etat.sciee) { nbNonSciees++; continue; }
+      var invalide = etat.produits.find(function (p) { return p.quantite > 0 && !produitValide(p); });
+      if (invalide) { showError('Grume ' + g.nom + ' : un produit a des cotes incomplètes.'); return; }
+      var produits = etat.produits.filter(produitValide).map(function (p) {
+        return {
+          type: p.type, epaisseur_mm: p.epaisseur_mm,
+          largeur_mm: p.type === 'avive' ? p.largeur_mm : null,
+          longueur_m: p.longueur_m, quantite: p.quantite,
+          volume: arrondiM3(DuramenCore.volumeProduit(p, g)),
+          grume_nom: g.nom
+        };
+      });
+      nbProduits += produits.reduce(function (s, p) { return s + p.quantite; }, 0);
+      lignesEnvoi.push({
+        id:           crypto.randomUUID(),
+        commune_code: communeConnectee.code,
+        essence:      g.essence,
+        volume:       arrondiM3(g.vol_utile || 0),
+        usage:        'Sciage',
+        destination:  c.nom || 'Campagne de sciage',
+        commune:      communeConnectee.nom,
+        contact:      '',
+        notes:        produits.length ? '' : 'Aucun produit récupéré',
+        type_sortie:  'sciage',
+        grumes_keys:  [g.id + '_0'],
+        produits:     produits,
+        vol_produits: arrondiM3(produits.reduce(function (s, p) { return s + p.volume; }, 0)),
+        campagne_id:  c.id,
+        date:         now.toLocaleDateString('fr-FR'),
+        date_iso:     now.toISOString()
+      });
+    }
+    if (lignesEnvoi.length === 0) {
+      showError('Aucune grume sciée. Si le sciage n\'a pas eu lieu, supprimez la campagne.');
+      return;
+    }
+    showLoading(false);
+    if (!confirm('Clôturer la campagne ?\n' + lignesEnvoi.length + ' grume(s) sciée(s) → ' + nbProduits
+      + ' pièce(s) en stock produits.' + (nbNonSciees ? '\n' + nbNonSciees + ' grume(s) non sciée(s) restent en stock brut.' : '')
+      + '\nLa clôture est définitive.')) return;
+    showLoading(true);
+    // Envoi groupé : soit toutes les grumes passent, soit aucune
+    await sbInsert('extractions', lignesEnvoi, { sansRetour: true });
+    try { localStorage.removeItem(CLE_BROUILLON_CLOTURE); } catch (e) {}
+    fermerCloture();
+    stockEtat = 'produits';
+    await chargerDonnees();
+    showToastSucces('Campagne clôturée : ' + nbProduits + ' pièce(s) en stock produits.');
+  } catch (err) {
+    if (err.reseau) showError('Pas de réseau : la clôture n\'a pas été envoyée. Votre saisie est gardée.');
+    else if (/GRUME DÉJÀ SORTIE/.test(err.message)) showError('Une grume de la campagne est déjà sortie du stock. Rien n\'a été enregistré.');
+    else if (/STOCK INSUFFISANT/.test(err.message)) showError('Le stock a changé entre-temps. Rien n\'a été enregistré.');
+    else showError('Erreur clôture : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
 }
 
 // ─── Header stats ─────────────────────────────────────────────────────────
