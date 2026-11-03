@@ -1,4 +1,4 @@
-const CACHE_NAME = 'duramen-v44';
+const CACHE_NAME = 'duramen-v45';
 
 const FICHIERS = [
   './',
@@ -16,7 +16,12 @@ self.addEventListener('install', function(e) {
   self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(FICHIERS);
+      // cache: 'reload' : télécharge toujours la version fraîche sur le serveur,
+      // jamais une copie gardée par le navigateur ou l'hébergeur (GitHub garde
+      // les fichiers ~10 min). Évite de mélanger ancienne et nouvelle version.
+      return cache.addAll(FICHIERS.map(function(f) {
+        return new Request(f, { cache: 'reload' });
+      }));
     })
   );
 });
@@ -35,6 +40,9 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
+  // Les envois (enregistrement d'un lot, d'une extraction…) passent
+  // directement au réseau : c'est app.js qui gère l'absence de réseau.
+  if (e.request.method !== 'GET') return;
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) return cached;
