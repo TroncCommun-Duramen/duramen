@@ -314,6 +314,21 @@
 <script src="app.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
+  // Mise à jour en une seule ouverture : dès que la nouvelle version
+  // est prête, l'app se recharge une fois pour l'afficher.
+  // Pas de rechargement à la toute première installation.
+  var swDejaActif = !!navigator.serviceWorker.controller;
+  var swRecharge  = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (!swDejaActif || swRecharge) return;
+    swRecharge = true;
+    window.location.reload();
+  });
+  // App rouverte depuis l'arrière-plan : chercher une nouvelle version
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+    navigator.serviceWorker.getRegistration().then(function (r) { if (r) r.update(); });
+  });
   navigator.serviceWorker.register('./sw.js');
 }
 </script>
