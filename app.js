@@ -222,15 +222,16 @@ async function envoyerFileEnvoi() {
         // Code 23505 = cet identifiant est déjà en base (envoi précédent arrivé,
         // réponse perdue en route) → considéré comme envoyé.
         // Tout autre refus du serveur : on garde l'élément, sans bloquer la suite.
-        // Exception : le numéro de grume a été pris entre-temps par un autre
-        // agent (index grumes_nom_unique). La grume n'est PAS en base : on la
-        // retire de la file et on affiche ses mesures pour la ressaisir.
+        // Exception : ce numéro existe déjà en base (index grumes_nom_unique).
+        // Le numéro correspond à l'étiquette physique : c'est une erreur de
+        // saisie ou une grume déjà enregistrée. La grume n'est PAS en base :
+        // on la retire de la file et on affiche ses mesures pour vérification.
         if (/grumes_nom_unique/.test(err.message)) {
           retirerFileEnvoi(it.data.id);
           var g0 = (it.data.grumes && it.data.grumes[0]) || {};
-          showError('La grume ' + it.data.nom + ' (' + it.data.essence + ', '
-            + g0.longueur + ' m × ' + g0.diametre + ' cm) n\'a pas été enregistrée : '
-            + 'ce numéro a été pris entre-temps. Ressaisissez-la avec un autre numéro.');
+          showError('Le numéro ' + it.data.nom + ' existe déjà. Vérifiez l\'étiquette de la grume : '
+            + 'erreur de saisie ou grume déjà enregistrée. Grume non envoyée : '
+            + it.data.essence + ', ' + g0.longueur + ' m × ' + g0.diametre + ' cm.');
           continue;
         }
         if (!(err.statut === 409 && /23505/.test(err.message))) continue;
@@ -1674,7 +1675,7 @@ async function nouvConfirmer() {
   var nom        = prefixeNomGrume() + numero;
   if (lots.some(function (l) { return l.nom === nom; })
       || fileEnvoiCommune().some(function (it) { return it.table === 'grumes' && it.data.nom === nom; })) {
-    showError('La grume ' + nom + ' existe déjà. Choisissez un autre numéro.'); return;
+    showError('Le numéro ' + nom + ' existe déjà. Vérifiez l\'étiquette de la grume : erreur de saisie ou grume déjà enregistrée.'); return;
   }
   // Toutes les grumes sont visibles des autres communes
   var partage    = true;
@@ -1747,9 +1748,9 @@ async function nouvConfirmer() {
     initialiserPanelSaisie();
     captureGPS();
   } catch (err) {
-    // Doublon refusé par la base (un autre agent a pris ce numéro entre-temps)
+    // Numéro déjà en base : erreur de saisie ou grume déjà enregistrée
     if (/grumes_nom_unique|duplicate key/.test(err.message)) {
-      showError('La grume ' + nom + ' existe déjà. Choisissez un autre numéro.');
+      showError('Le numéro ' + nom + ' existe déjà. Vérifiez l\'étiquette de la grume : erreur de saisie ou grume déjà enregistrée.');
     } else {
       showError('Erreur sauvegarde : ' + err.message);
     }
