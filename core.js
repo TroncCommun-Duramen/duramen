@@ -357,6 +357,30 @@ var DuramenCore = (function () {
     return lignes;
   }
 
+
+  // Vérifie une sortie de produits sciés avant envoi.
+  // selection = [{ cle, quantite }] ; retourne { ok, erreur }
+  function validerSortieProduits(selection) {
+    if (!selection || selection.length === 0)
+      return { ok: false, erreur: 'Choisissez au moins un produit.' };
+    var stock = {};
+    getStockProduits().forEach(function (l) { stock[l.cle] = l; });
+    var cumul = {};
+    for (var i = 0; i < selection.length; i++) {
+      var s = selection[i];
+      var q = parseFloat(s.quantite);
+      if (!(q > 0) || Math.floor(q) !== q)
+        return { ok: false, erreur: 'Quantité invalide : nombre entier de pièces attendu.' };
+      var l = stock[s.cle];
+      if (!l) return { ok: false, erreur: 'Un produit choisi n\'est plus en stock.' };
+      cumul[s.cle] = (cumul[s.cle] || 0) + q;
+      if (cumul[s.cle] > l.restant)
+        return { ok: false, erreur: 'Il ne reste que ' + l.restant + ' pièce(s) de ce produit ('
+          + l.essence + ', ' + l.epaisseur_mm + ' mm).' };
+    }
+    return { ok: true, erreur: '' };
+  }
+
   // ─── API publique ─────────────────────────────────────────────────────────
   return {
     ESSENCES_INFO:   ESSENCES_INFO,
@@ -376,6 +400,7 @@ var DuramenCore = (function () {
     dateSecAir:         dateSecAir,
     getGrumesEnStock:   getGrumesEnStock,
     getStockProduits:   getStockProduits,
+    validerSortieProduits: validerSortieProduits,
     calculerVolumes: calculerVolumes,
     getStock:        getStock,
     getHistorique:   getHistorique,

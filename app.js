@@ -320,6 +320,10 @@ var extDraft     = { destination: '', communeInstall: '', lieu: '' };
 var extGrumesSel = [];
 var extEssFiltre = null;
 var extDebitActif = false;
+// Mode de sortie : 'produits' (cas normal) ou 'grume' (exception : rondins,
+// pas japonais…). Sélection de produits : clé du produit → nombre de pièces.
+var extMode        = 'produits';
+var extProduitsSel = {};
 
 // Clés des grumes déjà sorties du stock, lues dans extractions.grumes_keys.
 // Une clé = id du lot + '_' + position de la grume dans le lot (ex. "abc_0").
@@ -349,6 +353,7 @@ function extractionEnCours() {
   var sheet = document.getElementById('grume-sel-sheet-wrap');
   var modal = document.getElementById('modal-ext-bg');
   return !!(extGrumesSel.length > 0
+    || Object.keys(extProduitsSel).some(function (k) { return extProduitsSel[k] > 0; })
     || extEssFiltre !== null
     || (sheet && sheet.classList.contains('open'))
     || (modal && modal.classList.contains('open')));
@@ -372,8 +377,29 @@ function afficherExtraction() {
   var panel = document.getElementById('ext-content');
   if (!panel) return;
   while (panel.firstChild) panel.removeChild(panel.firstChild);
-  extGrumesSel = [];
-  extEssFiltre = null;
+  extGrumesSel   = [];
+  extProduitsSel = {};
+  extEssFiltre   = null;
+
+  // Bascule : produits bois (cas normal) / grume brute (exception)
+  var bar = cel('div', 'histo-toggle-bar ext-mode-bar');
+  [['produits', 'Produits bois'], ['grume', 'Grume brute']].forEach(function (o) {
+    var b = cel('button', 'histo-toggle-btn' + (extMode === o[0] ? ' active' : ''), o[1]);
+    b.type    = 'button';
+    b.onclick = function () { extMode = o[0]; afficherExtraction(); };
+    bar.appendChild(b);
+  });
+  panel.appendChild(bar);
+
+  if (extMode === 'produits') {
+    afficherExtractionProduits(panel);
+    assureModalExtractionDest();
+    return;
+  }
+
+  panel.appendChild(cel('div', 'info-box',
+    'Exception : la grume sort entière, sans sciage (rondins, pas japonais…). '
+    + 'Les grumes d\'une campagne de sciage en cours ne sont pas proposées.'));
 
   // Section grumes à extraire
   var secGrumes = cel('div', 'ext-section');
@@ -408,65 +434,8 @@ function afficherExtraction() {
   secGrumes.appendChild(selSummary);
   panel.appendChild(secGrumes);
 
-  // Section débit en planches — seul mode d'extraction.
-  // Trait de scie (3 mm) et rendement (50 %) sont fixes : constantes du noyau.
-  extDebitActif = true;
-  var secDebit = cel('div', 'ext-section');
-  secDebit.appendChild(cel('div', 'ext-section-title', 'Débit en planches'));
-
-  var slidersWrap = cel('div', 'ext-debit-sliders');
-  slidersWrap.id = 'ext-debit-sliders';
-
-  var slidersDef = [
-    { id: 'ext-epaisseur', label: 'Épaisseur planche',  min: 20, max: 50, step: 1, def: 27, unit: 'mm' }
-  ];
-  slidersDef.forEach(function (s) {
-    var row = cel('div', 'ext-slider-row');
-    var top = cel('div', 'ext-slider-top');
-    top.appendChild(cel('span', 'ext-label', s.label));
-    var valEl = cel('span', 'ext-slider-val', s.def + ' ' + s.unit);
-    valEl.id = s.id + '-val';
-    top.appendChild(valEl);
-    row.appendChild(top);
-    var inp = cel('input', 'ext-slider');
-    inp.type  = 'range';
-    inp.min   = String(s.min);
-    inp.max   = String(s.max);
-    inp.step  = String(s.step);
-    inp.value = String(s.def);
-    inp.id    = s.id;
-    inp.addEventListener('input', function () {
-      valEl.textContent = inp.value + ' ' + s.unit;
-      majDebitExtraction();
-    });
-    row.appendChild(inp);
-    slidersWrap.appendChild(row);
-  });
-
-  var formulaRow  = cel('div', 'ext-formula-row');
-  var formuleLien = cel('button', 'ext-formula-link', 'Voir la formule');
-  formuleLien.type = 'button';
-  var formuleZone  = cel('div', 'ext-formula-zone hidden');
-  var ftxt = cel('p', 'ext-formula-text', 'V_utile = V × R × (e ÷ (e + t))   —   V_déchet = V − V_utile');
-  var fdet = cel('p', 'ext-formula-detail', 'V = volume brut · R = rendement géom. · e = épaisseur planche · t = trait de scie');
-  formuleZone.appendChild(ftxt);
-  formuleZone.appendChild(fdet);
-  formuleLien.onclick = function () {
-    formuleZone.classList.toggle('hidden');
-    formuleLien.textContent = formuleZone.classList.contains('hidden') ? 'Voir la formule' : 'Masquer la formule';
-  };
-  var lineaireBox = cel('div', 'ext-lineaire-box');
-  var linLbl = cel('div', 'ext-lineaire-lbl', 'Linéaire indicatif');
-  var linVal = cel('div', 'ext-lineaire-val', '—');
-  linVal.id = 'ext-lineaire-val';
-  lineaireBox.appendChild(linLbl);
-  lineaireBox.appendChild(linVal);
-  formulaRow.appendChild(formuleLien);
-  formulaRow.appendChild(lineaireBox);
-  slidersWrap.appendChild(formulaRow);
-  slidersWrap.appendChild(formuleZone);
-  secDebit.appendChild(slidersWrap);
-  panel.appendChild(secDebit);
+  // Plus de débit en planches ici : le débit passe par la campagne de sciage
+  extDebitActif = false;
 
   // Barre de synthèse
   var synthese = cel('div', 'ext-synthese hidden');
@@ -507,7 +476,9 @@ function assureModalExtractionDest() {
   modal.appendChild(closeBtn);
 
   modal.appendChild(cel('h2', '', 'Destination'));
-  modal.appendChild(cel('p', 'modal-sub', 'À qui vont ces grumes ?'));
+  var sousTitre = cel('p', 'modal-sub', 'À qui vont ces grumes ?');
+  sousTitre.id = 'modal-ext-sub';
+  modal.appendChild(sousTitre);
 
   // Nom du projet
   var fNom = cel('div', 'field');
@@ -561,8 +532,12 @@ function assureModalExtractionDest() {
 }
 
 function ouvrirModalExtractionDest() {
-  if (extGrumesSel.length === 0) { showError('Sélectionnez au moins une grume.'); return; }
+  if (extMode === 'produits') {
+    if (selectionProduits().length === 0) { showError('Choisissez au moins un produit.'); return; }
+  } else if (extGrumesSel.length === 0) { showError('Sélectionnez au moins une grume.'); return; }
   assureModalExtractionDest();
+  var sub = document.getElementById('modal-ext-sub');
+  if (sub) sub.textContent = extMode === 'produits' ? 'À qui vont ces produits ?' : 'À qui vont ces grumes ?';
   var nomEl  = document.getElementById('modal-ext-nom');
   var lieuEl = document.getElementById('modal-ext-lieu');
   if (nomEl)  nomEl.value  = extDraft.destination;
@@ -595,8 +570,10 @@ function construireContenuGrumeSelSheet() {
   // Les grumes déjà extraites sortent de la liste ; un lot entièrement
   // extrait disparaît. Le lot reste en base pour le bilan et l'historique.
   var extraites = clesGrumesExtraites();
+  var reservees = grumesADebiter();
   var lotsFiltrés = lots.filter(function (l) {
     if (!l.grumes || l.grumes.length === 0) return false;
+    if (reservees[l.id]) return false;
     if (extEssFiltre && l.essence !== extEssFiltre) return false;
     return l.grumes.some(function (g, gi) { return !extraites[l.id + '_' + gi]; });
   });
@@ -770,6 +747,8 @@ async function confirmerExtractionDest() {
   extDraft.communeInstall = communeInstall;
   extDraft.lieu           = lieu;
 
+  if (extMode === 'produits') { await confirmerExtractionProduits(); return; }
+
   var parEssence     = {};
   var clesParEssence = {};
   extGrumesSel.forEach(function (g) {
@@ -818,7 +797,7 @@ async function confirmerExtractionDest() {
         commune:         communeInstall,
         contact:         '',
         notes:           extDraft.lieu ? 'Lieu : ' + extDraft.lieu : '',
-        type_sortie:     'debit',
+        type_sortie:     'grume brute',
         grumes_keys:     clesParEssence[ess],
         date:            now.toLocaleDateString('fr-FR'),
         date_iso:        now.toISOString()
@@ -860,6 +839,225 @@ async function confirmerExtractionDest() {
   }
 }
 
+// ─── Extraction de produits sciés (cas normal) ───────────────────────────
+// L'agent choisit les produits et le nombre de pièces, puis la destination.
+// La sortie ne touche pas au stock de grumes (volume 0, verrou serveur) :
+// le volume réel des pièces est rangé dans vol_produits.
+
+// Volume d'une pièce d'une ligne du stock produits
+function volumePiece(l) {
+  return l.restant > 0 ? (l.volumeRestant || 0) / l.restant : 0;
+}
+
+// Sélection en cours : [{ ligne, quantite }]
+function selectionProduits() {
+  var stock = {};
+  DuramenCore.getStockProduits().forEach(function (l) { stock[l.cle] = l; });
+  return Object.keys(extProduitsSel)
+    .filter(function (k) { return extProduitsSel[k] > 0 && stock[k]; })
+    .map(function (k) { return { ligne: stock[k], quantite: extProduitsSel[k] }; });
+}
+
+function afficherExtractionProduits(panel) {
+  var lignes = DuramenCore.getStockProduits();
+  var sec = cel('div', 'ext-section');
+  sec.appendChild(cel('div', 'ext-section-title', 'Produits à sortir'));
+
+  if (lignes.length === 0) {
+    sec.appendChild(cel('div', 'ext-empty',
+      'Aucun produit bois en stock. Les produits arrivent à la clôture d\'une campagne de sciage.'));
+    panel.appendChild(sec);
+    return;
+  }
+
+  var essences = [];
+  lignes.forEach(function (l) { if (essences.indexOf(l.essence) === -1) essences.push(l.essence); });
+  var liste = cel('div', 'ext-produits-liste');
+  if (essences.length > 1) {
+    var chips = cel('div', 'ext-essence-chips');
+    essences.sort().forEach(function (ess) {
+      var chip = cel('button', 'ext-chip', ess);
+      chip.type = 'button';
+      chip.dataset.ess = ess;
+      chip.onclick = function () {
+        extEssFiltre = (extEssFiltre === ess) ? null : ess;
+        chips.querySelectorAll('.ext-chip').forEach(function (c) {
+          c.classList.toggle('active', c.dataset.ess === extEssFiltre);
+        });
+        rendreListeProduitsExt(liste, lignes);
+      };
+      chips.appendChild(chip);
+    });
+    sec.appendChild(chips);
+  }
+  sec.appendChild(liste);
+  panel.appendChild(sec);
+  rendreListeProduitsExt(liste, lignes);
+
+  var synthese = cel('div', 'ext-synthese hidden');
+  synthese.id  = 'ext-synthese-produits';
+  [['ext-syn-pieces', 'pièces'], ['ext-syn-vol-prod', 'm³ de produits']].forEach(function (d) {
+    var item = cel('div', 'ext-syn-item');
+    var val  = cel('div', 'ext-syn-val', '—');
+    val.id   = d[0];
+    item.appendChild(val);
+    item.appendChild(cel('div', 'ext-syn-lbl', d[1]));
+    synthese.appendChild(item);
+  });
+  panel.appendChild(synthese);
+
+  var btnVal = cel('button', 'ext-valider-btn', 'Valider l\'extraction →');
+  btnVal.type    = 'button';
+  btnVal.onclick = ouvrirModalExtractionDest;
+  panel.appendChild(btnVal);
+}
+
+function rendreListeProduitsExt(liste, lignes) {
+  while (liste.firstChild) liste.removeChild(liste.firstChild);
+  lignes
+    .filter(function (l) { return !extEssFiltre || l.essence === extEssFiltre; })
+    .forEach(function (l) {
+      var card   = cel('div', 'histo-lot-card ext-produit-card');
+      var header = cel('div', 'histo-lot-header');
+      header.appendChild(cel('div', 'histo-lot-nom', l.essence + ' · ' + texteProduit(l)));
+      header.appendChild(cel('div', 'histo-lot-vol', (l.volumeRestant || 0).toFixed(3) + ' m³'));
+      card.appendChild(header);
+      card.appendChild(cel('div', 'histo-essence-meta', 'En stock : ' + l.restant
+        + (l.type === 'avive' ? ' pièce(s)' : ' planche(s)') + (l.grume_nom ? ' · grume ' + l.grume_nom : '')));
+      var badges = cel('div', 'histo-badges');
+      badges.appendChild(creerBadgeSechage(l.dateSecAir));
+      card.appendChild(badges);
+
+      // Nombre de pièces à sortir : − / saisie / + / tout
+      var qte = cel('div', 'ext-qte');
+      var bMoins = cel('button', 'btn btn-outline ext-qte-btn', '−');
+      var inp    = document.createElement('input');
+      var bPlus  = cel('button', 'btn btn-outline ext-qte-btn', '+');
+      var bTout  = cel('button', 'btn btn-outline ext-qte-tout', 'Tout');
+      [bMoins, bPlus, bTout].forEach(function (b) { b.type = 'button'; });
+      inp.type = 'number'; inp.min = '0'; inp.max = String(l.restant); inp.step = '1';
+      inp.inputMode = 'numeric';
+      inp.className = 'ext-qte-input';
+      inp.setAttribute('aria-label', 'Nombre de pièces à sortir');
+      inp.value = String(extProduitsSel[l.cle] || 0);
+      function fixer(v) {
+        v = Math.max(0, Math.min(l.restant, Math.floor(parseFloat(v) || 0)));
+        extProduitsSel[l.cle] = v;
+        inp.value = String(v);
+        card.classList.toggle('selected', v > 0);
+        majSyntheseProduits();
+      }
+      bMoins.onclick = function () { fixer((extProduitsSel[l.cle] || 0) - 1); };
+      bPlus.onclick  = function () { fixer((extProduitsSel[l.cle] || 0) + 1); };
+      bTout.onclick  = function () { fixer(l.restant); };
+      inp.onchange   = function () { fixer(inp.value); };
+      qte.appendChild(bMoins); qte.appendChild(inp); qte.appendChild(bPlus); qte.appendChild(bTout);
+      card.appendChild(qte);
+      card.classList.toggle('selected', (extProduitsSel[l.cle] || 0) > 0);
+      liste.appendChild(card);
+    });
+  majSyntheseProduits();
+}
+
+function majSyntheseProduits() {
+  var sel = selectionProduits();
+  var nb  = sel.reduce(function (s, x) { return s + x.quantite; }, 0);
+  var vol = sel.reduce(function (s, x) { return s + volumePiece(x.ligne) * x.quantite; }, 0);
+  var syn = document.getElementById('ext-synthese-produits');
+  if (syn) syn.classList.toggle('hidden', nb === 0);
+  var eN = document.getElementById('ext-syn-pieces');
+  var eV = document.getElementById('ext-syn-vol-prod');
+  if (eN) eN.textContent = String(nb);
+  if (eV) eV.textContent = vol.toFixed(3);
+}
+
+async function confirmerExtractionProduits() {
+  function verifier() {
+    return DuramenCore.validerSortieProduits(selectionProduits().map(function (x) {
+      return { cle: x.ligne.cle, quantite: x.quantite };
+    }));
+  }
+  var v = verifier();
+  if (!v.ok) { showError(v.erreur); return; }
+  try {
+    showLoading(true);
+    // Données fraîches : un autre agent a pu sortir ces produits entre-temps
+    await chargerDonnees();
+    v = verifier();
+    if (!v.ok) { showError('Le stock a changé entre-temps. ' + v.erreur); return; }
+
+    // Une ligne de sortie par essence (comme les sorties de grumes)
+    var parEss = {};
+    selectionProduits().forEach(function (x) {
+      (parEss[x.ligne.essence] = parEss[x.ligne.essence] || []).push({
+        cle: x.ligne.cle, quantite: x.quantite,
+        volume: arrondiM3(volumePiece(x.ligne) * x.quantite)
+      });
+    });
+    var now = new Date();
+    var nouvelles = Object.keys(parEss).map(function (ess) {
+      return {
+        id:           crypto.randomUUID(),
+        commune_code: communeConnectee.code,
+        essence:      ess,
+        volume:       0,
+        usage:        'Non défini',
+        destination:  extDraft.destination,
+        commune:      extDraft.communeInstall,
+        contact:      '',
+        notes:        extDraft.lieu ? 'Lieu : ' + extDraft.lieu : '',
+        type_sortie:  'produit',
+        produits:     parEss[ess],
+        vol_produits: arrondiM3(parEss[ess].reduce(function (s, p) { return s + p.volume; }, 0)),
+        date:         now.toLocaleDateString('fr-FR'),
+        date_iso:     now.toISOString()
+      };
+    });
+    // Envoi groupé : soit tout passe, soit rien
+    await sbInsert('extractions', nouvelles, { sansRetour: true });
+    extDraft       = { destination: '', communeInstall: '', lieu: '' };
+    extProduitsSel = {};
+    fermerModalExtractionDest();
+    stockEtat = 'produits';
+    await chargerDonnees();
+    afficherExtraction();
+    showToastSucces('Sortie de produits enregistrée.');
+  } catch (err) {
+    if (err.reseau) showError('Pas de réseau : la sortie se fait avec réseau.');
+    else if (/STOCK PRODUIT INSUFFISANT|PRODUIT INTROUVABLE/.test(err.message)) {
+      showError('Le stock de produits a changé entre-temps. Rien n\'a été enregistré.');
+      await chargerDonnees();
+      afficherExtraction();
+    } else showError('Erreur : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+// Dernières sorties de produits (onglet Stock, produits bois, ma commune)
+function creerListeSortiesProduits() {
+  var bloc = cel('div', '');
+  bloc.appendChild(cel('div', 'histo-section-title mt-16', 'Dernières sorties de produits'));
+  var liste = cel('div', 'histo-ext-list');
+  var sorties = extractions
+    .filter(function (e) { return e.type_sortie === 'produit'; })
+    .sort(function (a, b) { return (b.date_iso || '').localeCompare(a.date_iso || ''); })
+    .slice(0, 5);
+  if (sorties.length === 0) liste.appendChild(cel('div', 'ext-empty', 'Aucune sortie de produits.'));
+  sorties.forEach(function (ex) {
+    var nb = (ex.produits || []).reduce(function (s, p) { return s + (parseFloat(p.quantite) || 0); }, 0);
+    var item = cel('div', 'histo-ext-item');
+    item.appendChild(cel('span', 'histo-ext-essence', ex.essence || '—'));
+    item.appendChild(cel('span', 'histo-ext-vol', (parseFloat(ex.vol_produits) || 0).toFixed(3) + ' m³'));
+    item.appendChild(cel('span', 'histo-ext-type', nb + (nb > 1 ? ' pièces' : ' pièce')));
+    item.appendChild(cel('span', 'histo-ext-date', ex.date || ''));
+    if (ex.destination) item.appendChild(cel('div', 'histo-ext-dest', '→ ' + ex.destination));
+    liste.appendChild(item);
+  });
+  bloc.appendChild(liste);
+  return bloc;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // HISTORIQUE — Toggle Ma commune / Communauté
 // ═══════════════════════════════════════════════════════════════════════════
@@ -884,6 +1082,7 @@ function afficherHistorique() {
     content.appendChild(creerBasculeStock());
     if (stockEtat === 'produits') {
       rendreStockProduits(content, DuramenCore.getStockProduits(), false);
+      content.appendChild(creerListeSortiesProduits());
       return;
     }
     var zone = cel('div', '');

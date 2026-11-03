@@ -96,7 +96,7 @@ Branche `feat/campagne-sciage` (partie de `feat/grumes`, 3 nov. 2026) :
 |-------|------|
 | 1. Supabase : table `campagnes`, colonnes `extractions.produits` / `vol_produits` / `campagne_id`, verrous serveur (grume sortie une seule fois, stock produits), fonctions métropole `grumes_en_stock_partagees()` et `produits_partages()` | ✅ Fait, testé en SQL puis annulé |
 | 2. Feature : badge d'urgence de débit, campagne, feuille de débit, clôture, stock produits | ✅ Fait (cache v47), testé navigateur (Supabase simulé) + envois rejoués en SQL |
-| 3. Feature : écran Extraction → produits sciés (grume brute en exception) | À faire |
+| 3. Feature : écran Extraction → produits sciés (grume brute en exception, hors campagne en cours) | ✅ Fait (cache v49), testé navigateur (Supabase simulé) |
 | 4. Structure puis Design | À faire |
 
 Classes CSS créées par l'étape 2, à styler en session Design (aujourd'hui sans style propre) :
@@ -104,6 +104,7 @@ Classes CSS créées par l'étape 2, à styler en session Design (aujourd'hui sa
 - campagne : `stock-etat-bar`, `sciage-section`, `sciage-campagne-card`, `sciage-campagne-actions`, `sciage-btn-nouvelle`, `sciage-btn-supprimer`, `sciage-modal`, `sciage-grume-row`, `sciage-grume-check`, `sciage-choix`, `sciage-type-bar`, `sciage-estimation` (indigo : valeur calculée), `sciage-resume`
 - clôture : `sciage-cloture-grume`, `sciage-realise`, `sciage-produits`, `sciage-produit-ligne`, `sciage-btn-ajouter`, `sciage-btn-retirer`
 - stock produits : `produit-card`
+- extraction : `ext-mode-bar`, `ext-produits-liste`, `ext-produit-card` (+ `.selected`), `ext-qte`, `ext-qte-btn`, `ext-qte-input`, `ext-qte-tout`
 - feuille de débit : `feuille-debit`, `feuille-table`, `feuille-pied`, `feuille-impression` (version imprimée)
 
 Hors périmètre pour l'instant : la version bureau (`bureau/app.js`) ne connaît pas encore les campagnes ni le stock produits.

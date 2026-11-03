@@ -14,7 +14,7 @@ Décisions du porteur :
 - **Clôture uniquement avec réseau** (un seul envoi : tout passe ou rien).
 - **Badge d'urgence de débit** : date de saisie + durée max en grume (tableau FIBOIS : 1 mois / 6 mois / 1 an). Orange à 75 % du délai, rouge au-delà. Essences absentes du tableau : 1 mois.
 - **Séchage** : règle unique **1 an par cm** de la plus petite cote, depuis la date de clôture de la campagne. Libellé « Sec à l'air ». Calculé, jamais enregistré (règle ajustable plus tard). **Information seulement, jamais un blocage** : un produit en séchage peut être sorti.
-- **Extraction** : on sort des **produits sciés** ; la grume brute reste possible en exception (rondins, pas japonais).
+- **Extraction** : on sort des **produits sciés** (nombre de pièces par produit) ; la grume brute reste possible en exception (rondins, pas japonais), **sauf si elle est dans une campagne en cours**. Le débit en planches de l'ancien écran Extraction est retiré : il passe par la campagne.
 - Statuts grume (brute / à débiter / débitée) **calculés**, jamais enregistrés.
 
 Modèle de données (Supabase, ajouts uniquement) :
