@@ -82,6 +82,11 @@
 | Point de retour : branche de sauvegarde `sauvegarde/avant-fusion-2026-11-03` sur l'ancienne version de `main` (procédure dans GIT_WORKFLOW.md) ✅ | GitHub | 3 novembre 2026 |
 | Mise à jour en une seule ouverture : rechargement automatique quand la nouvelle version est prête (`controllerchange`), recherche de mise à jour au retour de l'arrière-plan. Testé navigateur : pas de rechargement à la 1re installation, nouvelle version dès la 1re ouverture ✅ | `index.html` | 3 novembre 2026 |
 | Cache SW incrémenté `duramen-v53` → `duramen-v54` ✅ | `sw.js` | 3 novembre 2026 |
+| **Saisie de grume et débit — fusion du 4 novembre 2026** | | |
+| `feat/saisie-grume` fusionnée : date d'abattage (ou « Inconnue »), provenance et cause « Inconnue », numéro 5 chiffres avec zéros automatiques, « Numéroter plus tard » + attribution depuis le stock, pas de débit sans numéro (app + base) ✅ | `core.js`, `app.js` + Supabase | 4 novembre 2026 |
+| `feat/debit-epaisseurs` fusionnée : épaisseurs 27/34/41/54 + « Autre » (10–150 mm), plusieurs épaisseurs par grume, séchage 1 cm/an par face ✅ | `core.js`, `app.js` | 4 novembre 2026 |
+| Tests navigateur sur la version fusionnée (base imitée) + règles de la base testées dans Supabase ✅ | — | 4 novembre 2026 |
+| Cache SW incrémenté `duramen-v54` → `duramen-v56` ✅ | `sw.js` | 4 novembre 2026 |
 
 ---
 
@@ -92,8 +97,6 @@ Suites de la fusion du 3 nov. 2026 :
 | Étape | État |
 |-------|------|
 | Garder la passerelle Supabase (vue `lots`, fonction `lots_partages()`, colonne `extractions.cause_abattage`) tant que la nouvelle version n'est pas validée sur le terrain : c'est elle qui permet de revenir à l'ancienne version. Ensuite, la supprimer | En attente de validation terrain |
-| Valider puis fusionner `feat/saisie-grume` (date d'abattage, « Inconnue », numéro 5 chiffres, marquage différé). Après fusion : cache v55 | En attente de validation |
-| Valider puis fusionner `feat/debit-epaisseurs` (27/34/41/54 + Autre, plusieurs épaisseurs par grume, séchage 1 cm/an par face). Fusionnée après l'autre : conflit simple à résoudre (ajouts côte à côte), cache v56 | En attente de validation |
 | Version bureau : une grume sans numéro s'affiche « null » dans la liste des lots (`bureau/app.js`, ligne ~707). À traiter avec l'alignement du bureau ci-dessous | À faire |
 | Version bureau : elle ne connaît pas encore les campagnes ni le stock produits. Elle compte une grume sciée comme encore en stock et propose à l'extraction une grume déjà prévue dans une campagne. À aligner sur le mobile (lié à A15) | À faire — **Haute** |
 

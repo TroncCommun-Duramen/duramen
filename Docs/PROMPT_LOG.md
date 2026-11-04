@@ -58,6 +58,7 @@ HH:MM — [commit: abc1234] résultat final
 18:03 — Décision : règle de séchage unique pour toutes les essences, 1 cm par an
 18:05 — Précision : 1 cm par an sur les 4 faces
 18:07 — Codage : branches `feat/saisie-grume` et `feat/debit-epaisseurs`, base Supabase, tests navigateur
+18:27 — Validation du porteur → fusion des deux branches dans `main`, mise en ligne (cache v56)
 
 ---
 

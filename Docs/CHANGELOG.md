@@ -7,7 +7,7 @@
 
 ## 4 novembre 2026
 
-### Saisie de grume et débit — 2 branches en attente de validation
+### Saisie de grume et débit — 2 branches validées et fusionnées dans `main`
 Branche `feat/saisie-grume` :
 - `feat(saisie)` — Date d'abattage : aujourd'hui, date passée ou « Inconnue ». Le délai avant débit part de cette date. Date inconnue = débit urgent, par prudence.
 - `feat(saisie)` — Provenance et cause acceptent « Inconnue » : aucun champ vide dans le suivi.
@@ -20,7 +20,7 @@ Branche `feat/debit-epaisseurs` :
 - `feat(sciage)` — Épaisseurs proposées : 27, 34, 41, 54 mm, plus « Autre épaisseur » (10 à 150 mm).
 - `feat(sciage)` — Plusieurs épaisseurs dans une même grume (ex. 8 planches de 27 + 3 de 54). La nouvelle épaisseur prend ce qui reste du diamètre. Alerte si les plots dépassent le diamètre.
 - `feat(sechage)` — Séchage à l'air : 1 cm par an et par face, soit 0,5 an par cm de la plus petite cote (27 mm ≈ 16 mois).
-- `fix(sw)` — Cache duramen-v54 → duramen-v56.
+- `fix(sw)` — Cache duramen-v54 → duramen-v56 (version en ligne après les deux fusions).
 
 Base Supabase (déjà en place, sans effet sur la version en ligne) :
 - Colonnes `grumes.date_abattage` et `grumes.repere`.
