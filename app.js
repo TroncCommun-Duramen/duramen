@@ -1050,7 +1050,7 @@ function afficherHistorique() {
     content.appendChild(zone);
     // Grumes encore en stock brut ; l'export garde toutes les grumes saisies
     rendreHistoriqueContenu(zone, DuramenCore.getGrumesEnStock(),
-      { urgence: true, aDebiter: grumesADebiter(), exportData: lots });
+      { urgence: true, aDebiter: grumesADebiter(), exportData: lots, marquage: true });
     // Campagnes de sciage : juste après le total du stock brut
     var total = zone.querySelector('.histo-total-block');
     var sectionCamp = creerSectionCampagnes();
@@ -1226,20 +1226,37 @@ function rendreHistoriqueContenu(container, lotsData, options) {
   aAfficher.forEach(function (lot) {
     var card   = cel('div', 'histo-lot-card');
     var header = cel('div', 'histo-lot-header');
-    header.appendChild(cel('div', 'histo-lot-nom', lot.nom || '—'));
+    header.appendChild(cel('div', 'histo-lot-nom', nomAfficheGrume(lot)));
     header.appendChild(cel('div', 'histo-lot-vol', (lot.vol_utile || 0).toFixed(3) + ' m³'));
     card.appendChild(header);
+    if (!DuramenCore.estNumerotee(lot)) {
+      var m = DuramenCore.mesuresGrume(lot);
+      card.appendChild(cel('div', 'histo-essence-meta',
+        formatNb(m.longueur, 2) + ' m × ' + m.diametre + ' cm · ' + texteAbattageGrume(lot)
+        + (lot.provenance ? ' · ' + lot.provenance : '') + (lot.repere ? ' · ' + lot.repere : '')));
+    }
 
     var badges = cel('div', 'histo-badges');
     if (lot.commune) badges.appendChild(cel('span', 'histo-badge histo-badge-commune', lot.commune));
     if (lot.essence) badges.appendChild(cel('span', 'histo-badge histo-badge-essence', lot.essence));
     if (lot.cause)   badges.appendChild(cel('span', 'histo-badge histo-badge-cause',   lot.cause));
+    if (!DuramenCore.estNumerotee(lot)) {
+      badges.appendChild(cel('span', 'histo-badge badge-urgence badge-urgence-alerte', 'En attente de marquage'));
+    }
     if (options.urgence) badges.appendChild(creerBadgeUrgence(lot));
     if (options.aDebiter && options.aDebiter[lot.id]) {
       badges.appendChild(cel('span', 'histo-badge badge-a-debiter',
         'À débiter — ' + (options.aDebiter[lot.id].nom || 'campagne')));
     }
     card.appendChild(badges);
+    if (options.marquage && !DuramenCore.estNumerotee(lot)) {
+      var actsM = cel('div', 'sciage-campagne-actions');
+      var bNum  = cel('button', 'btn btn-primary', 'Attribuer un numéro');
+      bNum.type = 'button';
+      bNum.onclick = (function (g) { return function () { ouvrirAttributionNumero(g); }; })(lot);
+      actsM.appendChild(bNum);
+      card.appendChild(actsM);
+    }
     lotsList.appendChild(card);
   });
   container.appendChild(lotsList);
@@ -1338,15 +1355,16 @@ function grumesADebiter() {
 function grumesParUrgence(liste) {
   var now = new Date();
   return liste.slice().sort(function (a, b) {
-    return DuramenCore.urgenceDebit(b, now).ratio - DuramenCore.urgenceDebit(a, now).ratio;
+    return DuramenCore.urgenceDebitGrume(b, now).ratio - DuramenCore.urgenceDebitGrume(a, now).ratio;
   });
 }
 
 // ─── Badges ──────────────────────────────────────────────────────────────
 function creerBadgeUrgence(grume) {
-  var u = DuramenCore.urgenceDebit(grume);
+  var u = DuramenCore.urgenceDebitGrume(grume);
   var txt;
-  if (u.niveau === 'depasse')     txt = 'Délai de débit dépassé (' + formatDateFr(u.dateLimite) + ')';
+  if (u.inconnue)                 txt = 'Date d\'abattage inconnue — à débiter vite';
+  else if (u.niveau === 'depasse')     txt = 'Délai de débit dépassé (' + formatDateFr(u.dateLimite) + ')';
   else if (u.niveau === 'alerte') txt = 'Débit urgent — avant le ' + formatDateFr(u.dateLimite);
   else                            txt = 'Débit avant le ' + formatDateFr(u.dateLimite);
   return cel('span', 'histo-badge badge-urgence badge-urgence-' + u.niveau, txt);
@@ -1366,6 +1384,109 @@ function texteProduit(p) {
   var lon = formatNb(p.longueur_m, 2) + ' m';
   if (p.type === 'avive') return 'Avivé ' + p.epaisseur_mm + ' × ' + p.largeur_mm + ' mm · ' + lon;
   return 'Plot ' + p.epaisseur_mm + ' mm · ' + lon;
+}
+
+// Date d'abattage d'une grume, pour l'affichage
+function texteAbattageGrume(g) {
+  if (DuramenCore.abattageInconnu(g)) return 'abattue : date inconnue';
+  return 'abattue le ' + formatDateFr(g.date_abattage ? g.date_abattage + 'T12:00:00' : g.date_iso);
+}
+
+// ─── Attribuer un numéro à une grume en attente de marquage ──────────────
+// Sur le lieu de stockage, une fois l'étiquette posée sur la grume.
+async function sbRpc(fonction, params) {
+  var r = await requeteSupabase(SUPABASE_URL + '/rest/v1/rpc/' + fonction, {
+    method: 'POST', headers: sbH, body: JSON.stringify(params || {})
+  }, DELAI_ENVOI_MS, fonction);
+  if (!r.res.ok) {
+    var err = new Error(fonction + ': ' + r.res.status + ' ' + r.texte);
+    err.statut = r.res.status;
+    throw err;
+  }
+  return r.texte ? JSON.parse(r.texte) : null;
+}
+
+function ouvrirAttributionNumero(g) {
+  var bg = document.getElementById('modal-numero-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+  bg = cel('div', 'extract-modal-bg open');
+  bg.id = 'modal-numero-bg';
+  var modal = cel('div', 'extract-modal modal-nommer');
+  function fermer() { if (bg.parentNode) bg.parentNode.removeChild(bg); }
+  var closeBtn = cel('button', 'modal-close', '✕');
+  closeBtn.type = 'button';
+  closeBtn.onclick = fermer;
+  modal.appendChild(closeBtn);
+  modal.appendChild(cel('h2', '', 'Attribuer un numéro'));
+
+  // De quoi reconnaître la bonne grume sur le site
+  var m = DuramenCore.mesuresGrume(g);
+  modal.appendChild(cel('p', 'modal-sub', (g.essence || '') + ' · ' + formatNb(m.longueur, 2) + ' m × '
+    + m.diametre + ' cm · ' + texteAbattageGrume(g) + (g.provenance ? ' · ' + g.provenance : '')));
+  if (g.repere) modal.appendChild(cel('div', 'info-box', 'Repère : ' + g.repere));
+
+  var apercu = cel('p', 'modal-sub', '');
+  var fNom = cel('div', 'field');
+  var lNom = cel('label', '', 'Numéro de l\'étiquette (5 chiffres)');
+  lNom.htmlFor = 'numero-attrib-input';
+  var iNom = document.createElement('input');
+  iNom.type = 'text';
+  iNom.id   = 'numero-attrib-input';
+  iNom.inputMode = 'numeric';
+  iNom.maxLength = DuramenCore.NUMERO_GRUME_CHIFFRES;
+  iNom.autocomplete = 'off';
+  iNom.placeholder  = '00000';
+  function majApercu() {
+    var num = DuramenCore.formaterNumeroGrume(iNom.value);
+    apercu.textContent = 'Nom : ' + prefixeNomGrume() + (num || '_____');
+  }
+  iNom.addEventListener('input', function () {
+    iNom.value = iNom.value.replace(/\D/g, '').slice(0, DuramenCore.NUMERO_GRUME_CHIFFRES);
+    majApercu();
+  });
+  iNom.addEventListener('keydown', function (e) { if (e.key === 'Enter') valider(); });
+  fNom.appendChild(lNom);
+  fNom.appendChild(iNom);
+  modal.appendChild(fNom);
+  modal.appendChild(apercu);
+  majApercu();
+
+  async function valider() {
+    var num = DuramenCore.formaterNumeroGrume(iNom.value);
+    if (!num) { showError('Tapez le numéro de l\'étiquette (1 à 5 chiffres).'); return; }
+    var nom = prefixeNomGrume() + num;
+    if (nomGrumeDejaPris(nom)) {
+      showError('Le numéro ' + nom + ' existe déjà. Vérifiez l\'étiquette de la grume.'); return;
+    }
+    try {
+      showLoading(true);
+      await sbRpc('attribuer_numero_grume', { p_id: g.id, p_nom: nom });
+      fermer();
+      await chargerDonnees();
+      showToastSucces('Numéro ' + nom + ' attribué : la grume peut être débitée.');
+    } catch (err) {
+      if (err.reseau) showError('Pas de réseau : le numéro s\'attribue avec réseau.');
+      else if (/23505|duplicate key/.test(err.message)) showError('Le numéro ' + nom + ' existe déjà. Vérifiez l\'étiquette de la grume.');
+      else if (/DÉJÀ NUMÉROTÉE|INTROUVABLE/.test(err.message)) showError('Cette grume a déjà un numéro : rechargez la page.');
+      else showError('Erreur : ' + err.message);
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  var acts = cel('div', 'flex-end');
+  var bRet = cel('button', 'btn btn-outline', '← Retour');
+  bRet.type = 'button';
+  bRet.onclick = fermer;
+  var bOk = cel('button', 'btn btn-primary', 'Enregistrer');
+  bOk.type = 'button';
+  bOk.onclick = valider;
+  acts.appendChild(bRet);
+  acts.appendChild(bOk);
+  modal.appendChild(acts);
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+  iNom.focus();
 }
 
 // ─── Bascule Grumes brutes / Produits bois ───────────────────────────────
@@ -1614,13 +1735,23 @@ function creerLigneChoixDebit(g) {
   cb.type    = 'checkbox';
   cb.checked = !!campDraft.choix[g.id];
   lab.appendChild(cb);
-  lab.appendChild(cel('span', 'histo-lot-nom', (g.nom || '—') + ' · ' + (g.essence || '')));
+  lab.appendChild(cel('span', 'histo-lot-nom', nomAfficheGrume(g) + ' · ' + (g.essence || '')));
   row.appendChild(lab);
+  var debitOk = DuramenCore.validerDebitGrume(g);
+  if (!debitOk.ok) {
+    cb.checked  = false;
+    cb.disabled = true;
+    delete campDraft.choix[g.id];
+  }
   row.appendChild(cel('div', 'histo-essence-meta',
     formatNb(m.longueur, 2) + ' m × ' + m.diametre + ' cm · ' + (g.vol_utile || 0).toFixed(3) + ' m³'));
   var badges = cel('div', 'histo-badges');
   badges.appendChild(creerBadgeUrgence(g));
   row.appendChild(badges);
+  if (!debitOk.ok) {
+    row.appendChild(cel('div', 'info-box', debitOk.erreur + ' (Stock › Grumes brutes)'));
+    return row;
+  }
 
   var zone = cel('div', 'sciage-choix' + (cb.checked ? '' : ' hidden'));
   row.appendChild(zone);
@@ -1705,6 +1836,8 @@ async function enregistrerCampagne() {
     var g  = lots.find(function (l) { return l.id === ids[i]; });
     var ch = campDraft.choix[ids[i]];
     if (!g) continue;
+    var okDebit = DuramenCore.validerDebitGrume(g);
+    if (!okDebit.ok) { showError(okDebit.erreur); return; }
     if (!(ch.epaisseur_mm > 0) || (ch.type === 'avive' && !(ch.largeur_mm > 0))) {
       showError('Grume ' + g.nom + ' : indiquez l\'épaisseur' + (ch.type === 'avive' ? ' et la largeur.' : '.'));
       return;
@@ -1741,6 +1874,7 @@ async function enregistrerCampagne() {
     showToastSucces('Campagne enregistrée : ' + lignes.length + (lignes.length > 1 ? ' grumes à débiter.' : ' grume à débiter.'));
   } catch (err) {
     if (err.reseau) showError('Pas de réseau : la campagne s\'enregistre avec réseau. Votre préparation est gardée.');
+    else if (/GRUME SANS NUMÉRO/.test(err.message)) showError('Une grume n\'a pas encore de numéro : attribuez-le avant de la débiter.');
     else showError('Erreur enregistrement : ' + err.message);
   } finally {
     showLoading(false);
@@ -2215,7 +2349,25 @@ var nouvGrumes    = [];
 var nouvGPS       = { lat: null, lon: null };
 var nouvDate      = new Date();
 var nouvAnnee     = String(new Date().getFullYear());
+// Date d'abattage : 'AAAA-MM-JJ' ou 'inconnue' (grume saisie après coup)
+var nouvAbattage  = jourLocalISO(new Date());
 var saisieEnCours = false;
+
+// Date du jour au format AAAA-MM-JJ, à l'heure du téléphone
+function jourLocalISO(d) {
+  var x = new Date(d);
+  return x.getFullYear() + '-' + ('0' + (x.getMonth() + 1)).slice(-2) + '-' + ('0' + x.getDate()).slice(-2);
+}
+// Année de coupe déduite de la date d'abattage
+function anneeDepuisAbattage(abattage) {
+  return abattage === 'inconnue' ? DuramenCore.VALEUR_INCONNUE : String(abattage).slice(0, 4);
+}
+// Texte affiché pour la date d'abattage
+function texteAbattage(abattage) {
+  if (abattage === 'inconnue') return 'Inconnue';
+  if (abattage === jourLocalISO(new Date())) return 'Aujourd\'hui';
+  return formatDateFr(abattage + 'T12:00:00');
+}
 
 // Hauteur d'un item de drum en px — doit correspondre à .drum-item dans ui.css
 var DRUM_H = 40;
@@ -2513,34 +2665,41 @@ function nouvAnnuler() {
   captureGPS();
 }
 
-// ─── Modifier l'année de coupe ────────────────────────────────────────────
-function nouvModifierAnnee() {
+// ─── Modifier la date d'abattage ──────────────────────────────────────────
+// Grume saisie après coup : on indique sa vraie date d'abattage, ou
+// « Inconnue ». Le délai avant débit part de cette date.
+function nouvModifierAbattage() {
   var row = document.getElementById('saisie-annee-row');
   if (!row) return;
   row.querySelector('.saisie-annee-val').classList.add('hidden');
   row.querySelector('.saisie-annee-btn').classList.add('hidden');
   var inp = row.querySelector('.saisie-annee-input');
-  inp.value = nouvAnnee;
+  inp.value = nouvAbattage === 'inconnue' ? '' : nouvAbattage;
   inp.classList.remove('hidden');
+  row.querySelector('.saisie-abattage-inconnue').classList.remove('hidden');
   inp.focus();
-  inp.select();
 }
-function nouvValiderAnnee() {
+function nouvValiderAbattage(valeur) {
   var row = document.getElementById('saisie-annee-row');
   if (!row) return;
-  var inp = row.querySelector('.saisie-annee-input');
-  var val = parseInt(inp.value, 10);
-  if (!isNaN(val) && val >= 2015 && val <= 2035) nouvAnnee = String(val);
-  row.querySelector('.saisie-annee-val').textContent = nouvAnnee;
+  var aujourdhui = jourLocalISO(new Date());
+  if (valeur === 'inconnue') nouvAbattage = 'inconnue';
+  else if (/^\d{4}-\d{2}-\d{2}$/.test(valeur) && valeur <= aujourdhui && valeur >= '2000-01-01') nouvAbattage = valeur;
+  else if (valeur) showError('Date d\'abattage invalide : elle ne peut pas être dans le futur.');
+  nouvAnnee = anneeDepuisAbattage(nouvAbattage);
+  row.querySelector('.saisie-annee-val').textContent = texteAbattage(nouvAbattage);
   row.querySelector('.saisie-annee-val').classList.remove('hidden');
   row.querySelector('.saisie-annee-btn').classList.remove('hidden');
-  inp.classList.add('hidden');
+  row.querySelector('.saisie-annee-input').classList.add('hidden');
+  row.querySelector('.saisie-abattage-inconnue').classList.add('hidden');
   nouvSauverBrouillon();
 }
 
 // ─── Modal "Nommer la grume" ──────────────────────────────────────────────
-// Nom = préfixe de la commune + tiret + numéro à 4 chiffres tapé par l'agent
-// (ex. VER-0001). Toutes les grumes sont visibles des autres communes.
+// Nom = préfixe de la commune + tiret + numéro à 5 chiffres, comme sur
+// l'étiquette (ex. VER-00042). L'agent peut taper « 42 » : les zéros sont
+// ajoutés. Sans étiquette sur soi : « Numéroter plus tard » enregistre la
+// grume en attente de marquage. Toutes les grumes sont visibles des autres communes.
 function assureModalNommer() {
   if (document.getElementById('modal-nommer-bg')) return;
 
@@ -2558,17 +2717,17 @@ function assureModalNommer() {
   modal.appendChild(apercu);
 
   var fNom  = cel('div', 'field');
-  var lNom  = cel('label', '', 'Numéro (4 chiffres)');
+  var lNom  = cel('label', '', 'Numéro de l\'étiquette (5 chiffres)');
   lNom.htmlFor = 'modal-nom-input';
   var iNom  = document.createElement('input');
   iNom.type      = 'text';
   iNom.id        = 'modal-nom-input';
   iNom.inputMode = 'numeric';
-  iNom.maxLength = 4;
+  iNom.maxLength = DuramenCore.NUMERO_GRUME_CHIFFRES;
   iNom.autocomplete = 'off';
-  iNom.placeholder  = '0000';
+  iNom.placeholder  = '00000';
   iNom.addEventListener('input', function () {
-    iNom.value = iNom.value.replace(/\D/g, '').slice(0, 4);
+    iNom.value = iNom.value.replace(/\D/g, '').slice(0, DuramenCore.NUMERO_GRUME_CHIFFRES);
     majApercuNomGrume();
   });
   iNom.addEventListener('keydown', function (e) { if (e.key === 'Enter') nouvConfirmer(); });
@@ -2576,14 +2735,33 @@ function assureModalNommer() {
   fNom.appendChild(iNom);
   modal.appendChild(fNom);
 
-  var acts   = cel('div', 'flex-end');
+  // Pas d'étiquette sur soi : un repère pour reconnaître la grume au marquage
+  var fRep  = cel('div', 'field');
+  var lRep  = cel('label', '', 'Pas d\'étiquette ? Repère pour la retrouver (facultatif)');
+  lRep.htmlFor = 'modal-repere-input';
+  var iRep  = document.createElement('input');
+  iRep.type = 'text';
+  iRep.id   = 'modal-repere-input';
+  iRep.maxLength    = 80;
+  iRep.autocomplete = 'off';
+  iRep.placeholder  = 'ex. 3e grume de la pile, côté portail';
+  fRep.appendChild(lRep);
+  fRep.appendChild(iRep);
+  modal.appendChild(fRep);
+
+  // Trois boutons : ils passent à la ligne sur petit écran
+  var acts   = cel('div', 'flex-end sciage-campagne-actions');
   var btnRet = cel('button', 'btn btn-outline', '← Retour');
   btnRet.type    = 'button';
   btnRet.onclick = nouvFermerModal;
+  var btnPlusTard = cel('button', 'btn btn-outline', 'Numéroter plus tard');
+  btnPlusTard.type    = 'button';
+  btnPlusTard.onclick = function () { nouvConfirmer({ sansNumero: true }); };
   var btnOk  = cel('button', 'btn btn-primary', 'Confirmer');
   btnOk.type    = 'button';
-  btnOk.onclick = nouvConfirmer;
+  btnOk.onclick = function () { nouvConfirmer(); };
   acts.appendChild(btnRet);
+  acts.appendChild(btnPlusTard);
   acts.appendChild(btnOk);
   modal.appendChild(acts);
 
@@ -2601,8 +2779,26 @@ function majApercuNomGrume() {
   var inp = document.getElementById('modal-nom-input');
   var el  = document.getElementById('modal-nom-apercu');
   if (!el) return;
-  var num = inp ? inp.value : '';
-  el.textContent = 'Nom : ' + prefixeNomGrume() + (num + '____').slice(0, 4);
+  var num = DuramenCore.formaterNumeroGrume(inp ? inp.value : '');
+  el.textContent = 'Nom : ' + prefixeNomGrume() + (num || '_____');
+}
+
+// Le nom existe-t-il déjà (grumes enregistrées ou en attente d'envoi) ?
+// Compare les numéros : VER-0042 (ancien format) et VER-00042 sont la même grume.
+function nomGrumeDejaPris(nom) {
+  var n = DuramenCore.numeroDeNom(nom);
+  var pref = nom.slice(0, nom.lastIndexOf('-') + 1);
+  function meme(autre) {
+    return !!autre && autre.slice(0, autre.lastIndexOf('-') + 1) === pref
+      && DuramenCore.numeroDeNom(autre) === n;
+  }
+  return lots.some(function (l) { return meme(l.nom); })
+    || fileEnvoiCommune().some(function (it) { return it.table === 'grumes' && meme(it.data.nom); });
+}
+
+// Nom affiché d'une grume : son numéro, ou « Sans numéro » si en attente
+function nomAfficheGrume(g) {
+  return DuramenCore.estNumerotee(g) ? g.nom : 'Sans numéro';
 }
 
 function nouvOuvrirModal() {
@@ -2611,6 +2807,8 @@ function nouvOuvrirModal() {
   if (nouvGrumes.length === 0) { showError('Saisissez les mesures avant de nommer la grume.'); return; }
   document.getElementById('modal-nommer-bg').classList.add('open');
   var inp = document.getElementById('modal-nom-input');
+  var rep = document.getElementById('modal-repere-input');
+  if (rep) rep.value = '';
   if (inp) { inp.value = ''; inp.focus(); }
   majApercuNomGrume();
 }
@@ -2620,7 +2818,8 @@ function nouvFermerModal() {
 }
 
 // ─── Confirmer et sauvegarder le lot ─────────────────────────────────────
-async function nouvConfirmer() {
+async function nouvConfirmer(options) {
+  var sansNumero = !!(options && options.sansNumero);
   var essEl = document.getElementById('saisie-essence');
   var proEl = document.getElementById('saisie-provenance');
   var cauEl = document.getElementById('saisie-cause');
@@ -2633,12 +2832,18 @@ async function nouvConfirmer() {
   var essence    = essEl.value;
   var provenance = proEl.value;
   var cause      = cauEl.value;
-  var numero     = nomEl ? nomEl.value.trim() : '';
-  if (!/^\d{4}$/.test(numero)) { showError('Le numéro doit faire 4 chiffres (ex. 0001).'); return; }
-  var nom        = prefixeNomGrume() + numero;
-  if (lots.some(function (l) { return l.nom === nom; })
-      || fileEnvoiCommune().some(function (it) { return it.table === 'grumes' && it.data.nom === nom; })) {
-    showError('Le numéro ' + nom + ' existe déjà. Vérifiez l\'étiquette de la grume : erreur de saisie ou grume déjà enregistrée.'); return;
+  var repEl      = document.getElementById('modal-repere-input');
+  var repere     = repEl ? repEl.value.trim() : '';
+  var nom        = null;
+  if (!sansNumero) {
+    var numero = DuramenCore.formaterNumeroGrume(nomEl ? nomEl.value : '');
+    if (!numero) {
+      showError('Tapez le numéro de l\'étiquette (1 à 5 chiffres), ou choisissez « Numéroter plus tard ».'); return;
+    }
+    nom = prefixeNomGrume() + numero;
+    if (nomGrumeDejaPris(nom)) {
+      showError('Le numéro ' + nom + ' existe déjà. Vérifiez l\'étiquette de la grume : erreur de saisie ou grume déjà enregistrée.'); return;
+    }
   }
   // Toutes les grumes sont visibles des autres communes
   var partage    = true;
@@ -2662,7 +2867,9 @@ async function nouvConfirmer() {
     commune:      communeConnectee.nom,
     cause:        cause,
     provenance:   provenance,
-    annee:        nouvAnnee,
+    annee:        anneeDepuisAbattage(nouvAbattage),
+    date_abattage: nouvAbattage === 'inconnue' ? null : nouvAbattage,
+    repere:       repere || null,
     usage:        'Non défini',
     partage:      partage,
     epaisseur:    0,
@@ -2696,9 +2903,10 @@ async function nouvConfirmer() {
     nouvFermerModal();
     effacerBrouillonSaisie();
     // Toast de confirmation
+    var libelle = nom ? '"' + nom + '"' : 'Grume sans numéro';
     var toast = cel('div', 'toast-succes', envoye
-      ? '"' + nom + '" sauvegardé — ' + volBrut.toFixed(3) + ' m³'
-      : '"' + nom + '" gardé sur le téléphone — envoi automatique au retour du réseau');
+      ? libelle + ' sauvegardée — ' + volBrut.toFixed(3) + ' m³' + (nom ? '' : ' · en attente de marquage')
+      : libelle + ' gardée sur le téléphone — envoi automatique au retour du réseau');
     document.body.appendChild(toast);
     setTimeout(function () {
       toast.classList.add('hidden');
@@ -2733,6 +2941,7 @@ function nouvSauverBrouillon() {
     provenance: proEl ? proEl.value : '',
     cause:      cauEl ? cauEl.value : '',
     annee:      nouvAnnee,
+    abattage:   nouvAbattage,
     grumes:     nouvGrumes.slice()
   };
   localStorage.setItem('duramen_draft_v2', JSON.stringify(draft));
@@ -2761,10 +2970,11 @@ function nouvRestaurerBrouillon() {
     if (essEl) essEl.value = d.essence    || '';
     if (proEl) proEl.value = d.provenance || '';
     if (cauEl) cauEl.value = d.cause      || '';
-    if (d.annee) {
-      nouvAnnee = d.annee;
+    if (d.abattage) {
+      nouvAbattage = d.abattage;
+      nouvAnnee    = anneeDepuisAbattage(nouvAbattage);
       var valEl = document.querySelector('.saisie-annee-val');
-      if (valEl) valEl.textContent = nouvAnnee;
+      if (valEl) valEl.textContent = texteAbattage(nouvAbattage);
     }
     nouvGrumes = aGrumes ? [Object.assign({}, d.grumes[0], { quantite: 1 })] : [];
     nouvRendreGrumes();
@@ -2802,7 +3012,8 @@ function initialiserPanelSaisie() {
   // Réinitialiser l'état
   nouvGrumes = [];
   nouvDate   = new Date();
-  nouvAnnee  = String(nouvDate.getFullYear());
+  nouvAbattage = jourLocalISO(nouvDate);
+  nouvAnnee  = anneeDepuisAbattage(nouvAbattage);
 
   // Vider le panel
   while (panel.firstChild) panel.removeChild(panel.firstChild);
@@ -2817,23 +3028,26 @@ function initialiserPanelSaisie() {
   meta.appendChild(gpsChip);
   panel.appendChild(meta);
 
-  // ── Année de coupe ──────────────────────────────────────────────────
+  // ── Date d'abattage (aujourd'hui par défaut, ou date passée, ou inconnue)
   var anneeRow = cel('div', 'saisie-annee-row');
   anneeRow.id  = 'saisie-annee-row';
-  anneeRow.appendChild(cel('span', 'saisie-annee-lbl', 'Année de coupe'));
-  anneeRow.appendChild(cel('span', 'saisie-annee-val', nouvAnnee));
+  anneeRow.appendChild(cel('span', 'saisie-annee-lbl', 'Abattue le'));
+  anneeRow.appendChild(cel('span', 'saisie-annee-val', texteAbattage(nouvAbattage)));
   var anneeBtn = cel('button', 'saisie-annee-btn', 'modifier');
   anneeBtn.type    = 'button';
-  anneeBtn.onclick = nouvModifierAnnee;
+  anneeBtn.onclick = nouvModifierAbattage;
   anneeRow.appendChild(anneeBtn);
   var anneeInp = document.createElement('input');
   anneeInp.className = 'saisie-annee-input hidden';
-  anneeInp.type  = 'number';
-  anneeInp.min   = '2015';
-  anneeInp.max   = '2035';
-  anneeInp.onblur = nouvValiderAnnee;
-  anneeInp.addEventListener('keydown', function (e) { if (e.key === 'Enter') nouvValiderAnnee(); });
+  anneeInp.type  = 'date';
+  anneeInp.max   = jourLocalISO(new Date());
+  anneeInp.addEventListener('change', function () { if (anneeInp.value) nouvValiderAbattage(anneeInp.value); });
+  anneeInp.addEventListener('keydown', function (e) { if (e.key === 'Enter') nouvValiderAbattage(anneeInp.value); });
   anneeRow.appendChild(anneeInp);
+  var inconnueBtn = cel('button', 'saisie-annee-btn saisie-abattage-inconnue hidden', 'Inconnue');
+  inconnueBtn.type    = 'button';
+  inconnueBtn.onclick = function () { nouvValiderAbattage('inconnue'); };
+  anneeRow.appendChild(inconnueBtn);
   panel.appendChild(anneeRow);
 
   // ── Sélects : essence / provenance / cause ──────────────────────────
@@ -2846,7 +3060,7 @@ function initialiserPanelSaisie() {
     ['', '— Choisir —'],
     ['Alignement', 'Alignement urbain'], ['Bosquet', 'Bosquet'],
     ['Forêt', 'Forêt'], ['Haie bocagère', 'Haie bocagère'], ['Parc', 'Parc municipal'],
-    ['Autre', 'Autre']
+    ['Autre', 'Autre'], ['Inconnue', 'Inconnue']
   ]));
   selGrid.appendChild(creerSelectSaisie('saisie-cause', "Cause d'abattage *", [
     ['', '— Choisir —'],
@@ -2855,7 +3069,7 @@ function initialiserPanelSaisie() {
     ['Aménagement', 'Aménagement urbain'],
     ['Coupe sécuritaire', 'Coupe sécuritaire'],
     ['Gestion durable', 'Gestion durable'],
-    ['Autre', 'Autre']
+    ['Autre', 'Autre'], ['Inconnue', 'Inconnue']
   ]));
   panel.appendChild(selGrid);
 
