@@ -381,8 +381,72 @@ var DuramenCore = (function () {
     return { ok: true, erreur: '' };
   }
 
+  // ═══ Saisie a posteriori et marquage différé (ajouts du 4 nov. 2026) ═════
+  // Ajouts uniquement : aucune fonction existante n'est modifiée.
+
+  // Le numéro peint ou étiqueté sur la grume compte 5 chiffres
+  var NUMERO_GRUME_CHIFFRES = 5;
+  var VALEUR_INCONNUE = 'Inconnue';
+
+  // Numéro tapé par l'agent → numéro sur 5 chiffres, zéros ajoutés devant.
+  // « 42 » → « 00042 ». Retourne '' si la saisie est vide, trop longue ou nulle.
+  function formaterNumeroGrume(saisie) {
+    var s = String(saisie || '').replace(/\D/g, '');
+    if (!s || s.length > NUMERO_GRUME_CHIFFRES || parseInt(s, 10) === 0) return '';
+    return ('00000' + s).slice(-NUMERO_GRUME_CHIFFRES);
+  }
+
+  // Numéro (entier) d'un nom de grume : « VER-00042 » → 42. null si sans numéro.
+  // Sert à repérer un doublon même entre ancien format (4 chiffres) et nouveau.
+  function numeroDeNom(nom) {
+    var m = /-(\d+)$/.exec(String(nom || ''));
+    return m ? parseInt(m[1], 10) : null;
+  }
+
+  // Une grume saisie sans étiquette n'a pas encore de nom
+  function estNumerotee(grume) {
+    return !!(grume && grume.nom && String(grume.nom).trim());
+  }
+
+  // Date d'abattage inconnue : marquée « Inconnue » à la saisie
+  function abattageInconnu(grume) {
+    return !grume.date_abattage && grume.annee === VALEUR_INCONNUE;
+  }
+
+  // Urgence de débit, à partir de la date d'abattage quand elle est connue
+  // (grume saisie après coup). Ancienne grume : date de saisie, comme avant.
+  // Date inconnue : traitée comme délai dépassé, par prudence.
+  // Retourne le même objet que urgenceDebit, plus { inconnue: bool }.
+  function urgenceDebitGrume(grume, maintenant) {
+    if (abattageInconnu(grume)) {
+      return { niveau: 'depasse', dateLimite: null, joursRestants: 0, ratio: 2, inconnue: true };
+    }
+    var base = grume.date_abattage
+      ? { essence: grume.essence, date_iso: grume.date_abattage + 'T12:00:00' }
+      : grume;
+    var u = urgenceDebit(base, maintenant);
+    u.inconnue = false;
+    return u;
+  }
+
+  // Une grume peut-elle partir au débit (campagne de sciage) ?
+  // Sans numéro, le lien entre les planches et leur grume serait perdu.
+  function validerDebitGrume(grume) {
+    if (!estNumerotee(grume))
+      return { ok: false, erreur: 'Attribuez un numéro à cette grume avant de la débiter.' };
+    return { ok: true, erreur: '' };
+  }
+
   // ─── API publique ─────────────────────────────────────────────────────────
   return {
+    NUMERO_GRUME_CHIFFRES: NUMERO_GRUME_CHIFFRES,
+    VALEUR_INCONNUE:       VALEUR_INCONNUE,
+    formaterNumeroGrume:   formaterNumeroGrume,
+    numeroDeNom:           numeroDeNom,
+    estNumerotee:          estNumerotee,
+    abattageInconnu:       abattageInconnu,
+    urgenceDebitGrume:     urgenceDebitGrume,
+    validerDebitGrume:     validerDebitGrume,
     ESSENCES_INFO:   ESSENCES_INFO,
     ESSENCES_ORDRE:  ESSENCES_ORDRE,
     TRAIT_SCIE_MM:   TRAIT_SCIE_MM,
