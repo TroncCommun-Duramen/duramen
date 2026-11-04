@@ -92,6 +92,9 @@ Suites de la fusion du 3 nov. 2026 :
 | Étape | État |
 |-------|------|
 | Garder la passerelle Supabase (vue `lots`, fonction `lots_partages()`, colonne `extractions.cause_abattage`) tant que la nouvelle version n'est pas validée sur le terrain : c'est elle qui permet de revenir à l'ancienne version. Ensuite, la supprimer | En attente de validation terrain |
+| Valider puis fusionner `feat/saisie-grume` (date d'abattage, « Inconnue », numéro 5 chiffres, marquage différé). Après fusion : cache v55 | En attente de validation |
+| Valider puis fusionner `feat/debit-epaisseurs` (27/34/41/54 + Autre, plusieurs épaisseurs par grume, séchage 1 cm/an par face). Fusionnée après l'autre : conflit simple à résoudre (ajouts côte à côte), cache v56 | En attente de validation |
+| Version bureau : une grume sans numéro s'affiche « null » dans la liste des lots (`bureau/app.js`, ligne ~707). À traiter avec l'alignement du bureau ci-dessous | À faire |
 | Version bureau : elle ne connaît pas encore les campagnes ni le stock produits. Elle compte une grume sciée comme encore en stock et propose à l'extraction une grume déjà prévue dans une campagne. À aligner sur le mobile (lié à A15) | À faire — **Haute** |
 
 ---

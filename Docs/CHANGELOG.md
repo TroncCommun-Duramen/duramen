@@ -5,6 +5,31 @@
 
 ---
 
+## 4 novembre 2026
+
+### Saisie de grume et débit — 2 branches en attente de validation
+Branche `feat/saisie-grume` :
+- `feat(saisie)` — Date d'abattage : aujourd'hui, date passée ou « Inconnue ». Le délai avant débit part de cette date. Date inconnue = débit urgent, par prudence.
+- `feat(saisie)` — Provenance et cause acceptent « Inconnue » : aucun champ vide dans le suivi.
+- `feat(saisie)` — Numéro d'étiquette sur 5 chiffres. Les zéros sont ajoutés : 42 → TC-00042. Un doublon 4/5 chiffres (0042 / 00042) est reconnu.
+- `feat(saisie)` — « Numéroter plus tard » : la grume est enregistrée « En attente de marquage », avec un repère facultatif. Le numéro s'attribue ensuite depuis le stock.
+- `feat(sciage)` — Pas de débit sans numéro : la grume n'est pas cochable en campagne, et la base refuse la campagne.
+- `fix(sw)` — Cache duramen-v54 → duramen-v55.
+
+Branche `feat/debit-epaisseurs` :
+- `feat(sciage)` — Épaisseurs proposées : 27, 34, 41, 54 mm, plus « Autre épaisseur » (10 à 150 mm).
+- `feat(sciage)` — Plusieurs épaisseurs dans une même grume (ex. 8 planches de 27 + 3 de 54). La nouvelle épaisseur prend ce qui reste du diamètre. Alerte si les plots dépassent le diamètre.
+- `feat(sechage)` — Séchage à l'air : 1 cm par an et par face, soit 0,5 an par cm de la plus petite cote (27 mm ≈ 16 mois).
+- `fix(sw)` — Cache duramen-v54 → duramen-v56.
+
+Base Supabase (déjà en place, sans effet sur la version en ligne) :
+- Colonnes `grumes.date_abattage` et `grumes.repere`.
+- Fonction `attribuer_numero_grume(p_id, p_nom)` : seulement pour sa commune, seulement une grume sans numéro, format `ABC-00000`.
+- Verrou `trg_verifier_grumes_campagne` : une campagne avec une grume sans numéro est refusée.
+- `grumes_en_stock_partagees()` renvoie aussi `date_abattage` et `repere`.
+
+---
+
 ## 3 novembre 2026
 
 ### Grumes, campagne de sciage, envoi hors ligne — fusion dans `main`

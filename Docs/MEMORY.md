@@ -371,6 +371,11 @@ Problèmes identifiés :
 - `grumes` — tableau JSON des grumes individuelles
 - `partage` — booléen (visible aux autres communes ?)
 - `created_at` — date de création
+- `date_abattage` — date d'abattage (vide si inconnue : `annee` vaut alors « Inconnue »), ajoutée le 4 nov. 2026
+- `repere` — repère pour retrouver une grume sans étiquette, ajouté le 4 nov. 2026
+- `nom` vide = grume « En attente de marquage » ; numéro attribué par la fonction `attribuer_numero_grume`
+
+> Table renommée `grumes` le 3 nov. 2026.
 
 **Table `extractions`**
 - `id` — UUID (migré depuis bigint le 19 avril 2026)
@@ -436,6 +441,12 @@ sw.js          ← Service Worker (offline, cache duramen-v38) — ✅
 | Séparation `theme.css` / `ui.css` | Permettre au graphiste de travailler sans risque | Démarrage |
 | Supabase comme backend | Déjà en place et fonctionnel | Démarrage |
 | `vol_utile = vol_brut` pour les lots sans débit | Nouveau formulaire mobile : pas de calcul de débit | Avril 2026 |
+| Tous les champs de la grume sont remplis ; « Inconnue » est une réponse valide (date d'abattage, provenance, cause) | Un « Inconnue » assumé est une information ; un champ vide est un trou dans le suivi | 4 nov. 2026 |
+| Date d'abattage inconnue = débit urgent | Sans date, le délai avant débit ne se calcule pas : prudence | 4 nov. 2026 |
+| Numéro de grume sur 5 chiffres, zéros ajoutés par l'app | Correspond au marquage physique ; évite les doublons 42 / 00042 | 4 nov. 2026 |
+| Marquage différé : grume « En attente de marquage » (`nom` vide), numéro attribué plus tard ; pas de débit sans numéro (app + base) | Les agents n'ont pas toujours les étiquettes à la récolte ; le numéro relie les planches à leur grume | 4 nov. 2026 |
+| Épaisseurs proposées 27 / 34 / 41 / 54 mm + « Autre » (10–150 mm) ; plusieurs épaisseurs par grume | Usages courants de la filière feuillus (menuiserie, aménagement urbain) ; à affiner par le porteur | 4 nov. 2026 |
+| Séchage : 1 cm par an et par face, sur les 4 faces → 0,5 an par cm de la plus petite cote, toutes essences | Dicton de la filière en France ; une seule règle, pas de précision par essence | 4 nov. 2026 |
 
 ---
 

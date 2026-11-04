@@ -50,6 +50,15 @@ HH:MM — [commit: abc1234] résultat final
 11:31 — Alignement des volumes au millième de m³, mise en ligne, mise à jour du coffre Obsidian
 11:39 — A12 : vérifié non fait (ni sur GitHub ni dans la base) → code secret masqué au partage
 
+## Session 2026-11-04
+
+17:46 — Questions : saisie après coup (provenance, date, « inconnu »), zéros automatiques, marquage différé, blocage du débit sans numéro
+17:51 — Recherche des épaisseurs de sciage : 4 principales + champ libre, plusieurs épaisseurs par grume
+17:56 — Décision : 27 / 34 / 41 / 54 mm gardées (débits surtout pour l'aménagement urbain), à affiner plus tard
+18:03 — Décision : règle de séchage unique pour toutes les essences, 1 cm par an
+18:05 — Précision : 1 cm par an sur les 4 faces
+18:07 — Codage : branches `feat/saisie-grume` et `feat/debit-epaisseurs`, base Supabase, tests navigateur
+
 ---
 
 ## Voir aussi
