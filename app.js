@@ -1375,6 +1375,14 @@ function creerBadgeSechage(dateSec) {
     sec ? 'Sec à l\'air' : 'En séchage — sec à l\'air le ' + formatDateFr(dateSec));
 }
 function texteDemande(l) {
+  if (Array.isArray(l.debits) && l.debits.length) {
+    return l.debits.map(function (d) {
+      var q = ' · ' + d.quantite + (d.type === 'avive' ? ' pièce' : ' planche') + (d.quantite > 1 ? 's' : '');
+      return d.type === 'avive'
+        ? 'Avivé ' + d.epaisseur_mm + ' × ' + d.largeur_mm + ' mm' + q
+        : 'Plot ' + d.epaisseur_mm + ' mm' + q;
+    }).join(' + ');
+  }
   var est = l.estimation_quantite ? ' · ~' + l.estimation_quantite
     + (l.type === 'avive' ? ' pièces' : ' planches') : '';
   if (l.type === 'avive') return 'Avivé · ' + l.epaisseur_mm + ' × ' + l.largeur_mm + ' mm' + est;
@@ -1725,7 +1733,29 @@ function fermerPreparationCampagne() {
   if (bg) bg.parentNode.removeChild(bg);
 }
 
-// Une grume : case à cocher, puis plot (épaisseur standard) ou avivé (section libre)
+// Débits demandés pour une grume. Ancien brouillon (un seul débit par
+// grume) : converti en liste d'un débit.
+function debitsDuChoix(ch) {
+  if (!Array.isArray(ch.debits)) {
+    ch.debits = [{ type: ch.type || 'plot', epaisseur_mm: ch.epaisseur_mm || 27,
+                   largeur_mm: ch.largeur_mm || 0, quantite: 0, auto: true }];
+  }
+  return ch.debits;
+}
+
+// Quantité calculée par l'app pour les débits non retouchés à la main :
+// en plot, ce qui tient dans le diamètre restant ; en avivé, l'estimation.
+function recalculerDebitsAuto(g, debits) {
+  debits.forEach(function (d, i) {
+    if (!d.auto) return;
+    d.quantite = d.type === 'plot'
+      ? DuramenCore.planchesPossibles(g, debits, i)
+      : DuramenCore.estimerDebit(g, d).quantite;
+  });
+}
+
+// Une grume : case à cocher, puis un ou plusieurs débits (plusieurs
+// épaisseurs possibles dans la même grume)
 function creerLigneChoixDebit(g) {
   var m   = DuramenCore.mesuresGrume(g);
   var row = cel('div', 'histo-lot-card sciage-grume-row');
@@ -1756,63 +1786,131 @@ function creerLigneChoixDebit(g) {
   var zone = cel('div', 'sciage-choix' + (cb.checked ? '' : ' hidden'));
   row.appendChild(zone);
 
+  function changer() { sauverCampDraft(); rendreChoix(); majResumeCampagne(); }
+
+  // Retirer un champ encore actif déclenche sa validation (« change ») :
+  // ce second rendu, imbriqué dans le premier, est ignoré. La valeur
+  // tapée est déjà gardée et sera affichée par le rendu en cours.
+  var enRendu = false;
   function rendreChoix() {
+    if (enRendu) return;
+    enRendu = true;
+    try { construireChoix(); } finally { enRendu = false; }
+  }
+  function construireChoix() {
     while (zone.firstChild) zone.removeChild(zone.firstChild);
     var ch = campDraft.choix[g.id];
     if (!ch) return;
+    var debits = debitsDuChoix(ch);
+    recalculerDebitsAuto(g, debits);
 
-    var types = cel('div', 'histo-toggle-bar sciage-type-bar');
-    [['plot', 'Plot'], ['avive', 'Avivé']].forEach(function (t) {
-      var b = cel('button', 'histo-toggle-btn' + (ch.type === t[0] ? ' active' : ''), t[1]);
-      b.type = 'button';
-      b.onclick = function () {
-        ch.type = t[0];
-        if (t[0] === 'plot' && DuramenCore.EPAISSEURS_PLOT.indexOf(ch.epaisseur_mm) === -1) ch.epaisseur_mm = 27;
-        sauverCampDraft(); rendreChoix(); majResumeCampagne();
-      };
-      types.appendChild(b);
-    });
-    zone.appendChild(types);
+    debits.forEach(function (d, i) {
+      var ligne = cel('div', 'sciage-produit-ligne');
 
-    var est = cel('div', 'sciage-estimation');
-    function majEst() {
-      var r = DuramenCore.estimerDebit(g, ch);
-      est.textContent = r.quantite > 0
-        ? '≈ ' + r.quantite + (ch.type === 'avive' ? ' pièces' : ' planches') + ' · ' + r.volume.toFixed(3) + ' m³ (estimation)'
-        : 'Indiquez les cotes pour obtenir une estimation.';
-    }
+      var types = cel('div', 'histo-toggle-bar sciage-type-bar');
+      [['plot', 'Plot'], ['avive', 'Avivé']].forEach(function (t) {
+        var b = cel('button', 'histo-toggle-btn' + (d.type === t[0] ? ' active' : ''), t[1]);
+        b.type = 'button';
+        b.onclick = function () { d.type = t[0]; d.auto = true; changer(); };
+        types.appendChild(b);
+      });
+      ligne.appendChild(types);
 
-    if (ch.type === 'plot') {
+      // Épaisseur : 4 épaisseurs standard, ou « Autre » (champ libre)
+      var standard = DuramenCore.EPAISSEURS_PLOT.indexOf(parseInt(d.epaisseur_mm, 10)) !== -1;
       var fE = cel('div', 'field');
-      fE.appendChild(cel('label', '', 'Épaisseur des planches'));
+      fE.appendChild(cel('label', '', 'Épaisseur'));
       var sel = document.createElement('select');
       DuramenCore.EPAISSEURS_PLOT.forEach(function (e) {
         var o = document.createElement('option');
         o.value = e; o.textContent = e + ' mm';
-        if (e === ch.epaisseur_mm) o.selected = true;
+        if (standard && e === parseInt(d.epaisseur_mm, 10)) o.selected = true;
         sel.appendChild(o);
       });
-      sel.onchange = function () { ch.epaisseur_mm = parseInt(sel.value, 10); sauverCampDraft(); majEst(); };
+      var oAutre = document.createElement('option');
+      oAutre.value = 'autre'; oAutre.textContent = 'Autre épaisseur…';
+      if (!standard) oAutre.selected = true;
+      sel.appendChild(oAutre);
+      sel.onchange = function () {
+        d.epaisseur_mm = sel.value === 'autre' ? 0 : parseInt(sel.value, 10);
+        d.auto = true; changer();
+      };
       fE.appendChild(sel);
-      zone.appendChild(fE);
-    } else {
-      [['epaisseur_mm', 'Épaisseur (mm)'], ['largeur_mm', 'Largeur (mm)']].forEach(function (f) {
-        var fld = cel('div', 'field');
-        fld.appendChild(cel('label', '', f[1]));
-        var inp = document.createElement('input');
-        inp.type = 'number'; inp.min = '5'; inp.max = '500'; inp.inputMode = 'numeric';
-        inp.value = ch[f[0]] || '';
-        inp.oninput = function () { ch[f[0]] = parseInt(inp.value, 10) || 0; sauverCampDraft(); majEst(); };
-        fld.appendChild(inp);
-        zone.appendChild(fld);
-      });
+      ligne.appendChild(fE);
+
+      if (!standard) {
+        var fA = cel('div', 'field');
+        fA.appendChild(cel('label', '', 'Autre épaisseur (mm, de ' + DuramenCore.EPAISSEUR_AUTRE_MIN
+          + ' à ' + DuramenCore.EPAISSEUR_AUTRE_MAX + ')'));
+        var iA = document.createElement('input');
+        iA.type = 'number'; iA.inputMode = 'numeric';
+        iA.min = String(DuramenCore.EPAISSEUR_AUTRE_MIN); iA.max = String(DuramenCore.EPAISSEUR_AUTRE_MAX);
+        iA.value = d.epaisseur_mm || '';
+        iA.onchange = function () { d.epaisseur_mm = parseInt(iA.value, 10) || 0; d.auto = true; changer(); };
+        fA.appendChild(iA);
+        ligne.appendChild(fA);
+      }
+
+      if (d.type === 'avive') {
+        var fL = cel('div', 'field');
+        fL.appendChild(cel('label', '', 'Largeur (mm)'));
+        var iL = document.createElement('input');
+        iL.type = 'number'; iL.min = '5'; iL.max = '500'; iL.inputMode = 'numeric';
+        iL.value = d.largeur_mm || '';
+        iL.onchange = function () { d.largeur_mm = parseInt(iL.value, 10) || 0; d.auto = true; changer(); };
+        fL.appendChild(iL);
+        ligne.appendChild(fL);
+      }
+
+      var fQ = cel('div', 'field');
+      fQ.appendChild(cel('label', '', d.type === 'avive' ? 'Nombre de pièces' : 'Nombre de planches'));
+      var iQ = document.createElement('input');
+      iQ.type = 'number'; iQ.min = '0'; iQ.step = '1'; iQ.inputMode = 'numeric';
+      iQ.value = d.quantite || 0;
+      iQ.onchange = function () {
+        d.quantite = Math.max(0, parseInt(iQ.value, 10) || 0);
+        d.auto = false; changer();
+      };
+      fQ.appendChild(iQ);
+      ligne.appendChild(fQ);
+
+      var vol = DuramenCore.volumeDebitDemande(g, d);
+      ligne.appendChild(cel('div', 'sciage-estimation', vol > 0
+        ? '≈ ' + vol.toFixed(3) + ' m³ (estimation)'
+        : 'Indiquez les cotes et la quantité pour obtenir une estimation.'));
+
+      if (debits.length > 1) {
+        var bSup = cel('button', 'btn btn-outline sciage-btn-retirer', '✕ Retirer');
+        bSup.type = 'button';
+        bSup.onclick = function () { debits.splice(i, 1); changer(); };
+        ligne.appendChild(bSup);
+      }
+      zone.appendChild(ligne);
+    });
+
+    // Les planches en plot tiennent-elles dans la grume ?
+    if (debits.some(function (d) { return d.type === 'plot'; })) {
+      var util = DuramenCore.diametreUtilisePlots(debits);
+      zone.appendChild(cel('div', 'sciage-estimation',
+        (util > m.diametre ? '⚠ Dépasse le diamètre — ' : '')
+        + 'Diamètre pris par les plots : ' + formatNb(util, 1) + ' / ' + m.diametre + ' cm'));
     }
-    zone.appendChild(est);
-    majEst();
+
+    var bAdd = cel('button', 'btn btn-outline sciage-btn-ajouter', '+ Ajouter une épaisseur');
+    bAdd.type = 'button';
+    bAdd.onclick = function () {
+      // Les quantités déjà en place sont gardées ; la nouvelle épaisseur
+      // prend ce qui reste du diamètre
+      debits.forEach(function (d) { d.auto = false; });
+      debits.push({ type: 'plot', epaisseur_mm: 54, largeur_mm: 0, quantite: 0, auto: true });
+      changer();
+    };
+    zone.appendChild(bAdd);
   }
 
   cb.onchange = function () {
-    if (cb.checked) campDraft.choix[g.id] = campDraft.choix[g.id] || { type: 'plot', epaisseur_mm: 27, largeur_mm: 0 };
+    if (cb.checked) campDraft.choix[g.id] = campDraft.choix[g.id]
+      || { debits: [{ type: 'plot', epaisseur_mm: 27, largeur_mm: 0, quantite: 0, auto: true }] };
     else delete campDraft.choix[g.id];
     zone.classList.toggle('hidden', !cb.checked);
     sauverCampDraft(); rendreChoix(); majResumeCampagne();
@@ -1838,17 +1936,34 @@ async function enregistrerCampagne() {
     if (!g) continue;
     var okDebit = DuramenCore.validerDebitGrume(g);
     if (!okDebit.ok) { showError(okDebit.erreur); return; }
-    if (!(ch.epaisseur_mm > 0) || (ch.type === 'avive' && !(ch.largeur_mm > 0))) {
-      showError('Grume ' + g.nom + ' : indiquez l\'épaisseur' + (ch.type === 'avive' ? ' et la largeur.' : '.'));
-      return;
+    var debits = debitsDuChoix(ch);
+    for (var j = 0; j < debits.length; j++) {
+      var d = debits[j];
+      if (!DuramenCore.epaisseurValide(d.epaisseur_mm)) {
+        showError('Grume ' + g.nom + ' : épaisseur à indiquer (de ' + DuramenCore.EPAISSEUR_AUTRE_MIN
+          + ' à ' + DuramenCore.EPAISSEUR_AUTRE_MAX + ' mm).'); return;
+      }
+      if (d.type === 'avive' && !(d.largeur_mm > 0)) { showError('Grume ' + g.nom + ' : largeur de l\'avivé à indiquer.'); return; }
+      if (!(d.quantite > 0)) { showError('Grume ' + g.nom + ' : nombre de planches ou de pièces à indiquer.'); return; }
     }
-    var m   = DuramenCore.mesuresGrume(g);
-    var est = DuramenCore.estimerDebit(g, ch);
+    var m = DuramenCore.mesuresGrume(g);
+    if (DuramenCore.diametreUtilisePlots(debits) > m.diametre
+        && !confirm('Grume ' + g.nom + ' : les plots demandés dépassent le diamètre de la grume.\nEnregistrer quand même ?')) return;
+    var debitsLigne = debits.map(function (d) {
+      return {
+        type: d.type, epaisseur_mm: d.epaisseur_mm, largeur_mm: d.type === 'avive' ? d.largeur_mm : null,
+        quantite: d.quantite, volume: arrondiM3(DuramenCore.volumeDebitDemande(g, d))
+      };
+    });
+    var premier = debitsLigne[0];
     lignes.push({
       grume_id: g.id, cle: g.id + '_0', nom: g.nom, essence: g.essence,
       longueur: m.longueur, diametre: m.diametre, vol: g.vol_utile || 0,
-      type: ch.type, epaisseur_mm: ch.epaisseur_mm, largeur_mm: ch.type === 'avive' ? ch.largeur_mm : null,
-      estimation_quantite: est.quantite, estimation_volume: arrondiM3(est.volume)
+      debits: debitsLigne,
+      // Champs du premier débit : lus par les versions précédentes de l'app
+      type: premier.type, epaisseur_mm: premier.epaisseur_mm, largeur_mm: premier.largeur_mm,
+      estimation_quantite: debitsLigne.reduce(function (s, d) { return s + d.quantite; }, 0),
+      estimation_volume: arrondiM3(debitsLigne.reduce(function (s, d) { return s + d.volume; }, 0))
     });
   }
   // Ordre de la feuille de débit : les plus urgentes d'abord
@@ -1962,6 +2077,17 @@ function imprimerFeuilleDebit(c) {
 // que les écarts. Un seul envoi : tout passe ou rien.
 var clotDraft = null;
 
+// Produits pré-remplis à la clôture : un par débit demandé
+function produitsDepuisDemande(l) {
+  if (Array.isArray(l.debits) && l.debits.length) {
+    return l.debits.map(function (d) {
+      return { type: d.type, epaisseur_mm: d.epaisseur_mm,
+               largeur_mm: d.type === 'avive' ? d.largeur_mm : null,
+               longueur_m: l.longueur, quantite: d.quantite || 0 };
+    });
+  }
+  return [produitDepuisDemande(l)];
+}
 function produitDepuisDemande(l) {
   return {
     type: l.type, epaisseur_mm: l.epaisseur_mm,
@@ -1978,7 +2104,7 @@ function ouvrirCloture(c) {
   if (!d || d.campagne_id !== c.id) {
     d = { campagne_id: c.id, grumes: {} };
     (c.lignes || []).forEach(function (l) {
-      d.grumes[l.grume_id] = { sciee: true, produits: [produitDepuisDemande(l)] };
+      d.grumes[l.grume_id] = { sciee: true, produits: produitsDepuisDemande(l) };
     });
   }
   clotDraft = d;
@@ -2011,7 +2137,7 @@ function ouvrirCloture(c) {
       modal.appendChild(card);
       return;
     }
-    if (!clotDraft.grumes[l.grume_id]) clotDraft.grumes[l.grume_id] = { sciee: true, produits: [produitDepuisDemande(l)] };
+    if (!clotDraft.grumes[l.grume_id]) clotDraft.grumes[l.grume_id] = { sciee: true, produits: produitsDepuisDemande(l) };
     card.appendChild(creerSaisieRealise(g, clotDraft.grumes[l.grume_id]));
     modal.appendChild(card);
   });
