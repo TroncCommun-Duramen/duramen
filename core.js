@@ -210,12 +210,18 @@ var DuramenCore = (function () {
   // Badge orange à partir de 75 % du délai écoulé, rouge au-delà du délai
   var SEUIL_ALERTE_DEBIT = 0.75;
 
-  // Épaisseurs standard d'un débit en plot, en mm
-  var EPAISSEURS_PLOT = [27, 41, 54, 65, 80];
+  // Épaisseurs standard proposées au débit, en mm (décision du porteur,
+  // 4 nov. 2026). Toute autre épaisseur passe par le champ « Autre ».
+  var EPAISSEURS_PLOT = [27, 34, 41, 54];
+  var EPAISSEUR_AUTRE_MIN = 10;
+  var EPAISSEUR_AUTRE_MAX = 150;
 
-  // Séchage à l'air : 1 an par cm de la plus petite cote (décision du porteur).
+  // Séchage à l'air : 1 cm par an et par face (dicton de la filière, décision
+  // du porteur du 4 nov. 2026). Le bois sèche par ses 4 faces ; les deux
+  // faces opposées de la plus petite cote se rejoignent au cœur, soit
+  // 2 cm de cote par an → 0,5 an par cm (27 mm ≈ 16 mois).
   // Information seulement : un produit en séchage peut être sorti.
-  var SECHAGE_ANS_PAR_CM = 1;
+  var SECHAGE_ANS_PAR_CM = 0.5;
 
   var JOUR_MS = 86400000;
 
@@ -381,8 +387,55 @@ var DuramenCore = (function () {
     return { ok: true, erreur: '' };
   }
 
+  // ═══ Plusieurs épaisseurs dans une même grume (ajouts du 4 nov. 2026) ═══
+  // Ajouts uniquement : aucune fonction existante n'est modifiée.
+  // Un débit demandé = { type: 'plot' | 'avive', epaisseur_mm, largeur_mm, quantite }
+
+  // Épaisseur acceptée dans le champ « Autre » ?
+  function epaisseurValide(e) {
+    var v = parseFloat(e);
+    return v >= EPAISSEUR_AUTRE_MIN && v <= EPAISSEUR_AUTRE_MAX;
+  }
+
+  // Volume (m³) d'un débit demandé, sur toute la longueur de la grume
+  function volumeDebitDemande(grume, debit) {
+    var m = mesuresGrume(grume);
+    return volumeProduit({
+      type: debit.type, epaisseur_mm: debit.epaisseur_mm, largeur_mm: debit.largeur_mm,
+      longueur_m: m.longueur, quantite: debit.quantite
+    }, grume);
+  }
+
+  // Part du diamètre (en cm) prise par les planches des débits en plot :
+  // nombre de planches × (épaisseur + trait de scie). Sert à vérifier que
+  // les épaisseurs demandées tiennent dans la grume.
+  function diametreUtilisePlots(debits) {
+    var mm = (debits || []).reduce(function (s, d) {
+      if (d.type !== 'plot') return s;
+      return s + (parseFloat(d.quantite) || 0) * ((parseFloat(d.epaisseur_mm) || 0) + TRAIT_SCIE_MM);
+    }, 0);
+    return mm / 10;
+  }
+
+  // Nombre de planches d'une épaisseur qui tiennent dans le diamètre
+  // restant, une fois les autres débits en plot servis
+  function planchesPossibles(grume, debits, index) {
+    var d = debits[index];
+    var e = parseFloat(d && d.epaisseur_mm) || 0;
+    if (e <= 0) return 0;
+    var autres = debits.filter(function (x, i) { return i !== index; });
+    var resteCm = mesuresGrume(grume).diametre - diametreUtilisePlots(autres);
+    return Math.max(0, Math.floor(resteCm / ((e + TRAIT_SCIE_MM) / 10)));
+  }
+
   // ─── API publique ─────────────────────────────────────────────────────────
   return {
+    EPAISSEUR_AUTRE_MIN:   EPAISSEUR_AUTRE_MIN,
+    EPAISSEUR_AUTRE_MAX:   EPAISSEUR_AUTRE_MAX,
+    epaisseurValide:       epaisseurValide,
+    volumeDebitDemande:    volumeDebitDemande,
+    diametreUtilisePlots:  diametreUtilisePlots,
+    planchesPossibles:     planchesPossibles,
     ESSENCES_INFO:   ESSENCES_INFO,
     ESSENCES_ORDRE:  ESSENCES_ORDRE,
     TRAIT_SCIE_MM:   TRAIT_SCIE_MM,
