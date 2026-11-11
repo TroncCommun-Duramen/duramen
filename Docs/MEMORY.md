@@ -63,7 +63,7 @@ RLS **activé sur les 4 tables** (bouton « Disable RLS » affiché = actif). Te
 
 | Table | Règle lecture (`qual`) | Verdict |
 |-------|------------------------|---------|
-| `codes_acces` | `SELECT` : `actif = true` | 🔴 **FUITE** — la clé anon lit TOUS les codes de TOUTES les communes (testé : NANTES-A8CD, BOUAYE-K3FP, CARQUEFOU-L9DW… renvoyés en une requête). Le code EST le mot de passe. |
+| `codes_acces` | `SELECT` : `actif = true` | 🔴 **FUITE** — la clé anon lit TOUS les codes de TOUTES les communes (testé : les codes de plusieurs communes renvoyés en une requête). Le code EST le mot de passe. |
 | `extractions` | `SELECT` : `commune_code = get_commune_code()` ; INSERT/DELETE idem + `<> ''` | 🟢 OK — test sans code → `[]`. Isolation réelle côté serveur. |
 | `lots` | `SELECT` : `commune_code = get_commune_code() OR partage = true` ; INSERT/DELETE : commune propre | 🟢 OK — seuls les lots `partage = true` remontent (feature « vue communauté » voulue). |
 | `feedbacks` | INSERT seul (`with_check` sur commune) | ⚪ Hors périmètre projet — pas de lecture publique, sans risque. Table non documentée à l'origine. |

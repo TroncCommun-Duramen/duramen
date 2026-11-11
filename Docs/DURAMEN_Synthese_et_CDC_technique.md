@@ -159,7 +159,7 @@ sw.js            Service Worker (mode hors ligne) — à créer
 ## Fonctionnalités visibles (ce que l'agent voit)
 
 ### 1. Authentification par code commune
-Chaque commune dispose d'un code d'accès unique (ex: `BRAINS-H2NX`). Ce code est saisi une seule fois — l'application mémorise la commune pour les sessions suivantes. La déconnexion est possible à tout moment.
+Chaque commune dispose d'un code d'accès unique (ex: `COMMUNE-XXXX`). Ce code est saisi une seule fois — l'application mémorise la commune pour les sessions suivantes. La déconnexion est possible à tout moment.
 
 Les codes sont gérés dans Supabase (table `codes_acces`). Désactiver une commune = passer `actif = false` dans le dashboard, sans toucher au code.
 
@@ -293,7 +293,7 @@ La formule de Huber calcule le volume de chaque grume dès que longueur et diam�
 
 | Colonne | Type | Description |
 |---------|------|-------------|
-| code | text | Code d'accès (ex: BRAINS-H2NX) |
+| code | text | Code d'accès (ex: COMMUNE-XXXX) |
 | commune | text | Nom de la commune |
 | actif | boolean | Accès actif ou désactivé |
 
