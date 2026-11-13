@@ -72,22 +72,18 @@ body {
   color: var(--sumi);
 }
 
-/* Cadre de l'illustration (carré gris clair, comme la fiche) */
+/* Illustration : cadre gris clair au format de la photo (3:2), crédit en petit */
+.b-fiche-figure { display: flex; flex-direction: column; gap: 8px; }
+.b-fiche-credit { font-size: 11px; color: var(--cendre); letter-spacing: 0.02em; text-align: right; }
 .b-fiche-illustration {
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 2;
   background: var(--neige);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
-.b-fiche-illustration-txt {
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cendre);
-}
-.b-fiche-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+.b-fiche-image { width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; display: block; }
 
 .b-fiche-milieu {
   display: grid;
@@ -1161,7 +1157,6 @@ body {
   .b-page-titre { font-size: 30px; }
   .b-fiche { padding: 40px 24px 24px; gap: 40px; }
   .b-fiche-haut, .b-fiche-milieu { grid-template-columns: 1fr; }
-  .b-fiche-illustration { aspect-ratio: 16 / 9; }
   .b-fiche-pied { grid-template-columns: 1fr; text-align: left; }
   .b-fiche-pied-droite { text-align: left; }
   .b-panel-pad { padding: 16px; }
