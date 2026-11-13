@@ -17,7 +17,7 @@
       <img src="../icon-512.png" alt="DURAMEN" class="b-login-logo-img">
     </div>
     <div class="b-login-title">DURAMEN</div>
-    <div class="b-login-sub">Interface bureau</div>
+    <div class="b-login-sub">Interface bureau — ateliers et responsables</div>
     <label class="b-login-label" for="b-login-code">CODE D'ACCÈS</label>
     <input class="b-login-input" type="text" id="b-login-code"
       placeholder="ex : DURAMEN-01"
@@ -31,91 +31,144 @@
 <!-- ─── APPLICATION ─── -->
 <div id="b-app" class="hidden">
 
-  <!-- HEADER -->
+  <!-- EN-TÊTE : les 4 étapes du bois, de la grume à l'objet posé -->
   <header class="b-header">
-    <div class="b-stat-block b-stat-commune">
-      <div class="b-stat-lbl">STOCK COMMUNE</div>
-      <div class="b-stat-val b-stat-val-blue" id="b-stat-stock">—</div>
-      <div class="b-stat-sub b-stat-sub-green" id="b-stat-delta">—</div>
-    </div>
     <div class="b-stat-block">
       <div class="b-stat-lbl">GRUMES EN STOCK</div>
-      <div class="b-stat-val" id="b-stat-lots">—</div>
-      <div class="b-stat-sub" id="b-stat-essences">—</div>
+      <div class="b-stat-val b-stat-val-blue" id="b-stat-grumes">—</div>
+      <div class="b-stat-sub" id="b-stat-grumes-sub">—</div>
     </div>
     <div class="b-stat-block">
-      <div class="b-stat-lbl" id="b-stat-ext-lbl">EXTRACTIONS MOIS</div>
-      <div class="b-stat-val" id="b-stat-ext-vol">—</div>
-      <div class="b-stat-sub" id="b-stat-ext-ops">—</div>
+      <div class="b-stat-lbl">CAMPAGNES DE SCIAGE</div>
+      <div class="b-stat-val" id="b-stat-camp">—</div>
+      <div class="b-stat-sub" id="b-stat-camp-sub">—</div>
+    </div>
+    <div class="b-stat-block">
+      <div class="b-stat-lbl">PRODUITS BOIS</div>
+      <div class="b-stat-val b-stat-val-blue" id="b-stat-produits">—</div>
+      <div class="b-stat-sub" id="b-stat-produits-sub">—</div>
     </div>
     <div class="b-stat-block b-stat-last">
-      <div class="b-stat-lbl">STOCK MÉTROPOLE</div>
-      <div class="b-stat-val b-stat-val-blue" id="b-stat-metro">—</div>
-      <div class="b-stat-sub" id="b-stat-metro-detail">—</div>
+      <div class="b-stat-lbl">PROJETS</div>
+      <div class="b-stat-val" id="b-stat-projets">—</div>
+      <div class="b-stat-sub" id="b-stat-projets-sub">—</div>
     </div>
-    <button class="b-deconnexion-btn" onclick="bDeconnecter()">Déconnexion</button>
+    <div class="b-header-actions">
+      <div class="b-commune-badge" id="b-commune-badge">—</div>
+      <button class="b-deconnexion-btn" onclick="bDeconnecter()">Déconnexion</button>
+    </div>
   </header>
 
-  <!-- TABS (sticky) -->
+  <!-- ONGLETS (toujours visibles) -->
   <nav class="b-tabs">
-    <button class="b-tab active" id="b-tab-commune"   onclick="bSwitchTab('commune')">Commune — <span id="b-tab-commune-nom">—</span></button>
-    <button class="b-tab"        id="b-tab-metropole" onclick="bSwitchTab('metropole')">métropole</button>
-    <button class="b-tab"        id="b-tab-export"    onclick="bSwitchTab('export')">Export</button>
-    <button class="b-tab b-tab-feedback" id="b-tab-feedback" onclick="bSwitchTab('feedback')">📋 Ticket retour</button>
+    <button class="b-tab active" id="b-tab-grumes"    onclick="bSwitchTab('grumes')">1 · Grumes</button>
+    <button class="b-tab"        id="b-tab-campagnes" onclick="bSwitchTab('campagnes')">2 · Campagnes de sciage</button>
+    <button class="b-tab"        id="b-tab-produits"  onclick="bSwitchTab('produits')">3 · Produits bois</button>
+    <button class="b-tab"        id="b-tab-projets"   onclick="bSwitchTab('projets')">4 · Projets</button>
+    <button class="b-tab"        id="b-tab-metropole" onclick="bSwitchTab('metropole')">Métropole</button>
+    <button class="b-tab"        id="b-tab-export"    onclick="bSwitchTab('export')">Export tableur</button>
+    <button class="b-tab b-tab-feedback" id="b-tab-feedback" onclick="bSwitchTab('feedback')">Ticket retour</button>
   </nav>
+
+  <!-- Bandeau : données non actualisées (pas de réseau) -->
+  <div class="b-bandeau hidden" id="b-bandeau-reseau">
+    Pas de réseau : les données affichées datent du dernier chargement. Les enregistrements se font avec réseau.
+  </div>
 
   <!-- CONTENU -->
   <main class="b-main">
 
-    <!-- ══ COMMUNE ══ -->
-    <div class="b-panel active" id="b-panel-commune">
-      <div class="b-commune-layout">
-
-        <!-- COLONNE GAUCHE — lecture -->
-        <div class="b-commune-gauche">
-          <div class="b-section-lbl">RÉPARTITION DU STOCK PAR ESSENCE</div>
-          <div class="b-commune-donut-section" id="b-commune-donut-section">
-            <div class="b-donut-wrap b-commune-donut-wrap" style="flex-shrink:0">
-              <svg class="b-donut-svg" viewBox="0 0 200 200" id="b-commune-donut-svg"></svg>
-              <div class="b-donut-center" id="b-commune-donut-center"></div>
-            </div>
-            <div class="b-commune-donut-legende" id="b-commune-donut-legende"></div>
+    <!-- ══ 1 · GRUMES ══ -->
+    <div class="b-panel active" id="b-panel-grumes">
+      <div class="b-panel-pad">
+        <div class="b-barre-titre">
+          <div class="b-section-lbl">RÉPARTITION DU STOCK DE GRUMES PAR ESSENCE</div>
+        </div>
+        <div class="b-commune-donut-section">
+          <div class="b-donut-wrap b-commune-donut-wrap">
+            <svg class="b-donut-svg" viewBox="0 0 200 200" id="b-grumes-donut-svg"></svg>
           </div>
-          <div class="b-section-lbl b-section-lbl-mt">DERNIÈRES GRUMES SAISIES</div>
-          <div class="b-table-wrap">
-            <table class="b-table" id="b-lots-table">
-              <thead>
-                <tr><th></th><th>Grume</th><th>Essence</th><th>Volume</th><th>Provenance</th><th>Date</th></tr>
-              </thead>
-              <tbody id="b-lots-tbody"></tbody>
-            </table>
-          </div>
+          <div class="b-commune-donut-legende" id="b-grumes-donut-legende"></div>
         </div>
 
-        <!-- COLONNE DROITE — extraction -->
-        <div class="b-col-ext" id="b-col-ext">
+        <div class="b-barre-titre">
+          <div class="b-section-lbl">GRUMES EN STOCK — LES PLUS URGENTES À DÉBITER D'ABORD</div>
+          <button class="b-btn b-btn-ghost" onclick="bOuvrirSortieGrume()">Sortir une grume entière (exception)</button>
+        </div>
+        <div class="b-table-wrap">
+          <table class="b-table">
+            <thead>
+              <tr><th>N° grume</th><th>Essence</th><th>Dimensions</th><th>Volume</th><th>Abattage</th><th>Provenance</th><th>Débit</th><th>État</th></tr>
+            </thead>
+            <tbody id="b-grumes-tbody"></tbody>
+          </table>
+        </div>
+        <p class="b-note">La saisie des grumes et leur numérotation se font sur le terrain, dans la version mobile.</p>
+      </div>
+    </div>
 
-          <!-- ── État repos ── -->
-          <div class="b-ext-repos" id="b-ext-repos">
-            <div class="b-cercle-wrap" onclick="bOuvrirModalExt()">
-              <div class="b-cercle">
-                <img src="../icon-512.png" alt="Duramen" class="b-cercle-logo">
-                <div class="b-cercle-label">Extraction</div>
-              </div>
-            </div>
-            <div class="b-ext-hint">Nouvelle sortie de stock</div>
-            <div class="b-stock-pills" id="b-stock-pills"></div>
-          </div>
+    <!-- ══ 2 · CAMPAGNES DE SCIAGE ══ -->
+    <div class="b-panel" id="b-panel-campagnes">
+      <div class="b-panel-pad">
+        <div class="b-barre-titre">
+          <div class="b-section-lbl">CAMPAGNES EN PRÉPARATION</div>
+          <button class="b-btn b-btn-primary" onclick="bOuvrirPreparation()">+ Préparer une campagne de sciage</button>
+        </div>
+        <div id="b-camp-ouvertes"></div>
 
+        <div class="b-barre-titre b-mt">
+          <div class="b-section-lbl">CAMPAGNES CLÔTURÉES</div>
+        </div>
+        <div class="b-table-wrap">
+          <table class="b-table">
+            <thead>
+              <tr><th>Campagne</th><th>Sciée le</th><th>Grumes sciées</th><th>Pièces obtenues</th><th>Volume de grumes</th><th>Volume de produits</th></tr>
+            </thead>
+            <tbody id="b-camp-closes-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-        </div><!-- fin col-ext -->
-      </div><!-- fin commune-layout -->
-    </div><!-- fin panel-commune -->
+    <!-- ══ 3 · PRODUITS BOIS ══ -->
+    <div class="b-panel" id="b-panel-produits">
+      <div class="b-panel-pad">
+        <div class="b-barre-titre">
+          <div class="b-section-lbl">PRODUITS BOIS EN STOCK</div>
+          <button class="b-btn b-btn-primary" onclick="bOuvrirSortieProduits()">Sortir des produits pour un projet</button>
+        </div>
+        <div class="b-table-wrap">
+          <table class="b-table">
+            <thead>
+              <tr><th>Essence</th><th>Produit</th><th>Grume d'origine</th><th>En stock</th><th>Volume</th><th>Scié le</th><th>Séchage</th></tr>
+            </thead>
+            <tbody id="b-produits-tbody"></tbody>
+          </table>
+        </div>
+        <p class="b-note">Séchage à l'air : 1 cm par an et par face. C'est une information : un produit en séchage peut être sorti.</p>
+      </div>
+    </div>
+
+    <!-- ══ 4 · PROJETS : sortie → réalisation → pose ══ -->
+    <div class="b-panel" id="b-panel-projets">
+      <div class="b-panel-pad">
+        <div class="b-barre-titre">
+          <div class="b-section-lbl">PROJETS — DU BOIS SORTI À L'OBJET POSÉ</div>
+          <select class="b-select-sm" id="b-projets-filtre" onchange="bAfficherProjets()">
+            <option value="">Toutes les étapes</option>
+            <option value="sorti">À réaliser</option>
+            <option value="realise">Réalisés, à poser</option>
+            <option value="pose">Posés</option>
+          </select>
+        </div>
+        <div id="b-projets-liste"></div>
+      </div>
+    </div>
 
     <!-- ══ MÉTROPOLE ══ -->
     <div class="b-panel" id="b-panel-metropole">
       <div class="b-metro-topbar">
-        <span class="b-metro-lecture">Lecture seule — aucune extraction ni ajout depuis cette vue</span>
+        <span class="b-metro-lecture">Lecture seule — le bois disponible dans les communes de la métropole</span>
         <div class="b-metro-filtres">
           <select class="b-select-sm" id="b-metro-filtre-commune" onchange="bAfficherMetropole()">
             <option value="">Toutes communes</option>
@@ -127,7 +180,7 @@
       </div>
       <div class="b-metro-layout">
         <div class="b-metro-gauche">
-          <div class="b-section-lbl">RÉPARTITION PAR COMMUNE</div>
+          <div class="b-section-lbl">GRUMES PAR COMMUNE</div>
           <div class="b-donut-section b-metro-donut-section">
             <div class="b-donut-wrap">
               <svg class="b-donut-svg" viewBox="0 0 200 200" id="b-donut-svg"></svg>
@@ -137,11 +190,11 @@
           </div>
         </div>
         <div class="b-metro-droite">
-          <div class="b-section-lbl">VOLUMES DISPONIBLES</div>
+          <div class="b-section-lbl">BOIS DISPONIBLE</div>
           <div class="b-table-wrap">
-            <table class="b-table" id="b-metro-table">
+            <table class="b-table">
               <thead>
-                <tr><th>Commune</th><th>Essence</th><th>Volume</th><th>Grumes</th></tr>
+                <tr><th>Commune</th><th>Essence</th><th>Grumes</th><th>Volume de grumes</th><th>Pièces de produits</th><th>Volume de produits</th></tr>
               </thead>
               <tbody id="b-metro-tbody"></tbody>
             </table>
@@ -150,56 +203,67 @@
       </div>
     </div>
 
-    <!-- ══ EXPORT ══ -->
+    <!-- ══ EXPORT TABLEUR ══ -->
     <div class="b-panel" id="b-panel-export">
-      <div class="b-breadcrumb"><span class="b-bc-badge">—</span> Paramétrez vos filtres puis exportez en CSV</div>
+      <div class="b-breadcrumb">Choisissez les données, puis exportez. Le fichier s'ouvre dans Excel ou LibreOffice.</div>
       <div class="b-export-filtres">
         <div class="b-filtre-card">
-          <div class="b-filtre-card-titre">PÉRIMÈTRE</div>
+          <div class="b-filtre-card-titre">DONNÉES</div>
           <div class="b-field">
-            <div class="b-field-lbl">SOURCE</div>
-            <select class="b-select-filtre" id="b-exp-source">
-              <option value="commune">Ma commune uniquement</option>
-              <option value="metropole">métropole (toutes les communes)</option>
+            <label class="b-field-lbl" for="b-exp-donnees">TABLEAU À EXPORTER</label>
+            <select class="b-select-filtre" id="b-exp-donnees" onchange="bMajExport()">
+              <option value="grumes_stock">Grumes en stock</option>
+              <option value="grumes_toutes">Toutes les grumes saisies, avec leur état</option>
+              <option value="campagnes">Campagnes de sciage : demandé et réalisé</option>
+              <option value="produits">Produits bois en stock</option>
+              <option value="projets">Projets : sorties, réalisation, pose</option>
+            </select>
+          </div>
+          <div class="b-field">
+            <label class="b-field-lbl" for="b-exp-source">PÉRIMÈTRE</label>
+            <select class="b-select-filtre" id="b-exp-source" onchange="bMajExport()">
+              <option value="commune">Ma commune</option>
+              <option value="metropole">Métropole (toutes les communes)</option>
             </select>
           </div>
         </div>
         <div class="b-filtre-card">
-          <div class="b-filtre-card-titre">FILTRES BOIS</div>
+          <div class="b-filtre-card-titre">FILTRES</div>
           <div class="b-field">
-            <div class="b-field-lbl">ESSENCE</div>
-            <select class="b-select-filtre" id="b-exp-essence">
+            <label class="b-field-lbl" for="b-exp-essence">ESSENCE</label>
+            <select class="b-select-filtre" id="b-exp-essence" onchange="bMajExport()">
               <option value="">Toutes essences</option>
             </select>
           </div>
           <div class="b-field">
-            <div class="b-field-lbl">ANNÉE DE COUPE</div>
-            <select class="b-select-filtre" id="b-exp-annee">
+            <label class="b-field-lbl" for="b-exp-annee" id="b-exp-annee-lbl">ANNÉE</label>
+            <select class="b-select-filtre" id="b-exp-annee" onchange="bMajExport()">
               <option value="">Toutes années</option>
             </select>
           </div>
         </div>
       </div>
       <div class="b-export-actions">
-        <button class="b-btn-export-primary" onclick="bExportSelection()">↓ Exporter la sélection</button>
+        <span class="b-export-compte" id="b-exp-compte">—</span>
+        <button class="b-btn b-btn-primary" onclick="bExporter()">↓ Exporter vers le tableur</button>
       </div>
     </div>
 
     <!-- ══ TICKET RETOUR ══ -->
     <div class="b-panel" id="b-panel-feedback">
-      <div class="b-feedback-titre">📋 Ticket retour — phase de test</div>
+      <div class="b-feedback-titre">Ticket retour — phase de test</div>
       <div class="b-feedback-card">
         <div class="b-section-lbl">TYPE DE RETOUR</div>
         <div class="b-feedback-types">
           <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'usage-design')">Usage / Design</button>
           <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'amelioration')">Amélioration</button>
-          <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'bug')">🐛 Bug</button>
+          <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'bug')">Bug</button>
           <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'message-libre')">Message libre</button>
         </div>
         <div class="b-section-lbl">VOTRE MESSAGE</div>
         <textarea class="b-feedback-textarea" id="b-feedback-message" placeholder="Décrivez votre retour en détail..."></textarea>
         <div class="b-feedback-actions">
-          <button class="b-feedback-btn-envoyer" onclick="bEnvoyerTicket()">📋 Envoyer le ticket</button>
+          <button class="b-feedback-btn-envoyer" onclick="bEnvoyerTicket()">Envoyer le ticket</button>
           <button class="b-feedback-btn-effacer" onclick="bEffacerTicket()">Effacer</button>
         </div>
       </div>
@@ -207,106 +271,16 @@
 
   </main>
 
-  <!-- FOOTER FIXE -->
+  <!-- PIED DE PAGE FIXE -->
   <footer class="b-footer">
-    <span id="b-footer-gauche">Feuille 1 sur 4 · —</span>
-    <span id="b-footer-droite">Stock : — m³ · Métropole : — m³</span>
+    <span id="b-footer-gauche">—</span>
+    <span id="b-footer-droite">—</span>
   </footer>
 
 </div><!-- fin b-app -->
 
-<!-- ─── MODALE EXTRACTION 3 ÉTAPES ─── -->
-<div id="b-mext-overlay" class="b-mext-overlay hidden" onclick="if(event.target===this)bFermerModalExt()">
-  <div class="b-mext-card">
-
-    <!-- En-tête + indicateur d'étapes -->
-    <div class="b-mext-head">
-      <div class="b-mext-head-top">
-        <div class="b-mext-titre">Extraction</div>
-        <button class="b-modal-fermer" onclick="bFermerModalExt()">✕</button>
-      </div>
-      <div class="b-mext-stepper">
-        <div class="b-mext-step-dot active" id="b-mext-dot-1">1</div>
-        <div class="b-mext-step-line" id="b-mext-line-1"></div>
-        <div class="b-mext-step-dot" id="b-mext-dot-2">2</div>
-        <div class="b-mext-step-line" id="b-mext-line-2"></div>
-        <div class="b-mext-step-dot" id="b-mext-dot-3">3</div>
-      </div>
-      <div class="b-mext-step-labels">
-        <span>Essence &amp; type</span>
-        <span>Grumes</span>
-        <span>Destination</span>
-      </div>
-    </div>
-
-    <!-- Étape 1 — Essence + Type -->
-    <div class="b-mext-body" id="b-mext-step1">
-      <div class="b-mext-section-lbl">Essence</div>
-      <div class="b-mext-chips" id="b-mext-chips"></div>
-      <div class="b-mext-section-lbl">Type de valorisation</div>
-      <div class="b-type-toggle">
-        <button class="b-type-btn active" id="b-mext-type-planches">Débit en planches</button>
-      </div>
-      <div class="b-type-desc" id="b-mext-type-desc">
-        <span class="b-type-desc-icon">🪚</span>
-        <div class="b-type-desc-txt">
-          <strong id="b-mext-type-desc-titre">Débit en planches</strong>
-          <span id="b-mext-type-desc-body">Calcul du volume utile et du déchet selon l'épaisseur de planche.</span>
-        </div>
-      </div>
-      <div class="b-mext-nav">
-        <span></span>
-        <button class="b-btn-valider-ext" id="b-mext-s1-next" onclick="bMextStep1Suivant()" disabled>Suivant →</button>
-      </div>
-    </div>
-
-    <!-- Étape 2 — Sélection des grumes + sliders -->
-    <div class="b-mext-body hidden" id="b-mext-step2">
-      <div class="b-mext-section-lbl" id="b-mext-grumes-lbl">Grumes disponibles</div>
-      <div class="b-mext-grumes-scroll" id="b-mext-grumes-list"></div>
-      <div class="b-sliders-zone" id="b-mext-sliders">
-        <div class="b-slider-row">
-          <div class="b-slider-head"><div class="b-slider-lbl">Épaisseur planche</div><div class="b-slider-val" id="b-mext-val-ep">27 mm</div></div>
-          <input type="range" class="b-slider" min="15" max="60" value="27" id="b-mext-sl-ep" oninput="bMextMajSlider('b-mext-val-ep',this.value,'mm');bMextMajVol()">
-        </div>
-        <div class="b-formule-lin">
-          <span class="b-voir-formule">Voir la formule</span>
-          <div class="b-lin-chip"><div class="b-lin-lbl">Linéaire indicatif</div><div class="b-lin-val" id="b-mext-val-lin">—</div></div>
-        </div>
-      </div>
-      <div class="b-vol-barre">
-        <div class="b-vol-bloc b-vol-extrait"><span class="b-vol-num" id="b-mext-v-ext">—</span><span class="b-vol-lbl">m³ extrait</span></div>
-        <div class="b-vol-bloc b-vol-utile" id="b-mext-bloc-utile"><span class="b-vol-num" id="b-mext-v-util">—</span><span class="b-vol-lbl">m³ utile</span></div>
-        <div class="b-vol-bloc b-vol-dechet" id="b-mext-bloc-dechet"><span class="b-vol-num" id="b-mext-v-dec">—</span><span class="b-vol-lbl">m³ déchet</span></div>
-      </div>
-      <div class="b-mext-nav">
-        <button class="b-dest-retour" onclick="bMextGoStep(1)">← Retour</button>
-        <button class="b-btn-valider-ext" id="b-mext-s2-next" onclick="bMextStep2Suivant()" disabled>Destination →</button>
-      </div>
-    </div>
-
-    <!-- Étape 3 — Destination -->
-    <div class="b-mext-body hidden" id="b-mext-step3">
-      <div class="b-dest-field">
-        <div class="b-dest-lbl">Nom du projet</div>
-        <input class="b-dest-input" type="text" id="b-mext-projet" placeholder="Ex. : Mairie de Rezé, bancs publics…">
-      </div>
-      <div class="b-dest-field">
-        <div class="b-dest-lbl">Commune d'installation</div>
-        <div class="b-dest-commune-readonly" id="b-mext-commune">—</div>
-      </div>
-      <div class="b-dest-field">
-        <div class="b-dest-lbl">Lieu <span class="b-field-opt">(optionnel)</span></div>
-        <input class="b-dest-input" type="text" id="b-mext-lieu" placeholder="Ex. : salle des fêtes, école…">
-      </div>
-      <div class="b-mext-nav">
-        <button class="b-dest-retour" onclick="bMextGoStep(2)">← Retour</button>
-        <button class="b-dest-confirmer" onclick="bMextConfirmer()">CONFIRMER</button>
-      </div>
-    </div>
-
-  </div>
-</div>
+<!-- Les fenêtres (campagne, clôture, sortie, suivi) sont construites par app.js -->
+<div id="b-modales"></div>
 
 <div id="b-toast" class="b-toast hidden"></div>
 <div id="b-loading" class="b-loading hidden"><div class="b-loading-box">Chargement...</div></div>
