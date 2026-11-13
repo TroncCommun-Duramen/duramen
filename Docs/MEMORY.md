@@ -13,6 +13,41 @@ En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une cop
 
 ---
 
+## Session 13 novembre 2026 (soir) — Version bureau refaite (branche `feat/bureau-campagnes`)
+
+En attente de validation du porteur. Rien n'est fusionné dans `main`.
+
+Décisions du porteur :
+- **Le bureau sert les ateliers de menuiserie et les responsables.** Il commence à la campagne de sciage et va jusqu'à la pose de l'objet. La saisie et la numérotation des grumes restent sur le mobile.
+- **Suivi par étapes** : chaque sortie de stock devient un projet. Bois sorti → objet réalisé → objet posé, avec date et lieu de pose.
+- **Grume entière** : gardée au bureau en exception, même règle que le mobile.
+- **Verrou dans la base** contre deux campagnes sur la même grume.
+
+Onglets du bureau : 1 · Grumes, 2 · Campagnes de sciage (préparer, feuille de débit, clôturer, supprimer), 3 · Produits bois (sortie pour un projet), 4 · Projets (suivi), Métropole, Export tableur, Ticket retour.
+
+Le bureau envoie à la base des lignes de même forme que le mobile. Les calculs passent par `DuramenCore`. `core.js` est inchangé.
+
+Export tableur (CSV, décimales à la virgule, ligne de total) : grumes en stock, toutes les grumes avec leur état, campagnes (demandé et réalisé), produits en stock, projets. Métropole possible pour les grumes en stock et les produits.
+
+Base Supabase (ajouts uniquement, déjà en place) :
+- `trg_verifier_reservation_campagne` (table `campagnes`) : refuse une campagne dont une grume est déjà dans une campagne ouverte (`GRUME DÉJÀ RÉSERVÉE`) ou déjà sortie (`GRUME DÉJÀ SORTIE`).
+- `trg_verifier_reservation` (table `extractions`) : refuse la sortie entière d'une grume prévue dans une campagne ouverte (`GRUME RÉSERVÉE PAR UNE CAMPAGNE`). Le sciage passe.
+- Ces deux verrous prennent le même verrou que les sorties de grumes (`cles|commune`) : deux enregistrements au même moment passent l'un après l'autre.
+- `extractions` : colonnes `objet`, `date_realisation`, `date_pose`, `lieu_pose`. Écrites seulement par la fonction `enregistrer_suivi_sortie(p_ids, p_objet, p_date_realisation, p_date_pose, p_lieu_pose)` : sa commune, jamais un sciage, pose après réalisation.
+- Étape d'un projet : calculée (posé si `date_pose`, réalisé si `date_realisation`, sinon à réaliser). Un projet regroupe les lignes d'une même sortie (même `date_iso`, même `destination`).
+
+Deux agents en même temps (mobile et bureau) :
+- Le bureau relit la base toutes les 2 minutes, au retour sur la fenêtre et au retour du réseau. Une fenêtre de saisie ouverte reste en place.
+- Avant chaque enregistrement, le bureau relit la base et vérifie de nouveau. Si un autre poste est passé avant, la base refuse, le bureau l'explique et reconstruit la fenêtre sur le stock réel.
+- Brouillons du bureau sous des clés à part (`duramen_bureau_draft_campagne_<commune>`, `duramen_bureau_draft_cloture_<commune>`) : aucun mélange avec le mobile ouvert sur le même poste.
+- Mobile : messages clairs pour les deux nouveaux refus et pour une campagne supprimée pendant la clôture. Cache `duramen-v57`.
+
+Points clos par cette session : grume sans numéro affichée « null », grume sciée comptée en stock, A17 (vérification sur données fraîches et refus de la base expliqués ; la session restaurée au rechargement reste à revérifier, comme A7), A18 (total sur toutes les grumes), A19 ④ pour l'export du bureau (texte commençant par `=` neutralisé). **A15 disparaît** : le bureau n'enregistre plus de « débit en planches ». Le stock de grumes est en volume brut, le stock de produits en volume réel scié.
+
+Tests : 87 vérifications dans un navigateur, base imitée, version mobile réelle à côté (parcours complet, export, 9 cas de conflit entre deux postes, sans réseau). Règles de la base rejouées en SQL puis annulées : base inchangée.
+
+---
+
 ## Session 13 novembre 2026 — Cadrage de l'application de synthèse (aucun code)
 
 Session de cadrage. Aucun fichier de l'application n'a changé.
@@ -439,6 +474,7 @@ Problèmes identifiés :
 - `cause_abattage` — cause d'abattage (écrit par `confirmerExtractionDest()`)
 - `type_sortie`, `vol_brut_extrait`, `type_valorisation`, `lineaire`, `projet`, `commune_installation` — colonnes créées le 2 juillet 2026 (le code les envoyait déjà, l'enregistrement échouait en HTTP 400)
 - `grumes_keys` — JSON des clés de grumes extraites (`lotId_positionGrume`), créée le 2 juillet 2026 (A6)
+- `objet`, `date_realisation`, `date_pose`, `lieu_pose` — suivi d'une sortie (projet), créées le 13 nov. 2026, écrites par `enregistrer_suivi_sortie`
 - `date`, `date_iso` — date de l'extraction
 
 **Table `feedbacks`**

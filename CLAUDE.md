@@ -34,7 +34,7 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 
 - `grumes` — une ligne par grume (nom VER-0000, essence, volumes, commune_code). Ex-`lots`, renommée le 3 nov. 2026
 - `extractions` — sorties de stock par essence
-- `campagnes` — campagnes de sciage (feuille de débit) : ajout et suppression seulement
+- `campagnes` — campagnes de sciage (feuille de débit) : ajout et suppression seulement. Une grume est dans une seule campagne ouverte (verrou dans la base)
 - `codes_acces` — authentification par code commune
 
 ---

@@ -5,6 +5,24 @@
 
 ---
 
+## 13 novembre 2026
+
+### Version bureau refaite — branche `feat/bureau-campagnes` (à valider)
+- `feat(bureau)` — Le bureau suit le bois de la campagne de sciage à la pose : grumes en stock, campagnes (préparer, feuille de débit, clôturer), produits bois, projets.
+- `feat(bureau)` — Projets : chaque sortie se suit en trois étapes. Bois sorti, objet réalisé, objet posé, avec date et lieu.
+- `feat(bureau)` — Export tableur : grumes, campagnes, produits, projets.
+- `feat(bureau)` — Les données se relisent toutes les 2 minutes. Avant chaque enregistrement, le bureau vérifie sur des données fraîches.
+- `refactor(bureau)` — L'ancienne extraction « débit en planches » est retirée : le débit passe par la campagne.
+- `fix(sciage)` — Mobile : message clair quand un autre poste a pris la grume juste avant.
+- `fix(sw)` — Cache duramen-v56 → duramen-v57.
+
+Base Supabase (déjà en place) :
+- Verrou `trg_verifier_reservation_campagne` : une grume est dans une seule campagne ouverte.
+- Verrou `trg_verifier_reservation` : une grume prévue en campagne ne sort pas entière.
+- Colonnes `extractions.objet`, `date_realisation`, `date_pose`, `lieu_pose` et fonction `enregistrer_suivi_sortie`.
+
+---
+
 ## 4 novembre 2026
 
 ### Saisie de grume et débit — 2 branches validées et fusionnées dans `main`

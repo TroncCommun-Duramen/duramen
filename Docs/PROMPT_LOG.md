@@ -74,6 +74,9 @@ HH:MM — [commit: abc1234] résultat final
 14:11 — Décision : bureau pour gestionnaires et menuisiers, synthèse gardée par Tronc Commun comme service
 14:13 — Décision : session bureau d'abord, synthèse ensuite
 14:17 — Mise à jour de la documentation sur GitHub et de la sauvegarde interne
+20:05 — Demande : retravailler la version bureau (ateliers de menuiserie, responsables), de la campagne de sciage à la pose des objets, avec export tableur ; mise à niveau sur le mobile ; aucun conflit entre bureau et mobile
+20:10 — Décisions : suivi par étapes (sorti, réalisé, posé), grume entière gardée en exception, verrou ajouté dans la base
+20:40 — Codage sur `feat/bureau-campagnes`, verrous et suivi dans Supabase, tests navigateur bureau + mobile
 
 ---
 

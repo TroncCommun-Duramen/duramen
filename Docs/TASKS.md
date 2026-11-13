@@ -97,8 +97,7 @@ Suites de la fusion du 3 nov. 2026 :
 | Étape | État |
 |-------|------|
 | Garder la passerelle Supabase (vue `lots`, fonction `lots_partages()`, colonne `extractions.cause_abattage`) tant que la nouvelle version n'est pas validée sur le terrain : c'est elle qui permet de revenir à l'ancienne version. Ensuite, la supprimer | En attente de validation terrain |
-| Version bureau : une grume sans numéro s'affiche « null » dans la liste des lots (`bureau/app.js`, ligne ~707). À traiter avec l'alignement du bureau ci-dessous | À faire |
-| Version bureau : elle ne connaît pas encore les campagnes ni le stock produits. Elle compte une grume sciée comme encore en stock et propose à l'extraction une grume déjà prévue dans une campagne. À aligner sur le mobile (lié à A15) | À faire — **Haute** |
+| Version bureau refaite sur la branche `feat/bureau-campagnes` : grumes, campagnes de sciage, produits bois, projets (réalisation et pose), métropole, export tableur. Verrous ajoutés dans la base. Testée dans un navigateur (87 vérifications) | **À valider par le porteur**, puis fusion dans `main` |
 
 ---
 
@@ -134,7 +133,7 @@ Suites de la fusion du 3 nov. 2026 :
 | 20 | 🟠 A17 — **Bureau moins protégé que le mobile à l'enregistrement d'une extraction** : pas de re-validation sur données fraîches avant insertion, message « STOCK INSUFFISANT » du verrou non extrait de l'erreur brute, et `bTentativeConnexion` réutilise la session locale sans re-vérifier le code côté serveur (variante bureau de A7). | Feature (bureau) | Moyenne |
 | 21 | 🟡 A18 — **Bureau : la ligne « Total » du tableau des lots n'additionne que les 10 lots affichés**, pas l'ensemble — trompeur dès que la commune dépasse 10 lots. | Feature (bureau) | Basse |
 | 22 | 🟡 A19 — Divers basse priorité relevés au scan du 7 juil. : ① rafraîchissement auto (2 min) réinitialise la date du « Bilan du stock » et les réglages débit de l'écran Extraction si aucune grume n'est encore sélectionnée (angle mort de A1) ; ~~② volumes bureau insérés sans arrondi~~ ✅ 31 oct. ; ~~③ refus de l'extraction de la totalité d'un stock~~ ✅ 31 oct. ; ④ export CSV sans neutralisation des formules Excel (nom de lot commençant par `=`) ; ⑤ `date_iso` en UTC : saisie vers minuit comptée sur le mauvais jour dans le bilan ; ⑥ code mort bureau (`ESSENCE_COULEURS`, `b-exp-commune`). | Feature | Basse |
-| 23 | **Session bureau** — Aligner le bureau sur le mobile (campagnes, stock produits, grume sans numéro) et trancher A15. Le bureau sert les gestionnaires et les menuisiers : données, graphiques, export Excel. | Feature (bureau) | **Haute** — prochaine session |
+| 23 | **Session bureau** — ✅ codée le 13 nov. 2026 sur `feat/bureau-campagnes`. A15 disparaît (plus de débit en planches au bureau). Reste : validation du porteur et fusion. | Feature (bureau) | **À valider** |
 | 24 | **Application de synthèse** (Tronc Commun seul) — Application web séparée, en lecture seule : chiffrage au prix courant, graphiques, cartes à calques, dossier PDF. Cadrage du 13 nov. 2026 dans MEMORY. À coder après la tâche 23. | Nouvelle application | Après la tâche 23 |
 | 25 | **Synthèse — éléments à réunir** : grille de prix, données réelles (point avec les agents), accès Tronc Commun en lecture sur toutes les communes, périmètre du PDF. | Porteur + Supabase | Avant la tâche 24 |
 | 26 | **Lieu d'utilisation et photos** — À chaque utilisation ou réemploi, noter le lieu et ajouter une photo de la réalisation. Alimente la carte de la synthèse. Lié aux tâches 13 et 14. | À définir | À définir |
