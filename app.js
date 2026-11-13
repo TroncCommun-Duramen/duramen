@@ -792,6 +792,12 @@ async function confirmerExtractionDest() {
       showError(refus[0]);
       await chargerDonnees();
       afficherExtraction();
+    } else if (/GRUME RÉSERVÉE|GRUME DÉJÀ SORTIE/.test(err.message)) {
+      // Un autre poste a sorti cette grume, ou l'a mise dans une campagne
+      showError('Une grume choisie vient d\'être sortie ou mise dans une campagne de sciage depuis un autre poste. Rien n\'a été enregistré.');
+      extGrumesSel = [];
+      await chargerDonnees();
+      afficherExtraction();
     } else {
       showError('Erreur : ' + err.message);
     }
@@ -1990,6 +1996,13 @@ async function enregistrerCampagne() {
   } catch (err) {
     if (err.reseau) showError('Pas de réseau : la campagne s\'enregistre avec réseau. Votre préparation est gardée.');
     else if (/GRUME SANS NUMÉRO/.test(err.message)) showError('Une grume n\'a pas encore de numéro : attribuez-le avant de la débiter.');
+    else if (/GRUME DÉJÀ RÉSERVÉE|GRUME DÉJÀ SORTIE/.test(err.message)) {
+      // Un autre poste (mobile ou bureau) a pris cette grume juste avant :
+      // la base garde le premier. La préparation est reconstruite sur le stock réel.
+      showError('Une grume choisie vient d\'être réservée ou sortie depuis un autre poste. Rien n\'a été enregistré : vérifiez votre préparation.');
+      await chargerDonnees();
+      ouvrirPreparationCampagne();
+    }
     else showError('Erreur enregistrement : ' + err.message);
   } finally {
     showLoading(false);
@@ -2325,6 +2338,11 @@ async function validerCloture(c) {
     if (err.reseau) showError('Pas de réseau : la clôture n\'a pas été envoyée. Votre saisie est gardée.');
     else if (/GRUME DÉJÀ SORTIE/.test(err.message)) showError('Une grume de la campagne est déjà sortie du stock. Rien n\'a été enregistré.');
     else if (/STOCK INSUFFISANT/.test(err.message)) showError('Le stock a changé entre-temps. Rien n\'a été enregistré.');
+    else if (/23503/.test(err.message)) {
+      showError('Cette campagne vient d\'être supprimée depuis un autre poste. Rien n\'a été enregistré.');
+      fermerCloture();
+      await chargerDonnees();
+    }
     else showError('Erreur clôture : ' + err.message);
   } finally {
     showLoading(false);
