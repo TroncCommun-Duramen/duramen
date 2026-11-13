@@ -1899,7 +1899,34 @@ window.addEventListener('online', function () {
 });
 
 // ═══════════ INIT ═══════════
+// La connexion gardée sur ce poste est revérifiée à chaque ouverture : un code
+// désactivé ou remplacé dans la base (ex. ancien LOCKELN-D7WA) renvoie à
+// l'écran de connexion, et un nom de commune changé est mis à jour.
+// Sans réseau, la connexion gardée est reprise telle quelle.
+async function bReprendreSession(session) {
+  bShowLoading(true);
+  try {
+    var data = await bRequete('rpc/verifier_code', {
+      method: 'POST', headers: Object.assign({}, bH, { 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ code_saisi: session.code })
+    }, DELAI_LECTURE_MS, 'Vérification du code');
+    if (!data || !data.length) {
+      localStorage.removeItem('duramen_bureau_session');
+      document.getElementById('b-login-erreur').textContent =
+        'Le code ' + session.code + ' n\'est plus actif. Entrez votre code d\'accès.';
+      return;
+    }
+    bCommune = { code: data[0].code, nom: data[0].commune };
+    localStorage.setItem('duramen_bureau_session', JSON.stringify(bCommune));
+  } catch (e) {
+    bCommune = session;
+  } finally {
+    bShowLoading(false);
+  }
+  bLancerApp();
+}
+
 (function () {
   var session = lireLocal('duramen_bureau_session');
-  if (session && session.code && session.nom) { bCommune = session; bLancerApp(); }
+  if (session && session.code && session.nom) bReprendreSession(session);
 })();
