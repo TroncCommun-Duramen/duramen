@@ -13,9 +13,9 @@ En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une cop
 
 ---
 
-## Session 13 novembre 2026 (soir) — Version bureau refaite (branche `feat/bureau-campagnes`)
+## Session 13 novembre 2026 (soir) — Version bureau refaite
 
-En attente de validation du porteur. Rien n'est fusionné dans `main`.
+Validée par le porteur et fusionnée dans `main` le 13 nov. 2026 (branche `feat/bureau-campagnes`, supprimée). En ligne : bureau refait, mobile en cache `duramen-v57`.
 
 Décisions du porteur :
 - **Le bureau sert les ateliers de menuiserie et les responsables.** Il commence à la campagne de sciage et va jusqu'à la pose de l'objet. La saisie et la numérotation des grumes restent sur le mobile.

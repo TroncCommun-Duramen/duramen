@@ -7,7 +7,7 @@
 
 ## 13 novembre 2026
 
-### Version bureau refaite — branche `feat/bureau-campagnes` (à valider)
+### Version bureau refaite — fusionnée dans `main`
 - `feat(bureau)` — Le bureau suit le bois de la campagne de sciage à la pose : grumes en stock, campagnes (préparer, feuille de débit, clôturer), produits bois, projets.
 - `feat(bureau)` — Projets : chaque sortie se suit en trois étapes. Bois sorti, objet réalisé, objet posé, avec date et lieu.
 - `feat(bureau)` — Export tableur : grumes, campagnes, produits, projets.

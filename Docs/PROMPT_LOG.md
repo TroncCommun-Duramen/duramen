@@ -77,6 +77,7 @@ HH:MM — [commit: abc1234] résultat final
 20:05 — Demande : retravailler la version bureau (ateliers de menuiserie, responsables), de la campagne de sciage à la pose des objets, avec export tableur ; mise à niveau sur le mobile ; aucun conflit entre bureau et mobile
 20:10 — Décisions : suivi par étapes (sorti, réalisé, posé), grume entière gardée en exception, verrou ajouté dans la base
 20:40 — Codage sur `feat/bureau-campagnes`, verrous et suivi dans Supabase, tests navigateur bureau + mobile
+23:16 — Validation du porteur : fusion de `feat/bureau-campagnes` dans `main`
 
 ---
 
