@@ -60,6 +60,21 @@ HH:MM — [commit: abc1234] résultat final
 18:07 — Codage : branches `feat/saisie-grume` et `feat/debit-epaisseurs`, base Supabase, tests navigateur
 18:27 — Validation du porteur → fusion des deux branches dans `main`, mise en ligne (cache v56)
 
+## Session 2026-11-13
+
+13:17 — Demande : application de synthèse séparée de Duramen (chiffrage, graphiques, carte à calques, dossier PDF)
+13:24 — Carte : suivre le bois de l'abattage au stockage puis à la réalisation, avec le GPS de la récolte
+13:27 — Traçabilité au sciage : suivi par pile, numéro de la grume reporté
+13:33 — Carte de la métropole : 5 styles proposés, « trait d'encre » retenu
+13:40 — 24e commune retrouvée (La Montagne), tracé de la Loire, puis trait fin unique et Loire en courbe
+13:49 — Carte par commune ; calques interactifs dans le PDF
+13:58 — Mise en page du document de synthèse et note de bas de page
+14:01 — 3 rendus de graphiques validés
+14:05 — Ce qui est utile aux agents ; vérification sur GitHub : urgence de débit et séchage déjà en place
+14:11 — Décision : bureau pour gestionnaires et menuisiers, synthèse gardée par Tronc Commun comme service
+14:13 — Décision : session bureau d'abord, synthèse ensuite
+14:17 — Mise à jour de la documentation sur GitHub et de la sauvegarde interne
+
 ---
 
 ## Voir aussi

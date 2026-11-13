@@ -6,6 +6,57 @@
 
 ---
 
+## Sauvegarde interne — coffre Obsidian
+
+La sauvegarde interne du porteur est le coffre Obsidian, sur son Mac : `Documents/Coffre Obsidian/Tronc Commun` (l'application est dans `03_Appli Duramen`).
+En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une copie du dépôt : un `git pull` dans le dossier suffit à le mettre à jour.
+
+---
+
+## Session 13 novembre 2026 — Cadrage de l'application de synthèse (aucun code)
+
+Session de cadrage. Aucun fichier de l'application n'a changé.
+
+Trois outils, trois publics (décision du porteur) :
+
+| Outil | Pour qui | Rôle |
+|-------|----------|------|
+| Duramen mobile | Agents de terrain | Saisie, urgence de débit, séchage |
+| Duramen bureau | Gestionnaires, menuisiers | Données, graphiques, export Excel |
+| Synthèse | Tronc Commun seul | Chiffrage, analyse, cartes, dossier PDF |
+
+Application de synthèse — décisions :
+- **Application web séparée** de Duramen. Elle lit la base en lecture seule.
+- **Tronc Commun garde la main** : la synthèse est un service en plus. Les communes reçoivent le PDF. La grille de prix, le chiffrage et l'analyse restent chez Tronc Commun.
+- **Chiffrage** : bois en grume brute et en produits bois, au prix courant (valeur d'achat pour les communes) à une date donnée. Grille de prix datée.
+- **Destinataires du dossier** : services nature et jardins, gestion forestière, élus.
+- **Carte à calques** : abattage (point GPS de la saisie) → stockage → réalisation (lieu noté dans Duramen à l'utilisation ou au réemploi, avec photos). Une carte métropole et une carte détaillée par commune.
+- **Style de carte retenu** : trait d'encre, un seul trait fin, 24 communes (limites officielles), Loire en courbe, prolongée un peu au-delà de la métropole.
+- **PDF** : calques interactifs pour Acrobat Reader, plus une page par calque pour les autres lecteurs.
+- **Mise en page** : couverture (Tronc Commun, date, titre « Document de synthèse — Application Duramen », carte) et pages intérieures (bandeau, 3 chiffres clés, graphique, carte, note, pagination). Pied de couverture : « Document établi par Tronc Commun. »
+- **Graphiques retenus** : barres au trait, courbe avec hachures, cernes. Encre et indigo.
+- **Note de bas de page** : « Les données présentées dans ce document proviennent exclusivement des saisies effectuées par les agents des communes dans l'application Duramen. Elles sont restituées en l'état, sans vérification ni correction. Tronc Commun ne saurait être tenu responsable des erreurs, omissions ou inexactitudes résultant de ces saisies. »
+
+Traçabilité au sciage — principe retenu :
+- Chaque grume reçoit une étiquette. Son numéro est saisi à chaque étape.
+- Sciage « en plot » : les planches d'une grume restent dans la même pile. La pile garde le numéro de la grume. Le numéro est aussi écrit en bout de planche.
+- À voir avec le scieur avant la première campagne : une pile = une grume.
+
+Pour les agents (page courte par commune) : où se trouve le bois, photos des réalisations, saisies à compléter. Les urgences de débit et le séchage sont déjà dans le mobile. Les montants en euros restent pour les services et les élus.
+
+Ordre de travail décidé :
+1. **Session bureau d'abord** : aligner le bureau sur le mobile et trancher A15 (volume brut ou volume utile). Le chiffrage de la synthèse dépend de ce choix.
+2. **Synthèse ensuite.**
+
+Il manque encore pour coder la synthèse :
+- La grille de prix (source, niveau de détail).
+- Les données réelles, après le point du porteur avec les agents.
+- Les lieux de stockage, le lieu d'utilisation et les photos dans Duramen.
+- Un accès Tronc Commun en lecture sur toutes les communes, avec l'accord des communes.
+- Le périmètre du PDF : par commune, métropole ou les deux, et la période.
+
+---
+
 ## Session 3 novembre 2026 (soir) — Campagne de sciage (branche `feat/campagne-sciage`)
 
 Décisions du porteur :
