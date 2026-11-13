@@ -8,6 +8,7 @@
 ## 13 novembre 2026
 
 ### Nouvelle présentation du bureau — fusionnée dans `main`
+- `style(bureau)` — Photo d'illustration de l'accueil (14 nov.), crédit « © Paquito Couet pour Tronc Commun ».
 - `style(bureau)` — Accueil en fiche de présentation : grand titre, emplacement d'illustration (à fournir), encadré « L'outil en bref » (conçu par Tronc Commun), accès, pied signé.
 - `style(bureau)` — Les onglets deviennent une barre latérale : parcours du bois en 4 étapes reliées, puis Métropole et Export. Chiffres clés en tuiles, titre en tête de chaque page.
 

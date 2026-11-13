@@ -82,6 +82,8 @@ HH:MM — [commit: abc1234] résultat final
 23:27 — Validation du porteur : fusion de `fix/session-bureau` dans `main`
 23:43 — Demande : présentation du bureau moins austère, inspirée d'une fiche produit (Cinna) ; encadré d'infos avec Tronc Commun ; navigation plus moderne que les onglets. Réalisé sur `feat/bureau-presentation`
 00:23 (14 nov.) — Validation du porteur : fusion de `feat/bureau-presentation` dans `main`
+00:45 — Photo d'illustration fournie (crédit Paquito Couet), ajoutée sur `feat/bureau-illustration`
+00:47 — Validation du porteur : fusion dans `main`
 
 ---
 

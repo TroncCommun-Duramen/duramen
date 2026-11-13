@@ -97,7 +97,7 @@ Suites de la fusion du 3 nov. 2026 :
 | Étape | État |
 |-------|------|
 | Garder la passerelle Supabase (vue `lots`, fonction `lots_partages()`, colonne `extractions.cause_abattage`) tant que la nouvelle version n'est pas validée sur le terrain : c'est elle qui permet de revenir à l'ancienne version. Ensuite, la supprimer | En attente de validation terrain |
-| Version bureau : mettre l'illustration de la page d'accueil (emplacement prêt dans `bureau/index.html`, image à fournir par le porteur) | En attente de l'image |
+| Version bureau : illustration de la page d'accueil (`bureau/illustration-accueil.jpg`, © Paquito Couet pour Tronc Commun) | ✅ Fait le 14 nov. 2026 |
 | Version mobile : la connexion gardée sur le téléphone n'est jamais revérifiée. Un téléphone encore connecté avec l'ancien code `LOCKELN-D7WA` affiche toujours « Lockeln ». Le bureau est corrigé (13 nov. 2026) | À faire |
 | Version bureau refaite sur la branche `feat/bureau-campagnes` : grumes, campagnes de sciage, produits bois, projets (réalisation et pose), métropole, export tableur. Verrous ajoutés dans la base. Testée dans un navigateur (87 vérifications) | ✅ Validée par le porteur et fusionnée dans `main` le 13 nov. 2026 |
 
