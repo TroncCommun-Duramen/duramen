@@ -80,6 +80,8 @@ HH:MM — [commit: abc1234] résultat final
 23:16 — Validation du porteur : fusion de `feat/bureau-campagnes` dans `main`
 23:24 — Demande : le compte Lockeln apparaît encore au bureau. Cause : connexion gardée dans le navigateur, jamais revérifiée. Correction sur `fix/session-bureau`
 23:27 — Validation du porteur : fusion de `fix/session-bureau` dans `main`
+23:43 — Demande : présentation du bureau moins austère, inspirée d'une fiche produit (Cinna) ; encadré d'infos avec Tronc Commun ; navigation plus moderne que les onglets. Réalisé sur `feat/bureau-presentation`
+00:23 (14 nov.) — Validation du porteur : fusion de `feat/bureau-presentation` dans `main`
 
 ---
 
