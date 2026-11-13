@@ -78,6 +78,8 @@ HH:MM — [commit: abc1234] résultat final
 20:10 — Décisions : suivi par étapes (sorti, réalisé, posé), grume entière gardée en exception, verrou ajouté dans la base
 20:40 — Codage sur `feat/bureau-campagnes`, verrous et suivi dans Supabase, tests navigateur bureau + mobile
 23:16 — Validation du porteur : fusion de `feat/bureau-campagnes` dans `main`
+23:24 — Demande : le compte Lockeln apparaît encore au bureau. Cause : connexion gardée dans le navigateur, jamais revérifiée. Correction sur `fix/session-bureau`
+23:27 — Validation du porteur : fusion de `fix/session-bureau` dans `main`
 
 ---
 

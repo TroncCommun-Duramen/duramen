@@ -7,6 +7,9 @@
 
 ## 13 novembre 2026
 
+### Connexion du bureau revérifiée — fusionnée dans `main`
+- `fix(bureau)` — À chaque ouverture, le code gardé est revérifié dans la base. Un code supprimé (ancien `LOCKELN-D7WA`, devenu `TC-D7WA`) renvoie à l'écran de connexion.
+
 ### Version bureau refaite — fusionnée dans `main`
 - `feat(bureau)` — Le bureau suit le bois de la campagne de sciage à la pose : grumes en stock, campagnes (préparer, feuille de débit, clôturer), produits bois, projets.
 - `feat(bureau)` — Projets : chaque sortie se suit en trois étapes. Bois sorti, objet réalisé, objet posé, avec date et lieu.
