@@ -2246,17 +2246,21 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   .sciage-modal { padding: 22px 16px; max-height: 92vh; }
 }
 
+
 /* ═══════════════════════════════════════
-   Présentation du 14 nov. 2026 : le mobile rejoint le bureau.
-   La photo du bois à l'accueil, des titres francs,
-   des libellés lisibles, des formes arrondies.
-   Tout ce bloc est visuel : il se retire d'un seul tenant.
+   Présentation du 14 nov. 2026 — version mobile
+   La photo reste à la connexion. Partout ailleurs :
+   des cartes posées sur le fond, des coins arrondis,
+   des libellés lisibles et des zones de touche larges.
+   Ce bloc est visuel : il se retire d'un seul tenant.
 ═══════════════════════════════════════ */
 
 /* ── Connexion : la photo en tête de carte, le titre à la manière du bureau ── */
 .login-card {
   background: var(--washi);
+  border: none;
   border-radius: var(--border-radius-card);
+  box-shadow: var(--ombre-posee);
   padding-top: 0;
   overflow: hidden;
   text-align: left;
@@ -2285,34 +2289,45 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 .login-input:focus { border: var(--border-active); }
 .login-btn { border-radius: var(--border-radius-inner); }
-.login-footer-links::after {
-  content: 'Photo © Paquito Couet pour Tronc Commun';
-  text-transform: none;
-  letter-spacing: 0.02em;
-}
 
-/* ── Accueil : le stock posé sur la photo du bois ── */
+/* ── Accueil : le stock dans une carte, sans image ── */
 .accueil-commune-row { padding: 8px 16px 16px; }
-.accueil-stock,
-.histo-total-block {
-  background:
-    linear-gradient(var(--overlay-dark), var(--overlay-dark)),
-    var(--sumi) url('illustration-mobile.jpg') 50% 60% / cover no-repeat;
-}
 .accueil-stock {
   margin: 0 16px 24px;
-  padding: 44px 16px 40px;
-  border-bottom: none;
+  padding: 32px 20px 28px;
+  background: var(--washi);
+  border: var(--border-thin);
+  border-bottom: var(--border-thin);
   border-radius: var(--border-radius-card);
+  box-shadow: var(--ombre-carte);
 }
-.accueil-stock-val { color: var(--washi); font-weight: var(--font-weight-medium); }
-.accueil-stock .home-stock-unit { color: var(--washi); font-size: 14px; }
+.accueil-stock-val { font-weight: var(--font-weight-medium); }
+.accueil-stock .home-stock-unit {
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--cendre);
+}
+.histo-total-block { border-radius: var(--border-radius-card); }
 .histo-total-vol,
 .histo-total-lots { font-weight: var(--font-weight-medium); }
 .histo-total-unit { font-size: 11px; opacity: 0.8; }
 
-/* ── Navigation du bas : libellés lisibles ── */
-.bnav-btn { color: var(--cendre); font-size: 11px; min-height: 56px; }
+/* ── Navigation du bas : pastille sous l'onglet ouvert, libellés lisibles ── */
+.bottom-nav { box-shadow: var(--ombre-nav); }
+.bnav-btn {
+  color: var(--cendre);
+  font-size: 11px;
+  min-height: 60px;
+  padding: 8px 4px;
+  gap: 4px;
+}
+.bnav-btn svg {
+  box-sizing: content-box;
+  padding: 4px 16px;
+  border-radius: var(--border-radius-pill);
+  transition: background 0.15s;
+}
+.bnav-btn.active svg { background: var(--indigo-clair); }
 
 /* ── Libellés : 11 à 13 px au lieu de 7 à 10 px ── */
 .field label,
@@ -2320,7 +2335,8 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .ext-section-title,
 .saisie-grumes-title,
 .saisie-annee-lbl,
-.bilan-date-lbl {
+.bilan-date-lbl,
+.feedback-section-label {
   font-size: 12px;
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.1em;
@@ -2358,24 +2374,105 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .field textarea { border-radius: var(--border-radius-inner); }
 .saisie-annee-row { border-radius: var(--border-radius-inner); padding: 12px 14px; }
 
-/* ── Boutons, encadrés, fenêtres : coins arrondis ── */
+/* ── Bascules : une seule forme, pleine largeur, 48 px de haut ── */
+.histo-toggle-bar,
+.stock-etat-bar,
+.ext-mode-bar,
+.sciage-type-bar,
+.grume-methode-toggle {
+  width: 100%;
+  background: var(--neige);
+  border: none;
+  border-radius: var(--border-radius-pill);
+  padding: 4px;
+  gap: 4px;
+}
+.histo-toggle-btn,
+.grume-methode-btn {
+  flex: 1;
+  min-height: 48px;
+  border: none;
+  border-radius: var(--border-radius-pill);
+  background: transparent;
+  color: var(--cendre);
+}
+.histo-toggle-btn { padding: 9px 16px; }
+.histo-toggle-btn.active,
+.grume-methode-btn.active {
+  background: var(--indigo);
+  color: var(--washi);
+  border-radius: var(--border-radius-pill);
+}
+
+/* ── Boutons : coins arrondis, hauteur de doigt ── */
 .btn,
-.btn-primary { border-radius: var(--border-radius-inner); }
+.btn-primary,
+.btn-outline {
+  min-height: 48px;
+  border-radius: var(--border-radius-inner);
+}
+.btn-sm, .btn-deconnexion { min-height: 0; }
+.btn-primary { box-shadow: var(--ombre-carte); }
+.saisie-add-btn,
+.saisie-btn,
+.histo-export-btn,
+.ext-valider-btn,
+.ext-sel-btn,
+.feedback-type-btn,
+.feedback-btn-envoyer,
+.feedback-btn-effacer,
+.grume-sheet-btn-ann,
+.grume-sheet-btn-save { border-radius: var(--border-radius-inner); }
+
+/* ── Cartes : fond clair, bord léger, ombre douce ── */
+.histo-lot-card,
+.grume-summary-card,
+.feedback-card,
+.bilan-stats,
+.saisie-synthese {
+  border-radius: var(--border-radius-card);
+  box-shadow: var(--ombre-carte);
+}
+.histo-lot-card,
+.grume-summary-card {
+  background: var(--washi);
+  border: var(--border-thin);
+  padding: 16px;
+}
 .info-box {
   border-left: none;
   border-radius: var(--border-radius-inner);
   padding: 12px 14px;
 }
+
+/* ── Barres de stock : plus épaisses, donc lisibles de loin ── */
+.histo-bar-track,
+.histo-bar-fill { height: 8px; border-radius: var(--border-radius-pill); }
+.histo-essence-item { padding: 16px 0; }
+
+/* ── Badges, fenêtres, messages ── */
+.histo-badge,
+.badge-urgence,
+.badge-a-debiter,
+.badge-sechage { border-radius: var(--border-radius-pill); padding: 4px 11px; }
 .extract-modal,
 .modal-nommer,
 .modal-extraction-dest {
   border-top: var(--border-thin);
   border-radius: var(--border-radius-card);
+  box-shadow: var(--ombre-posee);
 }
-.histo-badge { border-radius: var(--border-radius-pill); padding: 3px 10px; }
+#grume-sheet,
+#grume-sel-sheet {
+  border-radius: var(--border-radius-sheet) var(--border-radius-sheet) 0 0;
+  box-shadow: var(--ombre-posee);
+}
 .toast-succes,
-.toast-erreur { border-radius: var(--border-radius-pill); }
-.loading-box { border-radius: var(--border-radius-card); }
+.toast-erreur {
+  border-radius: var(--border-radius-pill);
+  box-shadow: var(--ombre-posee);
+}
+.loading-box { border-radius: var(--border-radius-card); box-shadow: var(--ombre-posee); }
 
 /* Sur téléphone : 16 px au moins pour tout ce qui se lit ou se saisit à la connexion */
 @media (max-width: 600px) {
@@ -2388,4 +2485,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   .login-btn { font-size: 1rem; letter-spacing: 0.1em; }
   .login-error { font-size: 1rem; }
   .login-footer-links { font-size: 12px; }
+
+  /* Une épaisseur de débit par ligne : « Avivé » tenait mal à côté du menu */
+  .sciage-produit-ligne { grid-template-columns: minmax(0, 1fr); }
 }

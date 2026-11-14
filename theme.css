@@ -59,6 +59,11 @@
   --blanc-alpha:    rgba(255, 255, 255, 0.12); /* icône sur bouton sumi */
   --rouge-rgb:      192, 57, 43;               /* pour dégradés rouge semi-transparent */
 
+  /* ─── Ombres portées (relief léger des cartes et des fenêtres) ─── */
+  --ombre-carte:  0 1px 2px rgba(15, 15, 14, 0.04), 0 2px 8px rgba(15, 15, 14, 0.05);
+  --ombre-posee:  0 2px 4px rgba(15, 15, 14, 0.06), 0 8px 24px rgba(15, 15, 14, 0.10);
+  --ombre-nav:    0 -1px 14px rgba(15, 15, 14, 0.07);
+
   /* ─── Couleurs d'essences (pastilles) ─── */
   --ec-chene-rouge:  #8c3b2a;   /* brique sombre */
   --ec-chene-marais: #6e7a2f;   /* olive */
