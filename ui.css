@@ -186,6 +186,10 @@ main {
 
 /* ══════════════════════
    MOBILE
+   Attention : ce bloc est écrit AVANT les règles de base qu'il modifie.
+   À priorité égale, c'est la dernière règle écrite qui gagne, donc les
+   tailles de police fixées ici sont écrasées plus bas. Le rattrapage est
+   en fin de fichier, section « Taille minimale des champs ».
 ══════════════════════ */
 @media (max-width: 600px) {
   .header-inner { padding: 12px 14px 10px; gap: 10px; }
@@ -2502,4 +2506,18 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 
   /* Une épaisseur de débit par ligne : « Avivé » tenait mal à côté du menu */
   .sciage-produit-ligne { grid-template-columns: minmax(0, 1fr); }
+}
+
+
+/* ── Taille minimale des champs sur téléphone ──────────────────────────────
+   Safari sur iPhone zoome l'écran dès qu'on touche un champ dont le texte
+   est sous 16 px. L'agent doit alors repincer l'écran à chaque saisie.
+   Ce bloc est placé en fin de fichier, après les règles de base : à
+   priorité égale, la dernière écrite l'emporte. max(16px, 1rem) garde la
+   taille choisie par l'agent dans son téléphone si elle est plus grande. */
+@media (max-width: 600px) {
+  .field input,
+  .field select,
+  .field textarea,
+  .feedback-textarea { font-size: max(16px, 1rem); }
 }
