@@ -59,10 +59,31 @@
   --blanc-alpha:    rgba(255, 255, 255, 0.12); /* icône sur bouton sumi */
   --rouge-rgb:      192, 57, 43;               /* pour dégradés rouge semi-transparent */
 
-  /* ─── Couleurs d'essences (pastilles) ─── */
-  --ec-chene-rouge:  #8c3b2a;   /* brique sombre */
-  --ec-chene-marais: #6e7a2f;   /* olive */
-  --ec-cedre:        #5b7f86;   /* bleu-vert du cèdre */
+  /* ─── Couleurs d'essences ───
+     Un ton par essence, pris sur la couleur du bois fraîchement scié.
+     Teintes sourdes : elles accompagnent le nom de l'essence, elles ne
+     crient pas. L'indigo reste l'accent de ce qu'on touche. */
+  --ec-aulne:        #AE7F63;   /* orangé du bois fraîchement coupé */
+  --ec-cedre:        #6B8287;   /* bleu-vert du cèdre */
+  --ec-chataignier:  #9C7B42;   /* miel sombre */
+  --ec-chene:        #8A6A3F;   /* ocre moyen */
+  --ec-chene-marais: #7A7046;   /* olive-ocre */
+  --ec-chene-rouge:  #93584B;   /* brique sourde */
+  --ec-cypres:       #8A977F;   /* vert gris */
+  --ec-douglas:      #A5654A;   /* rosé-brun du douglas */
+  --ec-epicea:       #96A68A;   /* blanc verdâtre */
+  --ec-frene:        #BCA47A;   /* blond */
+  --ec-hetre:        #BE9468;   /* beige rosé */
+  --ec-meleze:       #B87F3F;   /* brun orangé */
+  --ec-merisier:     #A85C45;   /* brun rosé */
+  --ec-noyer:        #5E4632;   /* brun foncé */
+  --ec-peuplier:     #A8AA92;   /* blanc grisé */
+  --ec-pin-m:        #B59260;   /* blond doré */
+  --ec-platane:      #9A8964;   /* beige moucheté */
+  --ec-robinier:     #97883D;   /* jaune-vert */
+  --ec-sequoia:      #8E4F3C;   /* rouge brique */
+  --ec-tilleul:      #BFAD7C;   /* crème */
+  --ec-autre:        #9A9A90;   /* gris neutre, essence non listée */
 
   /* ─── Impression (feuille de débit) ─── */
   --print-encre:   #000000;     /* texte et bordures imprimés */
