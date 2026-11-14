@@ -509,29 +509,6 @@ footer {
 footer span { color: var(--sumi); font-family: var(--font-display); font-weight: var(--font-weight-light); letter-spacing: 0.04em; }
 .footer-link { color: var(--cendre); text-decoration: none; letter-spacing: 0.08em; }
 
-/* ─── ESSENCE COLORS ─── */
-.ec-chene        { background: #8B6914; }
-.ec-hetre        { background: #d4a843; }
-.ec-frene        { background: #5aaa8e; }
-.ec-chataignier  { background: #7a5c2e; }
-.ec-douglas      { background: #3d6e4a; }
-.ec-meleze       { background: #e07b30; }
-
-.ec-pin-m        { background: #c49a30; }
-.ec-epicea       { background: #4A9059; }
-.ec-peuplier     { background: #78c850; }
-.ec-noyer        { background: #5c3d1f; }
-.ec-merisier     { background: #d04060; }
-.ec-aulne        { background: #6a9a50; }
-.ec-robinier     { background: #50a040; }
-.ec-sequoia      { background: #a0522d; }
-.ec-cypres       { background: #4e7a4e; }
-.ec-platane      { background: #85a855; }
-.ec-tilleul      { background: #b5cc44; }
-.ec-chene-rouge  { background: var(--ec-chene-rouge); }
-.ec-chene-marais { background: var(--ec-chene-marais); }
-.ec-cedre        { background: var(--ec-cedre); }
-.ec-autre        { background: #8a9f74; }
 
 /* ─── TOAST ERREUR ─── */
 .toast-erreur {
@@ -1854,6 +1831,43 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   margin-top: 16px;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ─── Pastille de l'essence ───
+   Un rond de la couleur du bois devant le nom, et la barre de stock au
+   même ton. Ces règles viennent après .histo-bar-fill : à poids égal,
+   la dernière écrite gagne, donc le ton d'essence remplace l'indigo. */
+.pastille-essence {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 9px;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 15, 14, 0.12);   /* les bois clairs restent visibles */
+  flex-shrink: 0;
+}
+.histo-essence-top { align-items: center; }
+
+.ec-aulne         { background: var(--ec-aulne); }
+.ec-cedre         { background: var(--ec-cedre); }
+.ec-chataignier   { background: var(--ec-chataignier); }
+.ec-chene         { background: var(--ec-chene); }
+.ec-chene-marais  { background: var(--ec-chene-marais); }
+.ec-chene-rouge   { background: var(--ec-chene-rouge); }
+.ec-cypres        { background: var(--ec-cypres); }
+.ec-douglas       { background: var(--ec-douglas); }
+.ec-epicea        { background: var(--ec-epicea); }
+.ec-frene         { background: var(--ec-frene); }
+.ec-hetre         { background: var(--ec-hetre); }
+.ec-meleze        { background: var(--ec-meleze); }
+.ec-merisier      { background: var(--ec-merisier); }
+.ec-noyer         { background: var(--ec-noyer); }
+.ec-peuplier      { background: var(--ec-peuplier); }
+.ec-pin-m         { background: var(--ec-pin-m); }
+.ec-platane       { background: var(--ec-platane); }
+.ec-robinier      { background: var(--ec-robinier); }
+.ec-sequoia       { background: var(--ec-sequoia); }
+.ec-tilleul       { background: var(--ec-tilleul); }
+.ec-autre         { background: var(--ec-autre); }
 
 /* ════════════════════════════════════════════
    CAMPAGNE DE SCIAGE · STOCK PRODUITS · FEUILLE DE DÉBIT

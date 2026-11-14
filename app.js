@@ -1203,9 +1203,13 @@ function rendreHistoriqueContenu(container, lotsData, options) {
       var d    = parEss[ess];
       var pct  = totalVol > 0 ? (d.vol / totalVol * 100) : 0;
       var item = cel('div', 'histo-essence-item');
+      // Ton du bois : classe d'essence definie dans core.js, couleur dans theme.css
+      var ton  = (DuramenCore.ESSENCES_INFO[ess] || { color: 'ec-autre' }).color;
 
       var top = cel('div', 'histo-essence-top');
-      top.appendChild(cel('span', 'histo-essence-name', ess));
+      var nom = cel('span', 'histo-essence-name', ess);
+      nom.insertBefore(cel('span', 'pastille-essence ' + ton), nom.firstChild);
+      top.appendChild(nom);
       top.appendChild(cel('span', 'histo-essence-vol', d.vol.toFixed(3) + ' m³'));
       item.appendChild(top);
 
@@ -1215,7 +1219,7 @@ function rendreHistoriqueContenu(container, lotsData, options) {
       ));
 
       var track = cel('div', 'histo-bar-track');
-      var fill  = cel('div', 'histo-bar-fill');
+      var fill  = cel('div', 'histo-bar-fill ' + ton);
       fill.style.setProperty('--barre-pct', pct.toFixed(1) + '%');
       track.appendChild(fill);
       item.appendChild(track);
