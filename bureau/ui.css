@@ -63,6 +63,16 @@ body {
   color: var(--sumi);
 }
 
+/* « version bureau » : une ligne discrète sous le nom, pas un second titre */
+.b-fiche-titre-petit {
+  display: block;
+  margin-top: 14px;
+  font-size: clamp(13px, 1.3vw, 17px);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.16em;
+  color: var(--cendre);
+}
+
 .b-fiche-accroche {
   margin-top: 28px;
   max-width: 460px;
