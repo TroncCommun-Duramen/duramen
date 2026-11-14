@@ -1166,3 +1166,107 @@ body {
   .b-export-filtres { grid-template-columns: 1fr; }
   .b-etapes { grid-template-columns: 1fr; }
 }
+
+
+/* ── Mentions légales ──────────────────────────────────────────────────────
+   Une feuille centrée, posée sur le reste de l'écran. Texte long : colonne
+   étroite, interligne large, titres de section en petites capitales. */
+#b-mentions {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: var(--neige);
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  padding: 40px 24px;
+}
+#b-mentions.hidden { display: none !important; }
+
+.b-mentions-feuille {
+  width: 100%;
+  max-width: 760px;
+  align-self: flex-start;
+  background: var(--washi);
+  border-radius: var(--border-radius-card);
+  padding: 36px 44px 28px;
+}
+
+.b-mentions-tete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 22px;
+  border-bottom: var(--border-thin);
+}
+.b-mentions-titre {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: var(--sumi);
+}
+.b-mentions-sous { margin-top: 8px; font-size: 13px; color: var(--cendre); }
+
+.b-mentions-corps { font-size: 15px; line-height: 1.75; color: var(--sumi); }
+.b-mentions-corps h2 {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cendre);
+  margin: 28px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: var(--border-thin);
+}
+.b-mentions-corps p { margin-bottom: 10px; }
+.b-mentions-corps a { color: var(--indigo); }
+
+.b-mentions-encadre {
+  background: var(--neige);
+  border-radius: var(--border-radius-inner);
+  padding: 16px 18px;
+  margin: 14px 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.b-mentions-pied {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: var(--border-thin);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Entrée de la barre latérale, au même gabarit que la déconnexion */
+.b-mentions-btn {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: var(--border-radius-inner);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--cendre);
+  text-align: left;
+  cursor: pointer;
+}
+.b-mentions-btn:hover { background: var(--neige); color: var(--sumi); }
+
+/* Lien « Mentions légales » du pied de la fiche de connexion */
+.b-fiche-pied-bloc a + a { margin-top: 2px; }
+
+@media (max-width: 900px) {
+  #b-mentions { padding: 20px 14px; }
+  .b-mentions-feuille { padding: 24px 20px 20px; }
+  .b-mentions-titre { font-size: 26px; }
+  .b-mentions-tete { flex-direction: column; }
+}

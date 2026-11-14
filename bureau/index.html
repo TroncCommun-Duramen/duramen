@@ -58,6 +58,7 @@
       <div class="b-fiche-pied-bloc">
         <span class="b-fiche-pied-lbl">Plus d'info</span>
         <a href="mailto:contact.tronccommun@gmail.com">contact.tronccommun@gmail.com</a>
+        <a href="#" onclick="bAfficherMentions();return false;">Mentions légales</a>
       </div>
       <div class="b-fiche-marque">
         <img src="../icon-192.png" alt="" class="b-fiche-logo">
@@ -98,6 +99,7 @@
 
     <div class="b-nav-bas">
       <button class="b-tab b-nav-item b-tab-feedback" id="b-tab-feedback" onclick="bSwitchTab('feedback')"><svg class="b-nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H10l-5 4z"/></svg><span>Ticket retour</span></button>
+      <button class="b-nav-item b-mentions-btn" onclick="bAfficherMentions()"><svg class="b-nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg><span>Mentions légales</span></button>
       <button class="b-nav-item b-deconnexion-btn" onclick="bDeconnecter()"><svg class="b-nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10"/></svg><span>Déconnexion</span></button>
       <div class="b-nav-signature">Un outil conçu par Tronc Commun</div>
     </div>
@@ -363,6 +365,57 @@
 
   </div><!-- fin b-contenu -->
 </div><!-- fin b-app -->
+
+<!-- ─── MENTIONS LÉGALES ─── -->
+<!-- Hors de #b-app : la page s'ouvre aussi bien depuis la fiche de connexion
+     que depuis la barre latérale, une fois la commune connectée. -->
+<div id="b-mentions" class="hidden">
+  <div class="b-mentions-feuille">
+    <div class="b-mentions-tete">
+      <div>
+        <h1 class="b-mentions-titre">Mentions légales</h1>
+        <p class="b-mentions-sous">Conditions d'utilisation · Version 1.0 — 2026</p>
+      </div>
+      <button class="b-btn b-btn-ghost" onclick="bFermerMentions()">Fermer</button>
+    </div>
+
+    <div class="b-mentions-corps">
+      <h2>1. Éditeur</h2>
+      <p><strong>Tronc Commun</strong><br>La Montagne — 44620 · <a href="mailto:contact.tronccommun@gmail.com">contact.tronccommun@gmail.com</a> · SIRET 985 323 146 00011<br>Responsable de publication : Tronc Commun</p>
+
+      <h2>2. Hébergement</h2>
+      <p><strong>GitHub Pages</strong> — GitHub, Inc., San Francisco, CA, États-Unis.</p>
+      <p><strong>Supabase</strong> — Supabase Inc. Données stockées dans l'Union européenne (région eu-west).</p>
+
+      <h2>3. Nature de l'application</h2>
+      <p>La version bureau de DURAMEN s'adresse aux ateliers de menuiserie et aux responsables des communes. Elle partage les données de la version mobile utilisée sur le terrain.</p>
+      <div class="b-mentions-encadre">DURAMEN est un <strong>outil expérimental de recensement de ressources naturelles</strong>, mis à disposition gratuitement dans le cadre d'une phase de test. Il ne constitue pas un logiciel certifié et ne saurait engager la responsabilité de son éditeur en cas d'interruption de service, de perte de données ou d'inexactitude des informations saisies.</div>
+
+      <h2>4. Données collectées</h2>
+      <p>DURAMEN ne collecte <strong>aucune donnée personnelle</strong> au sens du RGPD. Les données enregistrées sont exclusivement : volumes et essences de bois d'œuvre, noms de communes (données publiques), informations techniques sur les grumes et les produits bois, codes d'accès anonymisés.</p>
+      <p>Les données exportées vers un tableur sortent de l'application. Leur conservation et leur diffusion relèvent ensuite de la commune.</p>
+
+      <h2>5. Partage des données entre communes</h2>
+      <p>Toutes les grumes enregistrées sont <strong>partagées automatiquement</strong> avec les autres communes de la métropole. Elles les consultent en lecture seule. Seule la commune propriétaire ajoute ou extrait du bois de son stock. Les codes d'accès restent privés.</p>
+
+      <h2>6. Accès et contrôle</h2>
+      <p>L'accès est conditionné à un code d'accès communal attribué par l'éditeur. Ce code est partageable uniquement avec les agents habilités de la même commune. L'éditeur se réserve le droit de désactiver tout code sans préavis en cas d'usage non conforme.</p>
+
+      <h2>7. Responsabilité</h2>
+      <p>La responsabilité de l'éditeur ne peut être engagée en cas d'interruption de service (GitHub, Supabase), de perte de données consécutive à une défaillance technique, d'usage non conforme, ou de dommages indirects.</p>
+
+      <h2>8. Propriété intellectuelle</h2>
+      <p>L'application DURAMEN, son interface, ses graphismes et son code source sont la propriété exclusive de l'éditeur. Toute reproduction sans autorisation est interdite. La photographie de la page d'accueil est de Paquito Couet pour Tronc Commun.</p>
+
+      <h2>9. Contact</h2>
+      <p><a href="mailto:contact.tronccommun@gmail.com">contact.tronccommun@gmail.com</a></p>
+    </div>
+
+    <div class="b-mentions-pied">
+      <button class="b-btn b-btn-primary" onclick="bFermerMentions()">Retour</button>
+    </div>
+  </div>
+</div>
 
 <!-- Les fenêtres (campagne, clôture, sortie, suivi) sont construites par app.js -->
 <div id="b-modales"></div>
