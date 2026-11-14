@@ -2245,3 +2245,147 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 @media (max-width: 600px) {
   .sciage-modal { padding: 22px 16px; max-height: 92vh; }
 }
+
+/* ═══════════════════════════════════════
+   Présentation du 14 nov. 2026 : le mobile rejoint le bureau.
+   La photo du bois à l'accueil, des titres francs,
+   des libellés lisibles, des formes arrondies.
+   Tout ce bloc est visuel : il se retire d'un seul tenant.
+═══════════════════════════════════════ */
+
+/* ── Connexion : la photo en tête de carte, le titre à la manière du bureau ── */
+.login-card {
+  background: var(--washi);
+  border-radius: var(--border-radius-card);
+  padding-top: 0;
+  overflow: hidden;
+  text-align: left;
+}
+.login-card::before {
+  content: '';
+  display: block;
+  height: 176px;
+  margin: 0 -40px 28px;
+  background: var(--neige) url('illustration-mobile.jpg') 50% 60% / cover no-repeat;
+}
+.login-logo { justify-content: flex-start; margin-bottom: 16px; }
+.login-logo svg { width: 48px; height: 48px; }
+.login-title {
+  font-size: 2.4rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.01em;
+}
+.login-sub { color: var(--sumi); margin: 10px 0 28px; }
+.login-input {
+  min-height: 56px;
+  text-align: left;
+  background: var(--washi);
+  border: var(--border-field);
+  border-radius: var(--border-radius-inner);
+}
+.login-input:focus { border: var(--border-active); }
+.login-btn { border-radius: var(--border-radius-inner); }
+.login-footer-links::after {
+  content: 'Photo © Paquito Couet pour Tronc Commun';
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* ── Accueil : le stock posé sur la photo du bois ── */
+.accueil-commune-row { padding: 8px 16px 16px; }
+.accueil-stock,
+.histo-total-block {
+  background:
+    linear-gradient(var(--overlay-dark), var(--overlay-dark)),
+    var(--sumi) url('illustration-mobile.jpg') 50% 60% / cover no-repeat;
+}
+.accueil-stock {
+  margin: 0 16px 24px;
+  padding: 44px 16px 40px;
+  border-bottom: none;
+  border-radius: var(--border-radius-card);
+}
+.accueil-stock-val { color: var(--washi); font-weight: var(--font-weight-medium); }
+.accueil-stock .home-stock-unit { color: var(--washi); font-size: 14px; }
+.histo-total-vol,
+.histo-total-lots { font-weight: var(--font-weight-medium); }
+.histo-total-unit { font-size: 11px; opacity: 0.8; }
+
+/* ── Navigation du bas : libellés lisibles ── */
+.bnav-btn { color: var(--cendre); font-size: 11px; min-height: 56px; }
+
+/* ── Libellés : 11 à 13 px au lieu de 7 à 10 px ── */
+.field label,
+.histo-section-title,
+.ext-section-title,
+.saisie-grumes-title,
+.saisie-annee-lbl,
+.bilan-date-lbl {
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.1em;
+}
+.saisie-chip { font-size: 12px; padding: 6px 12px; }
+.saisie-annee-btn { font-size: 13px; }
+.saisie-synth-lbl,
+.bilan-stat-lbl,
+.ext-syn-lbl { font-size: 11px; letter-spacing: 0.08em; }
+.btn,
+.btn-sm,
+.saisie-add-btn,
+.histo-export-btn { font-size: 12px; letter-spacing: 0.08em; }
+.saisie-btn { font-size: 13px; letter-spacing: 0.08em; }
+.histo-toggle-btn { font-size: 13px; }
+
+/* ── Champs : un cadre arrondi, comme au bureau ── */
+.field input:not([type="checkbox"]):not([type="radio"]),
+.field select {
+  min-height: 48px;
+  padding: 12px 14px;
+  background-color: var(--washi);
+  border: var(--border-field);
+  border-radius: var(--border-radius-inner);
+}
+.field select {
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6b63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+.field input:not([type="checkbox"]):not([type="radio"]):focus,
+.field select:focus { border: var(--border-active); }
+.field input:not([type="checkbox"]):not([type="radio"]):not(:placeholder-shown):not(:focus) { border: var(--border-filled); }
+.field textarea { border-radius: var(--border-radius-inner); }
+.saisie-annee-row { border-radius: var(--border-radius-inner); padding: 12px 14px; }
+
+/* ── Boutons, encadrés, fenêtres : coins arrondis ── */
+.btn,
+.btn-primary { border-radius: var(--border-radius-inner); }
+.info-box {
+  border-left: none;
+  border-radius: var(--border-radius-inner);
+  padding: 12px 14px;
+}
+.extract-modal,
+.modal-nommer,
+.modal-extraction-dest {
+  border-top: var(--border-thin);
+  border-radius: var(--border-radius-card);
+}
+.histo-badge { border-radius: var(--border-radius-pill); padding: 3px 10px; }
+.toast-succes,
+.toast-erreur { border-radius: var(--border-radius-pill); }
+.loading-box { border-radius: var(--border-radius-card); }
+
+/* Sur téléphone : 16 px au moins pour tout ce qui se lit ou se saisit à la connexion */
+@media (max-width: 600px) {
+  .login-card { padding: 0 24px 28px; }
+  .login-card::before { margin: 0 -24px 24px; }
+  .login-sub { font-size: 1rem; }
+  .login-field-label { font-size: 12px; font-weight: var(--font-weight-semibold); }
+  .login-input { font-size: 1.125rem; }
+  .login-input::placeholder { font-size: 1rem; }
+  .login-btn { font-size: 1rem; letter-spacing: 0.1em; }
+  .login-error { font-size: 1rem; }
+  .login-footer-links { font-size: 12px; }
+}
