@@ -139,6 +139,25 @@ Trois branches testées en local, validées par le porteur sur téléphone, puis
 
 ---
 
+## Session 2 novembre 2026 — Scan smartphone + hors ligne, veille du lancement
+
+Test réel de l'app sur smartphone simulé (360 px et 320 px), réseau coupé puis réseau faible. Aucun débordement d'écran. Consultation hors ligne et brouillon fonctionnent.
+
+**Corrigé sur la branche `fix/envoi-hors-ligne`**, fusionnée depuis :
+- **File d'envoi hors ligne** (clé localStorage `duramen_file_envoi`) : lots et tickets validés sans réseau partent seuls au retour du réseau. Les extractions n'y passent pas : elles se font à l'atelier, avec réseau (décision du porteur).
+- **Anti-doublon** : chaque élément garde son identifiant ; un refus 23505 au renvoi signifie « déjà en base ».
+- **Réseau faible** : requêtes limitées à 15 s / 20 s ; rafraîchissement auto silencieux (`chargerDonnees({ silencieux: true })`).
+- **Tickets retour** : envoyés avec `return=minimal`. La table `feedbacks` n'a qu'une policy INSERT : demander la ligne en retour était refusé (vérifié par un essai annulé dans la base). Les tickets restent lisibles par le porteur seul, dans Supabase.
+- **Service Worker** : installation avec `cache: 'reload'`, POST hors SW, cache `duramen-v43`.
+
+**Relevé, non traité (session Design)** : A20 zoom iPhone (bloc mobile écrasé dans `ui.css`), A21 contrastes et petits textes, A22 zones tactiles, A23 déconnexion inaccessible sur mobile. Voir [[TASKS]].
+
+**Constat** : la « mémoire tampon » hors ligne n'avait jamais été codée. Elle figurait seulement dans les évolutions prévues.
+
+**Accès GitHub** : Claude est relié au compte **TroncCommun-Duramen** (le compte Paquito-app sert à l'app apnée). L'application Claude GitHub est installée sur le seul dépôt `duramen`, avec droit d'écriture. Accès permanent.
+
+---
+
 ## Session 2 juillet 2026 (après-midi) — Audit A2 : RLS Supabase — TERMINÉ ✅ (constat)
 
 ### Périmètre

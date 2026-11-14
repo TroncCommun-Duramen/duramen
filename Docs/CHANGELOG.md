@@ -31,6 +31,17 @@ Base Supabase (déjà en place) :
 
 ---
 
+## 11 novembre 2026
+
+### Alerte email à la création d'un ticket (infrastructure Supabase)
+- `feat(infra)` — Edge Function `ticket-alert` déployée : envoie un email via Resend à chaque nouveau ticket.
+- `feat(infra)` — Trigger Postgres `trg_notify_ticket_alert` sur `after insert` de la table `feedbacks`, appel asynchrone via `pg_net` (extension activée).
+- `feat(infra)` — Secret `RESEND_API_KEY` ajouté dans Supabase (Edge Functions → Secrets).
+- `fix(infra)` — Compte Resend en mode non vérifié (sandbox) : l'envoi n'est possible que vers l'adresse du compte, `contact@paquito.fr`. Pour envoyer vers une autre adresse (ex. contact.tronccommun@gmail.com), il faudra vérifier le domaine paquito.fr sur resend.com/domains.
+- Testé en conditions réelles (insertion test dans `feedbacks`, réponse 200, ligne de test supprimée ensuite).
+
+---
+
 ## 4 novembre 2026
 
 ### Saisie de grume et débit — 2 branches validées et fusionnées dans `main`
@@ -70,6 +81,18 @@ Base Supabase (déjà en place, sans effet sur la version en ligne) :
 - `fix(maj)` — Mise à jour en une seule ouverture : l'app se recharge d'elle-même quand la nouvelle version est prête, y compris au retour de l'arrière-plan.
 - `fix(sw)` — Cache incrémenté duramen-v53 → duramen-v54.
 - Point de retour : branche de sauvegarde `sauvegarde/avant-fusion-2026-11-03` (voir GIT_WORKFLOW.md).
+
+---
+
+## 2 novembre 2026
+
+### Veille du lancement — scan smartphone et hors ligne (branche `fix/envoi-hors-ligne`, fusionnée depuis)
+- `fix(hors-ligne)` — Lot ou ticket validé sans réseau : gardé sur le téléphone et envoyé automatiquement au retour du réseau. Bandeau d'attente.
+- `fix(hors-ligne)` — Anti-doublon au renvoi (identifiant conservé).
+- `fix(reseau)` — Délai maximal des requêtes Supabase (15 s / 20 s). Rafraîchissement auto sans voile bloquant.
+- `fix(ticket)` — Ticket retour envoyé sans relecture : la table `feedbacks` le refusait.
+- `fix(sw)` — Fichiers frais téléchargés à chaque mise à jour, envois hors Service Worker.
+- `fix(sw)` — Cache incrémenté duramen-v42 → duramen-v43.
 
 ---
 

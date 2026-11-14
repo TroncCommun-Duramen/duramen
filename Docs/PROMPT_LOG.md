@@ -50,6 +50,16 @@ HH:MM — [commit: abc1234] résultat final
 11:31 — Alignement des volumes au millième de m³, mise en ligne, mise à jour du coffre Obsidian
 11:39 — A12 : vérifié non fait (ni sur GitHub ni dans la base) → code secret masqué au partage
 
+## Session 2026-11-02
+
+19:21 — Scan profond avant déploiement aux communes : affichage smartphone et mode hors ligne
+20:58 — Question : pourquoi la mémoire tampon hors ligne ne fonctionne plus → constat : elle n'a jamais été codée
+21:01 — Décision : extraction faite à l'atelier, avec réseau → file d'envoi limitée aux lots (et tickets)
+21:06 — Corriger tout ce qui a été vu, sans toucher au design et sans créer de bug
+21:52 — Compte GitHub relié à Claude remplacé par TroncCommun-Duramen, application installée sur `duramen`
+22:07 — [commits: c21c8e9, 790d959] branche `fix/envoi-hors-ligne` poussée, en attente de validation
+22:10 — Mise à jour du coffre Obsidian
+
 ## Session 2026-11-04
 
 17:46 — Questions : saisie après coup (provenance, date, « inconnu »), zéros automatiques, marquage différé, blocage du débit sans numéro
@@ -59,6 +69,20 @@ HH:MM — [commit: abc1234] résultat final
 18:05 — Précision : 1 cm par an sur les 4 faces
 18:07 — Codage : branches `feat/saisie-grume` et `feat/debit-epaisseurs`, base Supabase, tests navigateur
 18:27 — Validation du porteur → fusion des deux branches dans `main`, mise en ligne (cache v56)
+
+## Session 2026-11-11
+
+07:39 — Question : les retours "ticket" apparaissent-ils dans Supabase ? → oui, table `feedbacks`
+07:44 — Demande : alerte email au compte "Tronc Commun" à chaque ticket créé
+07:52–08:01 — Essais Brevo (vérification jamais reçue) puis Brevo payant → bascule sur Resend (gratuit)
+08:16 — Secret `RESEND_API_KEY` ajouté dans Supabase par l'utilisateur
+08:17 — [Edge Function `ticket-alert` déployée] + trigger `trg_notify_ticket_alert` sur `feedbacks` (extension `pg_net` activée)
+08:18 — Test : échec, Resend bloque l'envoi hors domaine vérifié (sandbox limité à l'adresse du compte)
+08:20 — Décision : envoi simplifié vers `contact@paquito.fr` (déjà reçu sur g.photopaq@gmail.com)
+08:21 — Test réussi (200 OK), ligne de test supprimée de `feedbacks`
+08:22 — Mise à jour CHANGELOG.md et PROMPT_LOG.md, sauvegarde dans le coffre Obsidian
+
+---
 
 ## Session 2026-11-13
 
