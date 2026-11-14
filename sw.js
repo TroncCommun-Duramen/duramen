@@ -1,4 +1,4 @@
-const CACHE_NAME = 'duramen-v59';
+const CACHE_NAME = 'duramen-v60';
 
 const FICHIERS = [
   './',
@@ -9,7 +9,8 @@ const FICHIERS = [
   './app.js',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './illustration-mobile.jpg'
 ];
 
 self.addEventListener('install', function(e) {
