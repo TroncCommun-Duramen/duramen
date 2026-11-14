@@ -248,6 +248,18 @@ function bDeconnecter() {
   document.getElementById('b-login-code').value = '';
 }
 
+// ═══════════ MENTIONS LÉGALES ═══════════
+// La page couvre l'écran. Elle s'ouvre depuis la fiche de connexion comme
+// depuis la barre latérale : rien d'autre n'est masqué ni déplacé.
+function bAfficherMentions() {
+  document.getElementById('b-mentions').classList.remove('hidden');
+  document.getElementById('b-mentions').scrollTop = 0;
+}
+
+function bFermerMentions() {
+  document.getElementById('b-mentions').classList.add('hidden');
+}
+
 function bLancerApp() {
   // L'en-tête x-commune-code est exigé par les règles de la base : sans lui,
   // elle renvoie du vide sans erreur. Posé ici pour couvrir aussi la session
