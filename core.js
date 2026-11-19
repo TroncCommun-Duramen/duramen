@@ -484,8 +484,27 @@ var DuramenCore = (function () {
     return Math.max(0, Math.floor(resteCm / ((e + TRAIT_SCIE_MM) / 10)));
   }
 
+  // ═══ Corriger une grume après coup (ajout du 19 nov. 2026) ═══
+  // Ajout uniquement : aucune fonction existante n'est modifiée.
+  // Tout se corrige sauf le numéro, tant que la grume n'est dans aucune
+  // campagne de sciage et n'est pas sortie du stock. La base refait la
+  // même vérification (fonction corriger_grume dans Supabase).
+  function validerCorrectionGrume(grume) {
+    if (!grume || !grume.id) return { ok: false, erreur: 'Grume introuvable.' };
+    var campData = (typeof campagnes !== 'undefined') ? campagnes : [];
+    var enCampagne = campData.some(function (c) {
+      return (c.lignes || []).some(function (l) { return l.grume_id === grume.id; });
+    });
+    if (enCampagne)
+      return { ok: false, erreur: 'Cette grume est dans une campagne de sciage : elle ne se corrige plus.' };
+    if (clesGrumesSorties()[grume.id + '_0'])
+      return { ok: false, erreur: 'Cette grume est sortie du stock : elle ne se corrige plus.' };
+    return { ok: true, erreur: '' };
+  }
+
   // ─── API publique ─────────────────────────────────────────────────────────
   return {
+    validerCorrectionGrume: validerCorrectionGrume,
     NUMERO_GRUME_CHIFFRES: NUMERO_GRUME_CHIFFRES,
     VALEUR_INCONNUE:       VALEUR_INCONNUE,
     formaterNumeroGrume:   formaterNumeroGrume,

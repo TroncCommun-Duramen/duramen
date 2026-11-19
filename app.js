@@ -1259,13 +1259,22 @@ function rendreHistoriqueContenu(container, lotsData, options) {
         'À débiter — ' + (options.aDebiter[lot.id].nom || 'campagne')));
     }
     card.appendChild(badges);
-    if (options.marquage && !DuramenCore.estNumerotee(lot)) {
+    // Stock de ma commune : attribuer un numéro, corriger une erreur de saisie
+    if (options.marquage) {
       var actsM = cel('div', 'sciage-campagne-actions');
-      var bNum  = cel('button', 'btn btn-primary', 'Attribuer un numéro');
-      bNum.type = 'button';
-      bNum.onclick = (function (g) { return function () { ouvrirAttributionNumero(g); }; })(lot);
-      actsM.appendChild(bNum);
-      card.appendChild(actsM);
+      if (DuramenCore.validerCorrectionGrume(lot).ok) {
+        var bCor  = cel('button', 'btn btn-outline', 'Corriger');
+        bCor.type = 'button';
+        bCor.onclick = (function (g) { return function () { ouvrirCorrectionGrume(g); }; })(lot);
+        actsM.appendChild(bCor);
+      }
+      if (!DuramenCore.estNumerotee(lot)) {
+        var bNum  = cel('button', 'btn btn-primary', 'Attribuer un numéro');
+        bNum.type = 'button';
+        bNum.onclick = (function (g) { return function () { ouvrirAttributionNumero(g); }; })(lot);
+        actsM.appendChild(bNum);
+      }
+      if (actsM.firstChild) card.appendChild(actsM);
     }
     lotsList.appendChild(card);
   });
@@ -1505,6 +1514,205 @@ function ouvrirAttributionNumero(g) {
   bg.appendChild(modal);
   document.body.appendChild(bg);
   iNom.focus();
+}
+
+// ─── Corriger une grume (erreur de saisie) ───────────────────────────────
+// Tout se corrige sauf le numéro, tant que la grume n'est dans aucune
+// campagne de sciage. La correction part tout de suite : il faut du réseau.
+// La base revérifie tout (fonction corriger_grume dans Supabase).
+
+// Valeur de la liste la plus proche (place la molette sur une valeur existante)
+function valeurProche(valeurs, v) {
+  return valeurs.reduce(function (best, x) {
+    return Math.abs(x - v) < Math.abs(best - v) ? x : best;
+  }, valeurs[0]);
+}
+
+// Liste déroulante de la correction. La valeur enregistrée reste proposée,
+// même si elle ne fait plus partie des choix actuels.
+function creerChoixCorrection(id, labelTxt, options, valeur) {
+  var f   = cel('div', 'field');
+  var l   = cel('label', '', labelTxt);
+  l.htmlFor = id;
+  var sel = document.createElement('select');
+  sel.id  = id;
+  var liste = options.slice();
+  if (valeur && !liste.some(function (o) { return o[0] === valeur; })) liste.unshift([valeur, valeur]);
+  liste.forEach(function (opt) {
+    var o = document.createElement('option');
+    o.value = opt[0];
+    o.textContent = opt[1];
+    sel.appendChild(o);
+  });
+  sel.value = valeur || liste[0][0];
+  f.appendChild(l);
+  f.appendChild(sel);
+  return { field: f, select: sel };
+}
+
+function texteDateCorrection(iso) {
+  return iso ? formatDateFr(iso + 'T12:00:00') : 'inconnue';
+}
+
+function ouvrirCorrectionGrume(g) {
+  var verif = DuramenCore.validerCorrectionGrume(g);
+  if (!verif.ok) { showError(verif.erreur); return; }
+
+  var bg = document.getElementById('modal-correction-bg');
+  if (bg) bg.parentNode.removeChild(bg);
+  bg = cel('div', 'extract-modal-bg open');
+  bg.id = 'modal-correction-bg';
+  var modal = cel('div', 'extract-modal sciage-modal modal-nommer');
+  function fermer() { if (bg.parentNode) bg.parentNode.removeChild(bg); }
+
+  var avant = DuramenCore.mesuresGrume(g);
+  var mes   = {
+    longueur: valeurProche(LON_VALS, avant.longueur),
+    diametre: valeurProche(DIA_VALS, avant.diametre)
+  };
+
+  var closeBtn = cel('button', 'modal-close', '✕');
+  closeBtn.type = 'button';
+  closeBtn.onclick = fermer;
+  modal.appendChild(closeBtn);
+  modal.appendChild(cel('h2', '', 'Corriger la grume'));
+  modal.appendChild(cel('p', 'modal-sub', nomAfficheGrume(g) + ' · le numéro reste le même'));
+
+  // Essence, provenance, cause
+  var cEss = creerChoixCorrection('corr-essence', 'Essence *',
+    DuramenCore.ESSENCES_ORDRE.map(function (e) { return [e, e]; }), g.essence);
+  var cPro = creerChoixCorrection('corr-provenance', 'Provenance *', OPTIONS_PROVENANCE, g.provenance);
+  var cCau = creerChoixCorrection('corr-cause', "Cause d'abattage *", OPTIONS_CAUSE, g.cause);
+  modal.appendChild(cEss.field);
+  modal.appendChild(cPro.field);
+  modal.appendChild(cCau.field);
+
+  // Date d'abattage : laissée vide = date inconnue
+  var fDate = cel('div', 'field');
+  var lDate = cel('label', '', 'Abattue le (vide si la date est inconnue)');
+  lDate.htmlFor = 'corr-abattage';
+  var iDate = document.createElement('input');
+  iDate.type  = 'date';
+  iDate.id    = 'corr-abattage';
+  iDate.max   = jourLocalISO(new Date());
+  iDate.value = g.date_abattage || '';
+  fDate.appendChild(lDate);
+  fDate.appendChild(iDate);
+  modal.appendChild(fDate);
+
+  // Mesures : les mêmes molettes qu'à la saisie
+  var volEl = cel('div', 'grume-sheet-vol', '');
+  function majVolume() {
+    var nouveau = arrondiM3(calcVol(mes.diametre, mes.longueur));
+    var ancien  = arrondiM3(g.vol_utile || 0);
+    volEl.textContent = nouveau === ancien
+      ? formatNb(nouveau, 3) + ' m³'
+      : formatNb(ancien, 3) + ' → ' + formatNb(nouveau, 3) + ' m³';
+  }
+  var rowL = cel('div', 'grume-sheet-row');
+  rowL.appendChild(cel('div', 'grume-sheet-label', 'Longueur'));
+  var drumL = creerDrum(LON_VALS, mes.longueur,
+    function (v) { return v.toFixed(2) + ' m'; },
+    function (v) { mes.longueur = v; majVolume(); });
+  rowL.appendChild(drumL);
+  modal.appendChild(rowL);
+  var rowD = cel('div', 'grume-sheet-row');
+  rowD.appendChild(cel('div', 'grume-sheet-label', 'Ø médian'));
+  var drumD = creerDrum(DIA_VALS, mes.diametre,
+    function (v) { return v + ' cm'; },
+    function (v) { mes.diametre = v; majVolume(); });
+  rowD.appendChild(drumD);
+  modal.appendChild(rowD);
+  modal.appendChild(volEl);
+  majVolume();
+
+  // Repère
+  var fRep = cel('div', 'field');
+  var lRep = cel('label', '', 'Repère pour retrouver la grume (facultatif)');
+  lRep.htmlFor = 'corr-repere';
+  var iRep = document.createElement('input');
+  iRep.type = 'text';
+  iRep.id   = 'corr-repere';
+  iRep.maxLength    = 80;
+  iRep.autocomplete = 'off';
+  iRep.placeholder  = 'ex. 3e grume de la pile, côté portail';
+  iRep.value = g.repere || '';
+  fRep.appendChild(lRep);
+  fRep.appendChild(iRep);
+  modal.appendChild(fRep);
+
+  // Liste des changements, lue avant d'enregistrer
+  function changements(n) {
+    var liste = [];
+    function comparer(libelle, a, b) { if (String(a) !== String(b)) liste.push(libelle + ' : ' + a + ' → ' + b); }
+    comparer('Essence', g.essence || '—', n.essence);
+    comparer('Provenance', g.provenance || '—', n.provenance);
+    comparer('Cause', g.cause || '—', n.cause);
+    comparer('Abattue le', texteDateCorrection(g.date_abattage), texteDateCorrection(n.abattage));
+    comparer('Longueur', formatNb(avant.longueur, 2) + ' m', formatNb(n.longueur, 2) + ' m');
+    comparer('Diamètre', avant.diametre + ' cm', n.diametre + ' cm');
+    comparer('Volume', formatNb(g.vol_utile || 0, 3) + ' m³', formatNb(calcVol(n.diametre, n.longueur), 3) + ' m³');
+    comparer('Repère', g.repere || '—', n.repere || '—');
+    return liste;
+  }
+
+  async function valider() {
+    var n = {
+      essence:    cEss.select.value,
+      provenance: cPro.select.value,
+      cause:      cCau.select.value,
+      abattage:   iDate.value,
+      repere:     iRep.value.trim(),
+      longueur:   mes.longueur,
+      diametre:   mes.diametre
+    };
+    if (n.abattage && (n.abattage > jourLocalISO(new Date()) || n.abattage < '2000-01-01')) {
+      showError('Date d\'abattage invalide : elle ne peut pas être dans le futur.'); return;
+    }
+    var liste = changements(n);
+    if (liste.length === 0) { fermer(); showToastSucces('Aucun changement.'); return; }
+    if (!confirm('Enregistrer ces corrections ?\n\n' + liste.join('\n'))) return;
+    try {
+      showLoading(true);
+      await sbRpc('corriger_grume', {
+        p_id: g.id, p_essence: n.essence, p_provenance: n.provenance, p_cause: n.cause,
+        p_date_abattage: n.abattage || null, p_repere: n.repere,
+        p_longueur: n.longueur, p_diametre: n.diametre
+      });
+      fermer();
+      await chargerDonnees();
+      showToastSucces(nomAfficheGrume(g) + ' corrigée.');
+    } catch (err) {
+      if (err.reseau) showError('Pas de réseau : la correction se fait avec réseau.');
+      else if (/CAMPAGNE/.test(err.message)) showError('Cette grume vient d\'entrer dans une campagne de sciage : elle ne se corrige plus.');
+      else if (/SORTIE/.test(err.message)) showError('Cette grume est sortie du stock : elle ne se corrige plus.');
+      else if (/INTROUVABLE/.test(err.message)) showError('Grume introuvable : rechargez la page.');
+      else showError('Erreur : ' + err.message);
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  var acts = cel('div', 'flex-end');
+  var bRet = cel('button', 'btn btn-outline', '← Retour');
+  bRet.type = 'button';
+  bRet.onclick = fermer;
+  var bOk = cel('button', 'btn btn-primary', 'Enregistrer');
+  bOk.type = 'button';
+  bOk.onclick = valider;
+  acts.appendChild(bRet);
+  acts.appendChild(bOk);
+  modal.appendChild(acts);
+  // Pas de « glisser vers le bas pour fermer » ici : les molettes se
+  // tournent au doigt, la fenêtre se fermerait en pleine correction.
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+
+  // Placer les molettes une fois la fenêtre affichée
+  setTimeout(function () {
+    if (drumL._init) drumL._init();
+    if (drumD._init) drumD._init();
+  }, 30);
 }
 
 // ─── Bascule Grumes brutes / Produits bois ───────────────────────────────
@@ -3134,6 +3342,21 @@ function nouvRestaurerBrouillon() {
 }
 
 // ─── Helper : créer un champ select dans la grille ────────────────────────
+// Choix de provenance et de cause : les mêmes à la saisie et à la correction
+var OPTIONS_PROVENANCE = [
+  ['Alignement', 'Alignement urbain'], ['Bosquet', 'Bosquet'],
+  ['Forêt', 'Forêt'], ['Haie bocagère', 'Haie bocagère'], ['Parc', 'Parc municipal'],
+  ['Autre', 'Autre'], ['Inconnue', 'Inconnue']
+];
+var OPTIONS_CAUSE = [
+  ['Coupe sanitaire', 'Coupe sanitaire'],
+  ['Intempérie', 'Intempérie (chablis, neige…)'],
+  ['Aménagement', 'Aménagement urbain'],
+  ['Coupe sécuritaire', 'Coupe sécuritaire'],
+  ['Gestion durable', 'Gestion durable'],
+  ['Autre', 'Autre'], ['Inconnue', 'Inconnue']
+];
+
 function creerSelectSaisie(id, labelTxt, options) {
   var f   = cel('div', 'field');
   var l   = cel('label', '', labelTxt);
@@ -3204,21 +3427,10 @@ function initialiserPanelSaisie() {
   selGrid.appendChild(creerSelectSaisie('saisie-essence', 'Essence *',
     [['', '— Choisir —']].concat(DuramenCore.ESSENCES_ORDRE.map(function (e) { return [e, e]; }))
   ));
-  selGrid.appendChild(creerSelectSaisie('saisie-provenance', 'Provenance *', [
-    ['', '— Choisir —'],
-    ['Alignement', 'Alignement urbain'], ['Bosquet', 'Bosquet'],
-    ['Forêt', 'Forêt'], ['Haie bocagère', 'Haie bocagère'], ['Parc', 'Parc municipal'],
-    ['Autre', 'Autre'], ['Inconnue', 'Inconnue']
-  ]));
-  selGrid.appendChild(creerSelectSaisie('saisie-cause', "Cause d'abattage *", [
-    ['', '— Choisir —'],
-    ['Coupe sanitaire', 'Coupe sanitaire'],
-    ['Intempérie', 'Intempérie (chablis, neige…)'],
-    ['Aménagement', 'Aménagement urbain'],
-    ['Coupe sécuritaire', 'Coupe sécuritaire'],
-    ['Gestion durable', 'Gestion durable'],
-    ['Autre', 'Autre'], ['Inconnue', 'Inconnue']
-  ]));
+  selGrid.appendChild(creerSelectSaisie('saisie-provenance', 'Provenance *',
+    [['', '— Choisir —']].concat(OPTIONS_PROVENANCE)));
+  selGrid.appendChild(creerSelectSaisie('saisie-cause', "Cause d'abattage *",
+    [['', '— Choisir —']].concat(OPTIONS_CAUSE)));
   panel.appendChild(selGrid);
 
   // ── Section grumes ──────────────────────────────────────────────────
