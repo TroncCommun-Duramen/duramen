@@ -2731,22 +2731,22 @@ var DRUM_H = 40;
 // ─── Valeurs des molettes ─────────────────────────────────────────────────
 function genLongueurs() {
   var v = [];
-  for (var i = 0; i <= 106; i++) v.push(+(1.70 + i * 0.05).toFixed(2));
+  for (var i = 0; i <= 206; i++) v.push(+(1.70 + i * 0.05).toFixed(2));
   return v;
 }
 function genDiametres() {
   var v = [];
-  for (var i = 20; i <= 70; i++) v.push(i);
+  for (var i = 20; i <= 150; i++) v.push(i);
   return v;
 }
-var LON_VALS = genLongueurs(); // 1.70 → 7.00, pas 0.05 m
-var DIA_VALS = genDiametres(); // 20 → 70, pas 1 cm
+var LON_VALS = genLongueurs(); // 1.70 → 12.00, pas 0.05 m
+var DIA_VALS = genDiametres(); // 20 → 150, pas 1 cm
 function genCirconferences() {
   var v = [];
-  for (var i = 63; i <= 220; i++) v.push(i);
+  for (var i = 63; i <= 471; i++) v.push(i);
   return v;
 }
-var CIRC_VALS = genCirconferences(); // 63 → 220 cm, équivalent 20→70 cm de diamètre
+var CIRC_VALS = genCirconferences(); // 63 → 471 cm, équivalent 20→150 cm de diamètre
 
 // ─── Volume d'une grume ── V = π × (d/200)² × L ──────────────────────────
 function calcVol(d, l) { return Math.PI * Math.pow(d / 200, 2) * l; }
