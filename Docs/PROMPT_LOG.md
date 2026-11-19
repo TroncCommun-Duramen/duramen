@@ -118,6 +118,9 @@ HH:MM — [commit: abc1234] résultat final
 18:22 — [commit: 5728d14] Diamètre 150 cm, circonférence 471 cm, longueur 12 m. Cache v64
 18:22 — Validation du porteur : fusion de `feat/corriger-grume` dans `main`, branche supprimée par le porteur
 23:18 — Mise à jour de la documentation sur GitHub et de la sauvegarde interne
+23:21 — Texte de mail pour annoncer la correction aux communes
+23:27 — Demande : la correction aussi sur la version bureau, et la sauvegarde sur l'ordinateur
+23:40 — [commit: 2c68dfd] Bouton « Corriger » dans l'onglet Grumes du bureau, sur `feat/bureau-corriger-grume`. En attente de validation
 
 ---
 
