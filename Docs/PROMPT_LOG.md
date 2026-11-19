@@ -109,6 +109,16 @@ HH:MM — [commit: abc1234] résultat final
 00:45 — Photo d'illustration fournie (crédit Paquito Couet), ajoutée sur `feat/bureau-illustration`
 00:47 — Validation du porteur : fusion dans `main`
 
+## Session 2026-11-19
+
+17:56 — Premier ticket retour : on ne peut pas modifier une grume enregistrée (ex. diamètre mal saisi). Proposition demandée avant tout
+18:07 — Validation : tout se corrige sauf le numéro, jusqu'à l'entrée dans une campagne de sciage. Attribuer un numéro après coup : déjà possible
+18:15 — [commit: 7cc684d] Bouton « Corriger » sur `feat/corriger-grume`, fonction `corriger_grume` dans Supabase, tests base et navigateur
+18:21 — Demande : élargir les molettes de mesure
+18:22 — [commit: 5728d14] Diamètre 150 cm, circonférence 471 cm, longueur 12 m. Cache v64
+18:22 — Validation du porteur : fusion de `feat/corriger-grume` dans `main`, branche supprimée par le porteur
+23:18 — Mise à jour de la documentation sur GitHub et de la sauvegarde interne
+
 ---
 
 ## Voir aussi

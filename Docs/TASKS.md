@@ -87,6 +87,8 @@
 | `feat/debit-epaisseurs` fusionnée : épaisseurs 27/34/41/54 + « Autre » (10–150 mm), plusieurs épaisseurs par grume, séchage 1 cm/an par face ✅ | `core.js`, `app.js` | 4 novembre 2026 |
 | Tests navigateur sur la version fusionnée (base imitée) + règles de la base testées dans Supabase ✅ | — | 4 novembre 2026 |
 | Cache SW incrémenté `duramen-v54` → `duramen-v56` ✅ | `sw.js` | 4 novembre 2026 |
+| Premier ticket retour : corriger une grume après une erreur de saisie. Bouton « Corriger » sur chaque grume du stock de sa commune. Tout se corrige sauf le numéro, tant que la grume n'est dans aucune campagne de sciage. Le volume se recalcule. Fusionné ✅ | `core.js`, `app.js` + Supabase | 19 novembre 2026 |
+| Molettes de mesure élargies : diamètre jusqu'à 150 cm, circonférence jusqu'à 471 cm, longueur jusqu'à 12 m. Saisie et correction. Fusionné, cache `duramen-v64` ✅ | `app.js`, `sw.js` | 19 novembre 2026 |
 
 ---
 

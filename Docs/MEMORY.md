@@ -8,8 +8,38 @@
 
 ## Sauvegarde interne — coffre Obsidian
 
-La sauvegarde interne du porteur est le coffre Obsidian, sur son Mac : `Documents/Coffre Obsidian/Tronc Commun` (l'application est dans `03_Appli Duramen`).
+La sauvegarde interne du porteur est le coffre Obsidian, sur son Mac : `Documents/Coffre Obsidian/Tronc Commun` (l'application est dans `01-Projet/Appli Duramen`).
 En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une copie du dépôt : un `git pull` dans le dossier suffit à le mettre à jour.
+
+---
+
+## Session 19 novembre 2026 — Corriger une grume (premier ticket retour)
+
+Validée par le porteur et fusionnée dans `main` le 19 nov. 2026 (branche `feat/corriger-grume`). Mobile en cache `duramen-v64`.
+
+Le ticket : une grume enregistrée ne pouvait plus changer (ex. diamètre mal saisi).
+
+Décisions du porteur :
+- **Tout se corrige sauf le numéro** : essence, provenance, cause, date d'abattage, longueur, diamètre, repère.
+- **Jusqu'à l'entrée dans une campagne de sciage.** Ensuite la grume ne se corrige plus. Une grume sortie du stock non plus.
+- **Molettes de mesure élargies** : diamètre 20 → 150 cm, circonférence 63 → 471 cm, longueur 1,70 → 12 m. Saisie et correction.
+
+Le numéro s'attribuait déjà après coup : bouton « Attribuer un numéro » sur une grume « En attente de marquage ».
+
+Comment ça marche :
+- Bouton « Corriger » sur chaque grume du stock de sa commune. Absent sur une grume en campagne (badge « À débiter »).
+- La fenêtre reprend les valeurs enregistrées et les molettes de la saisie. Le volume se recalcule en direct.
+- Avant d'enregistrer, l'agent lit la liste des changements et confirme.
+- Il faut du réseau, comme pour attribuer un numéro.
+- `core.js` : ajout de `validerCorrectionGrume(grume)`. Aucune fonction existante modifiée.
+- `app.js` : listes provenance et cause mises en commun (`OPTIONS_PROVENANCE`, `OPTIONS_CAUSE`) pour la saisie et la correction.
+
+Base Supabase (ajout uniquement) :
+- Fonction `corriger_grume(p_id, p_essence, p_provenance, p_cause, p_date_abattage, p_repere, p_longueur, p_diametre)`. Elle vérifie la commune, refuse une grume en campagne (`GRUME DANS UNE CAMPAGNE`) ou sortie (`GRUME DÉJÀ SORTIE`), une date future, un champ vide. Elle recalcule le volume.
+- Même verrou que la création d'une campagne (`cles|commune`) : les deux passent l'un après l'autre.
+- La table `grumes` reste fermée aux modifications directes.
+
+Tests : règles de la base rejouées en SQL puis annulées, base inchangée. Navigateur avec base imitée : bons boutons, volume juste, carte mise à jour, molettes jusqu'au bout.
 
 ---
 
