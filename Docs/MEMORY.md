@@ -41,7 +41,7 @@ Base Supabase (ajout uniquement) :
 
 Tests : règles de la base rejouées en SQL puis annulées, base inchangée. Navigateur avec base imitée : bons boutons, volume juste, carte mise à jour, molettes jusqu'au bout.
 
-Version bureau (branche `feat/bureau-corriger-grume`, en attente de validation) :
+Version bureau (branche `feat/bureau-corriger-grume`, validée et fusionnée le 19 nov. 2026) :
 - Bouton « Corriger » dans la colonne État de l'onglet Grumes. Absent sur une grume en campagne.
 - Champs de saisie au clavier. Mêmes bornes que les molettes du mobile. Longueur arrondie à 5 cm.
 - Juste avant l'envoi, le bureau relit la base. Si la grume a été corrigée depuis un autre poste, la fenêtre se rouvre sur les nouvelles valeurs : rien n'est écrasé.

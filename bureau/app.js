@@ -550,6 +550,14 @@ function bAfficherGrumes() {
     if (reservees[g.id])                      etat = el('span', 'b-badge b-badge-campagne', 'À débiter — ' + (reservees[g.id].nom || 'campagne'));
     else if (!DuramenCore.estNumerotee(g))    etat = el('span', 'b-badge b-badge-alerte', 'En attente de marquage');
     else                                      etat = el('span', 'b-badge b-badge-neutre', 'En stock');
+    // Correction possible tant que la grume n'est dans aucune campagne
+    if (DuramenCore.validerCorrectionGrume(g).ok) {
+      var cellEtat = el('div', 'b-debit-ligne');
+      cellEtat.appendChild(etat);
+      cellEtat.appendChild(bouton('b-btn b-btn-ghost b-btn-petit', 'Corriger',
+        (function (id) { return function () { bOuvrirCorrectionGrume(id); }; })(g.id)));
+      etat = cellEtat;
+    }
     var nom = DuramenCore.estNumerotee(g) ? g.nom : (g.repere ? '— (repère : ' + g.repere + ')' : '—');
     tbody.appendChild(bTr([
       { t: nom, cls: 'b-essence-nom' }, g.essence || '—', texteDimensions(g),
@@ -558,6 +566,171 @@ function bAfficherGrumes() {
     ]));
   });
   tbody.appendChild(bTr([pl(grumes.length, 'grume'), '', '', { t: m3(total), cls: 'b-vol' }, '', '', '', ''], 'b-tr-total'));
+}
+
+// ─── Corriger une grume (erreur de saisie) ───────────────────────────────
+// Mêmes règles que la version mobile : tout se corrige sauf le numéro, tant
+// que la grume n'est dans aucune campagne de sciage. La base revérifie tout
+// (fonction corriger_grume dans Supabase).
+
+// Mêmes choix que la saisie sur le mobile
+var B_OPTIONS_PROVENANCE = [
+  ['Alignement', 'Alignement urbain'], ['Bosquet', 'Bosquet'],
+  ['Forêt', 'Forêt'], ['Haie bocagère', 'Haie bocagère'], ['Parc', 'Parc municipal'],
+  ['Autre', 'Autre'], ['Inconnue', 'Inconnue']
+];
+var B_OPTIONS_CAUSE = [
+  ['Coupe sanitaire', 'Coupe sanitaire'],
+  ['Intempérie', 'Intempérie (chablis, neige…)'],
+  ['Aménagement', 'Aménagement urbain'],
+  ['Coupe sécuritaire', 'Coupe sécuritaire'],
+  ['Gestion durable', 'Gestion durable'],
+  ['Autre', 'Autre'], ['Inconnue', 'Inconnue']
+];
+// Mêmes bornes que les molettes du mobile
+var B_LONGUEUR_MIN = 1.70, B_LONGUEUR_MAX = 12;
+var B_DIAMETRE_MIN = 20,   B_DIAMETRE_MAX = 150;
+
+// Liste déroulante : la valeur enregistrée reste proposée, même hors liste
+function bSelectCorrection(options, valeur) {
+  var s = document.createElement('select');
+  s.className = 'b-input';
+  var liste = options.slice();
+  if (valeur && !liste.some(function (o) { return o[0] === valeur; })) liste.unshift([valeur, valeur]);
+  liste.forEach(function (o) {
+    var opt = el('option', '', o[1]);
+    opt.value = o[0];
+    s.appendChild(opt);
+  });
+  s.value = valeur || liste[0][0];
+  return s;
+}
+
+// Ce que montre la fenêtre à l'ouverture : sert à voir si un autre poste
+// a corrigé la même grume pendant la saisie.
+function bEtatGrume(g) {
+  var m = DuramenCore.mesuresGrume(g);
+  return [g.essence, g.provenance, g.cause, g.date_abattage || '', g.repere || '', m.longueur, m.diametre].join('|');
+}
+
+function bTexteDateCorrection(iso) { return iso ? fmtDate(iso) : 'inconnue'; }
+
+function bOuvrirCorrectionGrume(id) {
+  var g = lots.find(function (x) { return x.id === id; });
+  if (!g) { bShowToast('Cette grume n\'est plus dans la liste.', true); return; }
+  var verif = DuramenCore.validerCorrectionGrume(g);
+  if (!verif.ok) { bShowToast(verif.erreur, true); return; }
+  var vu    = bEtatGrume(g);
+  var avant = DuramenCore.mesuresGrume(g);
+  var md = bOuvrirModale('Corriger la grume — ' + nomGrume(g),
+    'Tout se corrige sauf le numéro. Le volume se recalcule.');
+
+  var sEss = bSelectCorrection(DuramenCore.ESSENCES_ORDRE.map(function (e) { return [e, e]; }), g.essence);
+  var sPro = bSelectCorrection(B_OPTIONS_PROVENANCE, g.provenance);
+  var sCau = bSelectCorrection(B_OPTIONS_CAUSE, g.cause);
+  var iDate = bInput('date', g.date_abattage || '', { max: jourISO() });
+  var iLon  = bInput('number', avant.longueur, { min: B_LONGUEUR_MIN, max: B_LONGUEUR_MAX, step: '0.05' });
+  var iDia  = bInput('number', avant.diametre, { min: B_DIAMETRE_MIN, max: B_DIAMETRE_MAX, step: '1' });
+  var iRep  = bInput('text', g.repere || '', { placeholder: 'Ex. : 3e grume de la pile, côté portail', maxlength: '80' });
+
+  md.corps.appendChild(bChamp('Essence', sEss));
+  md.corps.appendChild(bChamp('Provenance', sPro));
+  md.corps.appendChild(bChamp('Cause d\'abattage', sCau));
+  md.corps.appendChild(bChamp('Abattue le (vide si la date est inconnue)', iDate, 'b-champ-court'));
+  var mesures = el('div', 'b-debit-ligne');
+  mesures.appendChild(bChamp('Longueur (m) · ' + fmtNb(B_LONGUEUR_MIN, 2) + ' à ' + B_LONGUEUR_MAX, iLon, 'b-champ-court'));
+  mesures.appendChild(bChamp('Diamètre (cm) · ' + B_DIAMETRE_MIN + ' à ' + B_DIAMETRE_MAX, iDia, 'b-champ-court'));
+  md.corps.appendChild(mesures);
+  md.corps.appendChild(bChamp('Repère pour retrouver la grume (facultatif)', iRep));
+
+  // Volume recalculé en direct
+  var synth = el('div', 'b-synthese', '');
+  function lireMesures() {
+    return {
+      longueur: Math.round((parseFloat(String(iLon.value).replace(',', '.')) || 0) * 20) / 20,
+      diametre: Math.round(parseFloat(String(iDia.value).replace(',', '.')) || 0)
+    };
+  }
+  function majVolume() {
+    var m = lireMesures();
+    var ancien = arrondiM3(g.vol_utile || 0);
+    var nouveau = arrondiM3(calcVol(m.diametre, m.longueur));
+    synth.textContent = nouveau === ancien ? 'Volume : ' + m3(nouveau) : 'Volume : ' + m3(ancien) + ' → ' + m3(nouveau);
+  }
+  iLon.oninput = majVolume;
+  iDia.oninput = majVolume;
+  majVolume();
+
+  md.pied.appendChild(synth);
+  md.pied.appendChild(bouton('b-btn b-btn-ghost', 'Annuler', bFermerModale));
+  md.pied.appendChild(bouton('b-btn b-btn-primary', 'Enregistrer', function () {
+    var m = lireMesures();
+    bEnregistrerCorrection(g, vu, {
+      essence: sEss.value, provenance: sPro.value, cause: sCau.value,
+      abattage: iDate.value, repere: iRep.value.trim(),
+      longueur: m.longueur, diametre: m.diametre
+    });
+  }));
+}
+
+async function bEnregistrerCorrection(g, vu, n) {
+  if (!(n.longueur >= B_LONGUEUR_MIN && n.longueur <= B_LONGUEUR_MAX)) {
+    bShowToast('Longueur entre ' + fmtNb(B_LONGUEUR_MIN, 2) + ' et ' + B_LONGUEUR_MAX + ' m.', true); return;
+  }
+  if (!(n.diametre >= B_DIAMETRE_MIN && n.diametre <= B_DIAMETRE_MAX)) {
+    bShowToast('Diamètre entre ' + B_DIAMETRE_MIN + ' et ' + B_DIAMETRE_MAX + ' cm.', true); return;
+  }
+  if (n.abattage && (n.abattage > jourISO() || n.abattage < '2000-01-01')) {
+    bShowToast('Date d\'abattage invalide : elle ne peut pas être dans le futur.', true); return;
+  }
+
+  // Liste des changements, lue avant d'enregistrer
+  var avant = DuramenCore.mesuresGrume(g);
+  var liste = [];
+  function comparer(libelle, a, b) { if (String(a) !== String(b)) liste.push(libelle + ' : ' + a + ' → ' + b); }
+  comparer('Essence', g.essence || '—', n.essence);
+  comparer('Provenance', g.provenance || '—', n.provenance);
+  comparer('Cause', g.cause || '—', n.cause);
+  comparer('Abattue le', bTexteDateCorrection(g.date_abattage), bTexteDateCorrection(n.abattage));
+  comparer('Longueur', fmtNb(avant.longueur, 2) + ' m', fmtNb(n.longueur, 2) + ' m');
+  comparer('Diamètre', avant.diametre + ' cm', n.diametre + ' cm');
+  comparer('Volume', m3(g.vol_utile), m3(calcVol(n.diametre, n.longueur)));
+  comparer('Repère', g.repere || '—', n.repere || '—');
+  if (liste.length === 0) { bFermerModale(); bShowToast('Aucun changement.'); return; }
+  if (!confirm('Enregistrer ces corrections ?\n\n' + liste.join('\n'))) return;
+
+  bShowLoading(true);
+  try {
+    // Données fraîches : un agent sur le terrain a pu corriger la grume
+    // ou la mettre dans une campagne pendant la saisie.
+    if (!await bChargerDonnees({ interne: true })) { bShowToast('Pas de réseau : la correction se fait avec réseau.', true); return; }
+    var frais = lots.find(function (x) { return x.id === g.id; });
+    if (!frais) { bShowToast('Cette grume n\'est plus dans la base. Rien n\'a été enregistré.', true); bFermerModale(); return; }
+    var verif = DuramenCore.validerCorrectionGrume(frais);
+    if (!verif.ok) { bShowToast(verif.erreur + ' Rien n\'a été enregistré.', true); bFermerModale(); return; }
+    if (bEtatGrume(frais) !== vu) {
+      bShowToast('Cette grume vient d\'être corrigée depuis un autre poste. Vérifiez, puis enregistrez de nouveau.', true);
+      bOuvrirCorrectionGrume(g.id);
+      return;
+    }
+    await bSbRpc('corriger_grume', {
+      p_id: g.id, p_essence: n.essence, p_provenance: n.provenance, p_cause: n.cause,
+      p_date_abattage: n.abattage || null, p_repere: n.repere,
+      p_longueur: n.longueur, p_diametre: n.diametre
+    });
+    vider(document.getElementById('b-modales'));
+    await bChargerDonnees({ interne: true });
+    bShowToast(nomGrume(g) + ' corrigée.');
+  } catch (err) {
+    var m = err.message || '';
+    if (err.reseau)                  bShowToast('Pas de réseau : rien n\'a été enregistré. Réessayez avec réseau.', true);
+    else if (/CAMPAGNE/.test(m))     { bShowToast('Cette grume vient d\'entrer dans une campagne de sciage : elle ne se corrige plus.', true); bFermerModale(); await bChargerDonnees({ interne: true }); }
+    else if (/SORTIE/.test(m))       { bShowToast('Cette grume vient de sortir du stock : elle ne se corrige plus.', true); bFermerModale(); await bChargerDonnees({ interne: true }); }
+    else if (/INTROUVABLE/.test(m))  bShowToast('Grume introuvable : rechargez la page.', true);
+    else                             bShowToast('Erreur : ' + m, true);
+  } finally {
+    bShowLoading(false);
+  }
 }
 
 // ─── Sortie d'une grume entière (exception : rondins, pas japonais…) ──────

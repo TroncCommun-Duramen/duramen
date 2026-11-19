@@ -121,6 +121,7 @@ HH:MM — [commit: abc1234] résultat final
 23:21 — Texte de mail pour annoncer la correction aux communes
 23:27 — Demande : la correction aussi sur la version bureau, et la sauvegarde sur l'ordinateur
 23:40 — [commit: 2c68dfd] Bouton « Corriger » dans l'onglet Grumes du bureau, sur `feat/bureau-corriger-grume`. En attente de validation
+23:35 — Validation du porteur : fusion de `feat/bureau-corriger-grume` dans `main`
 
 ---
 
