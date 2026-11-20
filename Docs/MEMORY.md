@@ -13,6 +13,26 @@ En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une cop
 
 ---
 
+## Session 20 novembre 2026 — Supprimer une grume saisie par erreur
+
+Branche `feat/supprimer-grume`, en attente de validation du porteur. Mobile en cache `duramen-v65`.
+
+Décisions du porteur : on peut supprimer une grume, sur le mobile et le bureau, en gardant une trace.
+
+Comment ça marche :
+- Bouton rouge « Supprimer cette grume » dans la fenêtre « Corriger », à part des autres boutons.
+- Mêmes conditions que la correction : grume de sa commune, dans aucune campagne de sciage, pas sortie du stock.
+- Confirmation explicite qui rappelle la grume (numéro, essence, mesures, volume). Elle rappelle aussi qu'une grume sciée ou donnée passe par une sortie.
+- Le numéro redevient libre.
+- Bureau : relit la base juste avant. Si la grume a été corrigée depuis un autre poste, la fenêtre se rouvre : rien n'est supprimé.
+
+Base Supabase :
+- Table `grumes_supprimees` : la grume entière telle qu'elle était (`donnees`), son numéro, son essence, son volume, la source (`mobile` ou `bureau`), la date. Lecture par sa commune, aucune écriture directe.
+- Fonction `supprimer_grume(p_id, p_source)` : mêmes vérifications que `corriger_grume`, même verrou, écrit la trace puis supprime.
+- **Règle `grumes_delete` supprimée** : elle laissait supprimer une grume sans aucune vérification, même en campagne ou sortie. Seule la fonction supprime désormais. Conséquence : l'ancienne version (passerelle `lots`) ne peut plus supprimer de lot.
+
+---
+
 ## Session 19 novembre 2026 — Corriger une grume (premier ticket retour)
 
 Validée par le porteur et fusionnée dans `main` le 19 nov. 2026 (branche `feat/corriger-grume`). Mobile en cache `duramen-v64`.

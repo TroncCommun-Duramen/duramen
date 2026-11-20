@@ -123,6 +123,12 @@ HH:MM — [commit: abc1234] résultat final
 23:40 — [commit: 2c68dfd] Bouton « Corriger » dans l'onglet Grumes du bureau, sur `feat/bureau-corriger-grume`. En attente de validation
 23:35 — Validation du porteur : fusion de `feat/bureau-corriger-grume` dans `main`
 
+## Session 2026-11-20
+
+08:42 — Question : peut-on aller jusqu'à la suppression d'une grume ? Proposition faite avant tout
+08:44 — Validation : garder une trace, faire sur le mobile et le bureau
+09:00 — [commit: b53ee76] Bouton « Supprimer cette grume » dans la fenêtre « Corriger », sur `feat/supprimer-grume`. Base : table `grumes_supprimees`, fonction `supprimer_grume`, suppression directe fermée. En attente de validation
+
 ---
 
 ## Voir aussi
