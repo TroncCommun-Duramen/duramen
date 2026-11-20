@@ -1703,6 +1703,15 @@ function ouvrirCorrectionGrume(g) {
   acts.appendChild(bRet);
   acts.appendChild(bOk);
   modal.appendChild(acts);
+
+  // Supprimer : pour une grume saisie par erreur (doublon…). À part, en rouge.
+  var actsSup = cel('div', 'sciage-campagne-actions');
+  var bSup = cel('button', 'btn btn-outline sciage-btn-supprimer', 'Supprimer cette grume');
+  bSup.type = 'button';
+  bSup.onclick = function () { supprimerGrume(g, fermer); };
+  actsSup.appendChild(bSup);
+  modal.appendChild(actsSup);
+
   // Pas de « glisser vers le bas pour fermer » ici : les molettes se
   // tournent au doigt, la fenêtre se fermerait en pleine correction.
   bg.appendChild(modal);
@@ -1713,6 +1722,35 @@ function ouvrirCorrectionGrume(g) {
     if (drumL._init) drumL._init();
     if (drumD._init) drumD._init();
   }, 30);
+}
+
+// ─── Supprimer une grume saisie par erreur ───────────────────────────────
+// Mêmes conditions que la correction. La base garde une trace
+// (table grumes_supprimees) et revérifie tout (fonction supprimer_grume).
+async function supprimerGrume(g, fermer) {
+  var verif = DuramenCore.validerCorrectionGrume(g);
+  if (!verif.ok) { showError(verif.erreur.replace('se corrige', 'se supprime')); return; }
+  var m = DuramenCore.mesuresGrume(g);
+  if (!confirm('Supprimer définitivement ' + nomAfficheGrume(g) + ' ?\n\n'
+      + (g.essence || '') + ' · ' + formatNb(m.longueur, 2) + ' m × ' + m.diametre + ' cm · '
+      + formatNb(g.vol_utile || 0, 3) + ' m³\n\n'
+      + 'À utiliser pour une grume saisie par erreur (doublon…). '
+      + 'Une grume sciée ou donnée passe par une sortie.')) return;
+  try {
+    showLoading(true);
+    await sbRpc('supprimer_grume', { p_id: g.id, p_source: 'mobile' });
+    if (fermer) fermer();
+    await chargerDonnees();
+    showToastSucces(nomAfficheGrume(g) + ' supprimée.');
+  } catch (err) {
+    if (err.reseau) showError('Pas de réseau : la suppression se fait avec réseau.');
+    else if (/CAMPAGNE/.test(err.message)) showError('Cette grume vient d\'entrer dans une campagne de sciage : elle ne se supprime plus.');
+    else if (/SORTIE/.test(err.message)) showError('Cette grume est sortie du stock : elle ne se supprime plus.');
+    else if (/INTROUVABLE/.test(err.message)) { if (fermer) fermer(); await chargerDonnees(); showError('Cette grume n\'existe plus.'); }
+    else showError('Erreur : ' + err.message);
+  } finally {
+    showLoading(false);
+  }
 }
 
 // ─── Bascule Grumes brutes / Produits bois ───────────────────────────────

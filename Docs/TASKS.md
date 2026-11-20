@@ -101,7 +101,7 @@ Suites de la fusion du 3 nov. 2026 :
 | Garder la passerelle Supabase (vue `lots`, fonction `lots_partages()`, colonne `extractions.cause_abattage`) tant que la nouvelle version n'est pas validée sur le terrain : c'est elle qui permet de revenir à l'ancienne version. Ensuite, la supprimer | En attente de validation terrain |
 | Version bureau : illustration de la page d'accueil (`bureau/illustration-accueil.jpg`, © Paquito Couet pour Tronc Commun) | ✅ Fait le 14 nov. 2026 |
 | Version mobile : la connexion gardée sur le téléphone n'est jamais revérifiée. Un téléphone encore connecté avec l'ancien code `LOCKELN-D7WA` affiche toujours « Lockeln ». Le bureau est corrigé (13 nov. 2026) | À faire |
-| Supprimer une grume saisie par erreur, mobile et bureau, avec trace dans la base (`grumes_supprimees`). Branche `feat/supprimer-grume`, testée dans un navigateur | En attente de validation du porteur |
+| Supprimer une grume saisie par erreur, mobile et bureau, avec trace dans la base (`grumes_supprimees`). Branche `feat/supprimer-grume`, testée dans un navigateur | ✅ Validée et fusionnée dans `main` le 20 nov. 2026 |
 | Version bureau : corriger une grume depuis l'onglet Grumes, mêmes règles que le mobile. Branche `feat/bureau-corriger-grume`, testée dans un navigateur | ✅ Validée et fusionnée dans `main` le 19 nov. 2026 |
 | Version bureau refaite sur la branche `feat/bureau-campagnes` : grumes, campagnes de sciage, produits bois, projets (réalisation et pose), métropole, export tableur. Verrous ajoutés dans la base. Testée dans un navigateur (87 vérifications) | ✅ Validée par le porteur et fusionnée dans `main` le 13 nov. 2026 |
 

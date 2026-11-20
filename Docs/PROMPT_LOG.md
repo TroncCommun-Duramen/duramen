@@ -128,6 +128,7 @@ HH:MM — [commit: abc1234] résultat final
 08:42 — Question : peut-on aller jusqu'à la suppression d'une grume ? Proposition faite avant tout
 08:44 — Validation : garder une trace, faire sur le mobile et le bureau
 09:00 — [commit: b53ee76] Bouton « Supprimer cette grume » dans la fenêtre « Corriger », sur `feat/supprimer-grume`. Base : table `grumes_supprimees`, fonction `supprimer_grume`, suppression directe fermée. En attente de validation
+08:50 — Validation du porteur : fusion de `feat/supprimer-grume` dans `main`
 
 ---
 

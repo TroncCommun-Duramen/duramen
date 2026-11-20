@@ -15,7 +15,7 @@ En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une cop
 
 ## Session 20 novembre 2026 — Supprimer une grume saisie par erreur
 
-Branche `feat/supprimer-grume`, en attente de validation du porteur. Mobile en cache `duramen-v65`.
+Validée par le porteur et fusionnée dans `main` le 20 nov. 2026 (branche `feat/supprimer-grume`). Mobile en cache `duramen-v65`.
 
 Décisions du porteur : on peut supprimer une grume, sur le mobile et le bureau, en gardant une trace.
 
