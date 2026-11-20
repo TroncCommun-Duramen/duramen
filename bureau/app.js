@@ -643,6 +643,13 @@ function bOuvrirCorrectionGrume(id) {
   md.corps.appendChild(mesures);
   md.corps.appendChild(bChamp('Repère pour retrouver la grume (facultatif)', iRep));
 
+  // Supprimer : pour une grume saisie par erreur (doublon…). À part, en rouge.
+  var zoneSup = el('div', 'b-debit-ligne');
+  zoneSup.appendChild(bouton('b-btn b-btn-danger b-btn-petit', 'Supprimer cette grume', function () {
+    bSupprimerGrume(g.id, vu);
+  }));
+  md.corps.appendChild(zoneSup);
+
   // Volume recalculé en direct
   var synth = el('div', 'b-synthese', '');
   function lireMesures() {
@@ -728,6 +735,48 @@ async function bEnregistrerCorrection(g, vu, n) {
     else if (/SORTIE/.test(m))       { bShowToast('Cette grume vient de sortir du stock : elle ne se corrige plus.', true); bFermerModale(); await bChargerDonnees({ interne: true }); }
     else if (/INTROUVABLE/.test(m))  bShowToast('Grume introuvable : rechargez la page.', true);
     else                             bShowToast('Erreur : ' + m, true);
+  } finally {
+    bShowLoading(false);
+  }
+}
+
+// ─── Supprimer une grume saisie par erreur ───────────────────────────────
+// Mêmes conditions que la correction. La base garde une trace
+// (table grumes_supprimees) et revérifie tout (fonction supprimer_grume).
+async function bSupprimerGrume(id, vu) {
+  var g = lots.find(function (x) { return x.id === id; });
+  if (!g) { bShowToast('Cette grume n\'est plus dans la liste.', true); return; }
+  var m = DuramenCore.mesuresGrume(g);
+  if (!confirm('Supprimer définitivement ' + nomGrume(g) + ' ?\n\n'
+      + (g.essence || '') + ' · ' + fmtNb(m.longueur, 2) + ' m × ' + m.diametre + ' cm · ' + m3(g.vol_utile) + '\n\n'
+      + 'À utiliser pour une grume saisie par erreur (doublon…). '
+      + 'Une grume sciée ou donnée passe par une sortie.')) return;
+
+  bShowLoading(true);
+  try {
+    // Données fraîches : un agent sur le terrain a pu la corriger ou la
+    // mettre dans une campagne entre-temps.
+    if (!await bChargerDonnees({ interne: true })) { bShowToast('Pas de réseau : la suppression se fait avec réseau.', true); return; }
+    var frais = lots.find(function (x) { return x.id === id; });
+    if (!frais) { bFermerModale(); bShowToast('Cette grume n\'existe plus.', true); return; }
+    var verif = DuramenCore.validerCorrectionGrume(frais);
+    if (!verif.ok) { bFermerModale(); bShowToast(verif.erreur.replace('se corrige', 'se supprime') + ' Rien n\'a été supprimé.', true); return; }
+    if (bEtatGrume(frais) !== vu) {
+      bShowToast('Cette grume vient d\'être corrigée depuis un autre poste. Vérifiez avant de la supprimer.', true);
+      bOuvrirCorrectionGrume(id);
+      return;
+    }
+    await bSbRpc('supprimer_grume', { p_id: id, p_source: 'bureau' });
+    vider(document.getElementById('b-modales'));
+    await bChargerDonnees({ interne: true });
+    bShowToast(nomGrume(g) + ' supprimée.');
+  } catch (err) {
+    var msg = err.message || '';
+    if (err.reseau)                    bShowToast('Pas de réseau : rien n\'a été supprimé. Réessayez avec réseau.', true);
+    else if (/CAMPAGNE/.test(msg))     { bFermerModale(); bShowToast('Cette grume vient d\'entrer dans une campagne de sciage : elle ne se supprime plus.', true); }
+    else if (/SORTIE/.test(msg))       { bFermerModale(); bShowToast('Cette grume vient de sortir du stock : elle ne se supprime plus.', true); }
+    else if (/INTROUVABLE/.test(msg))  { bFermerModale(); bShowToast('Cette grume n\'existe plus.', true); }
+    else                               bShowToast('Erreur : ' + msg, true);
   } finally {
     bShowLoading(false);
   }
