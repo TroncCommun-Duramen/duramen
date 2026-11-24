@@ -3589,6 +3589,7 @@ function creerChoixBoutons(labelTxt, options, valeur, onChange) {
   var btns = options.map(function (o) {
     var b = cel('button', 'grume-methode-btn' + (o[0] === actuel ? ' active' : ''), o[1]);
     b.type = 'button';
+    b.dataset.valeur = o[0];   // la couleur du choix actif dépend de la valeur (ui.css)
     b.onclick = function () {
       actuel = o[0];
       btns.forEach(function (x) { x.classList.toggle('active', x === b); });
