@@ -1068,113 +1068,28 @@ function afficherHistorique() {
     }
     var zone = cel('div', '');
     content.appendChild(zone);
-    // Grumes encore en stock brut ; l'export garde toutes les grumes saisies
+    // Grumes encore en stock brut
     rendreHistoriqueContenu(zone, DuramenCore.getGrumesEnStock(),
-      { urgence: true, aDebiter: grumesADebiter(), exportData: lots, marquage: true });
+      { urgence: true, aDebiter: grumesADebiter(), marquage: true });
     // Campagnes de sciage : juste après le total du stock brut
     var total = zone.querySelector('.histo-total-block');
     var sectionCamp = creerSectionCampagnes();
     if (total && total.nextSibling) zone.insertBefore(sectionCamp, total.nextSibling);
     else zone.insertBefore(sectionCamp, zone.firstChild);
-    // Bilan entrées / sorties à une date choisie — juste avant les boutons export
-    var exportRow = zone.querySelector('.histo-export-row');
-    var bilan     = creerBilanBloc();
-    if (exportRow) { zone.insertBefore(bilan, exportRow); } else { zone.appendChild(bilan); }
+    // Bilan et exports retirés du mobile le 24 nov. 2026 : ils restent au bureau
   } else {
     afficherStockCommunaute(content);
   }
 }
 
-// ─── Bilan du stock à une date ────────────────────────────────────────────
-// À une date T : tout ce qui est entré, tout ce qui est sorti, le solde.
-// Même stock vide, les entrées et les sorties restent visibles.
-function creerBilanBloc() {
-  var bloc = cel('div', '');
-  bloc.appendChild(cel('div', 'histo-section-title mt-16', 'Bilan du stock'));
-
-  var dateRow = cel('div', 'bilan-date-row');
-  dateRow.appendChild(cel('span', 'bilan-date-lbl', 'État au'));
-  var dateInp = document.createElement('input');
-  dateInp.type      = 'date';
-  dateInp.className = 'bilan-date-input';
-  dateInp.value     = new Date().toISOString().slice(0, 10);
-  dateRow.appendChild(dateInp);
-  bloc.appendChild(dateRow);
-
-  var stats = cel('div', 'bilan-stats');
-  var defs  = [
-    { lbl: 'm³ entrés',   cls: '' },
-    { lbl: 'm³ sortis',   cls: '' },
-    { lbl: 'm³ en stock', cls: 'bilan-stat-stock' }
-  ];
-  var vals = defs.map(function (d) {
-    var item = cel('div', 'bilan-stat ' + d.cls);
-    var val  = cel('div', 'bilan-stat-val', '—');
-    item.appendChild(val);
-    item.appendChild(cel('div', 'bilan-stat-lbl', d.lbl));
-    stats.appendChild(item);
-    return val;
-  });
-  bloc.appendChild(stats);
-
-  var sortiesTitre = cel('div', 'histo-section-title mt-16', 'Sorties');
-  var sortiesList  = cel('div', 'histo-ext-list');
-  bloc.appendChild(sortiesTitre);
-  bloc.appendChild(sortiesList);
-
-  function majBilan() {
-    var limite = dateInp.value || new Date().toISOString().slice(0, 10);
-    function avantLimite(x) {
-      var jour = (x.date_iso || '').slice(0, 10);
-      return !jour || jour <= limite;
-    }
-    var lotsT = lots.filter(avantLimite);
-    var extsT = extractions.filter(function (e) {
-      return avantLimite(e) && e.type_sortie !== 'produit';
-    });
-    var entres = lotsT.reduce(function (s, l) { return s + (l.vol_utile || 0); }, 0);
-    var sortis = extsT.reduce(function (s, e) { return s + (e.volume || 0); }, 0);
-    vals[0].textContent = entres.toFixed(3);
-    vals[1].textContent = sortis.toFixed(3);
-    vals[2].textContent = Math.max(0, entres - sortis).toFixed(3);
-
-    while (sortiesList.firstChild) sortiesList.removeChild(sortiesList.firstChild);
-    if (extsT.length === 0) {
-      sortiesList.appendChild(cel('div', 'ext-empty', 'Aucune sortie à cette date.'));
-      return;
-    }
-    extsT
-      .slice()
-      .sort(function (a, b) { return (b.date_iso || '').localeCompare(a.date_iso || ''); })
-      .slice(0, 5)
-      .forEach(function (ex) {
-        var item = cel('div', 'histo-ext-item');
-        item.appendChild(cel('span', 'histo-ext-essence', ex.essence || '—'));
-        item.appendChild(cel('span', 'histo-ext-vol', (ex.volume || 0).toFixed(3) + ' m³'));
-        item.appendChild(cel('span', 'histo-ext-type',
-          ex.type_sortie === 'debit' ? 'Débit' : (ex.type_sortie === 'sciage' ? 'Sciage' : 'Grume brute')));
-        item.appendChild(cel('span', 'histo-ext-date', ex.date || ''));
-        if (ex.destination) item.appendChild(cel('div', 'histo-ext-dest', '→ ' + ex.destination));
-        sortiesList.appendChild(item);
-      });
-  }
-
-  dateInp.addEventListener('change', majBilan);
-  majBilan();
-  return bloc;
-}
-
 // options.urgence    : liste complète triée par urgence de débit, avec badge
 // options.aDebiter   : id de grume → campagne ouverte (badge « À débiter »)
-// options.exportData : grumes à exporter (par défaut : celles affichées)
 function rendreHistoriqueContenu(container, lotsData, options) {
   options = options || {};
-  var exportData = options.exportData || lotsData || [];
   if (!lotsData || lotsData.length === 0) {
     var es = cel('div', 'empty-state');
     es.appendChild(cel('p', '', options.urgence ? 'Aucune grume en stock brut.' : 'Aucune grume enregistrée.'));
     container.appendChild(es);
-    container.appendChild(creerBoutonsExportHisto(exportData));
     return;
   }
 
@@ -1309,46 +1224,6 @@ function rendreHistoriqueContenu(container, lotsData, options) {
     lotsList.appendChild(card);
   });
   container.appendChild(lotsList);
-
-  container.appendChild(creerBoutonsExportHisto(exportData));
-}
-
-function creerBoutonsExportHisto(lotsData) {
-  var row    = cel('div', 'histo-export-row');
-  var btnXls = cel('button', 'histo-export-btn', 'Exporter Excel');
-  btnXls.type    = 'button';
-  btnXls.onclick = function () { exporterHistoriqueCSV(lotsData); };
-  var btnPdf = cel('button', 'histo-export-btn', 'Exporter PDF');
-  btnPdf.type    = 'button';
-  btnPdf.onclick = exporterHistoriquePDF;
-  row.appendChild(btnXls);
-  row.appendChild(btnPdf);
-  return row;
-}
-
-function exporterHistoriqueCSV(lotsData) {
-  if (!lotsData || lotsData.length === 0) { showError('Aucune grume à exporter.'); return; }
-  var h = ['Nom','Essence','Commune','Cause','Provenance','Annee','Usage',
-           'Nb grumes','Vol. brut','Vol. utile','Vol. dechets','Nb planches','Lineaire','Date',
-           'Etat','Debit externe'];
-  var r = lotsData.map(function (l) {
-    return [l.nom, l.essence, l.commune, l.cause, l.provenance, l.annee, l.usage,
-            l.nb_grumes || 0, (l.vol_brut || 0).toFixed(3), (l.vol_utile || 0).toFixed(3),
-            (l.vol_dechets || 0).toFixed(3), l.nb_planches || 0, (l.lineaire || 0).toFixed(2), l.date,
-            DuramenCore.libelleEtatGrume(l.etat), l.debit_externe ? 'Oui' : 'Non'];
-  });
-  var csv = [h].concat(r).map(function (row) {
-    return row.map(function (v) { return '"' + String(v || '').replace(/"/g, '""') + '"'; }).join(';');
-  }).join('\n');
-  var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-  var a    = document.createElement('a');
-  a.href   = URL.createObjectURL(blob);
-  a.download = 'duramen_historique_' + new Date().toISOString().slice(0, 10) + '.csv';
-  a.click();
-}
-
-function exporterHistoriquePDF() {
-  window.print();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -1299,88 +1299,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   color: var(--cendre);
 }
 
-/* ─── Bilan du stock à une date ─── */
-.bilan-date-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 12px 0 14px;
-}
-.bilan-date-lbl {
-  font-size: 0.62rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--cendre);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-.bilan-date-input {
-  padding: 8px 12px;
-  background: var(--washi);
-  border: var(--border-field);
-  border-radius: var(--border-radius-md);
-  font-family: var(--font-body);
-  font-size: 1rem;
-  color: var(--sumi);
-}
-.bilan-date-input:focus { outline: none; border: var(--border-active); }
-.bilan-stats {
-  display: flex;
-  background: var(--neige);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-card);
-  padding: 14px 8px;
-  margin-bottom: 14px;
-}
-.bilan-stat {
-  flex: 1;
-  text-align: center;
-  border-right: var(--border-thin);
-}
-.bilan-stat:last-child { border-right: none; }
-.bilan-stat-val {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: var(--font-weight-semibold);
-  color: var(--sumi);
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-.bilan-stat-stock .bilan-stat-val { color: var(--indigo); }
-.bilan-stat-lbl {
-  font-size: 9px;
-  font-weight: var(--font-weight-medium);
-  color: var(--cendre);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-top: 5px;
-}
-
-/* ─── Boutons export ─── */
-.histo-export-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 28px;
-  padding-top: 20px;
-  border-top: var(--border-thin);
-}
-.histo-export-btn {
-  flex: 1;
-  height: 44px;
-  border-radius: var(--border-radius-card);
-  border: var(--border-thin);
-  background: transparent;
-  color: var(--sumi);
-  font-family: var(--font-body);
-  font-size: 0.62rem;
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.15s;
-  -webkit-tap-highlight-color: transparent;
-}
-.histo-export-btn:hover { background: var(--neige); }
-
 /* ─── Toast succès ─── */
 .toast-succes {
   position: fixed;
@@ -2353,7 +2271,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .ext-section-title,
 .saisie-grumes-title,
 .saisie-annee-lbl,
-.bilan-date-lbl,
 .feedback-section-label {
   font-size: 12px;
   font-weight: var(--font-weight-semibold);
@@ -2362,12 +2279,10 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .saisie-chip { font-size: 12px; padding: 6px 12px; }
 .saisie-annee-btn { font-size: 13px; }
 .saisie-synth-lbl,
-.bilan-stat-lbl,
 .ext-syn-lbl { font-size: 11px; letter-spacing: 0.08em; }
 .btn,
 .btn-sm,
-.saisie-add-btn,
-.histo-export-btn { font-size: 12px; letter-spacing: 0.08em; }
+.saisie-add-btn { font-size: 12px; letter-spacing: 0.08em; }
 .saisie-btn { font-size: 13px; letter-spacing: 0.08em; }
 .histo-toggle-btn { font-size: 13px; }
 
@@ -2433,7 +2348,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .btn-primary { box-shadow: var(--ombre-carte); }
 .saisie-add-btn,
 .saisie-btn,
-.histo-export-btn,
 .ext-valider-btn,
 .ext-sel-btn,
 .feedback-type-btn,
@@ -2446,7 +2360,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .histo-lot-card,
 .grume-summary-card,
 .feedback-card,
-.bilan-stats,
 .saisie-synthese {
   border-radius: var(--border-radius-card);
   box-shadow: var(--ombre-carte);
