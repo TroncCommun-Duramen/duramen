@@ -1531,12 +1531,11 @@ function ouvrirCorrectionGrume(g) {
   rowD.appendChild(cel('div', 'grume-sheet-label', 'Ø médian'));
   var drumD = creerDrum(DIA_VALS, mes.diametre,
     function (v) { return v + ' cm'; },
-    function (v) { mes.diametre = v; majVolume(); mentionExt.maj(v); });
+    function (v) { mes.diametre = v; majVolume(); mesureMax.maj(v); });
   rowD.appendChild(drumD);
   modal.appendChild(rowD);
-  var mentionExt = creerMentionExternalise();
-  mentionExt.maj(mes.diametre);
-  modal.appendChild(mentionExt.el);
+  var mesureMax = creerMesurePlusLarge(g.diametre_max_cm);
+  modal.appendChild(mesureMax.el);
   modal.appendChild(volEl);
   majVolume();
 
@@ -1564,6 +1563,7 @@ function ouvrirCorrectionGrume(g) {
     comparer('Cause', g.cause || '—', n.cause);
     comparer('Tempête', g.nom_intemperie || '—', n.tempete || '—');
     comparer('État', DuramenCore.libelleEtatGrume(g.etat), DuramenCore.libelleEtatGrume(n.etat));
+    comparer('Ø au plus large', g.diametre_max_cm ? g.diametre_max_cm + ' cm' : '—', n.diametreMax ? n.diametreMax + ' cm' : '—');
     comparer('Débit externalisé', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
     comparer('Abattue le', texteDateCorrection(g.date_abattage), texteDateCorrection(n.abattage));
     comparer('Longueur', formatNb(avant.longueur, 2) + ' m', formatNb(n.longueur, 2) + ' m');
@@ -1577,8 +1577,9 @@ function ouvrirCorrectionGrume(g) {
     var ess = cEss.lire(), cau = cCau.lire();
     if (!ess.valeur) { showError('Écrivez le nom de l\'essence.'); return; }
     if (!cau.valeur) { showError("Écrivez la cause d'abattage."); return; }
-    var debitExterne = mentionExt.debitExterne();
+    var debitExterne = mesureMax.debitExterne();
     var n = {
+      diametreMax: mesureMax.lire(),
       essence:    ess.valeur,
       provenance: cPro.select.value,
       cause:      cau.valeur,
@@ -1603,7 +1604,8 @@ function ouvrirCorrectionGrume(g) {
         p_date_abattage: n.abattage || null, p_repere: n.repere,
         p_longueur: n.longueur, p_diametre: n.diametre,
         p_etat: n.etat, p_debit_externe: n.debitExterne,
-        p_nom_intemperie: n.tempete || null
+        p_nom_intemperie: n.tempete || null,
+        p_diametre_max: n.diametreMax
       });
       if (n.tempete) await memoriserTempete(n.tempete);
       if (ess.nouveau) await memoriserNom('essence', n.essence);
@@ -1650,6 +1652,7 @@ function ouvrirCorrectionGrume(g) {
   setTimeout(function () {
     if (drumL._init) drumL._init();
     if (drumD._init) drumD._init();
+    mesureMax.maj(mes.diametre);
   }, 30);
 }
 
@@ -2827,6 +2830,11 @@ function creerDrum(valeurs, defaut, afficher, onChange) {
 
   // Appelé après insertion dans le DOM pour positionner la molette
   wrap._init = function () { track.scrollTop = defIdx * DRUM_H; };
+  // Placer la molette sur une valeur (molette visible)
+  wrap._aller = function (v) {
+    var i = valeurs.findIndex(function (x) { return Math.abs(x - v) < 0.001; });
+    if (i >= 0) { defIdx = i; track.scrollTop = i * DRUM_H; }
+  };
   return wrap;
 }
 
@@ -2838,6 +2846,7 @@ function creerCarteGrume(idx) {
 
   var dims = cel('div', 'grume-summary-dims');
   dims.textContent = 'L ' + g.longueur.toFixed(2) + ' m  ·  Ø ' + g.diametre + ' cm'
+    + (g.diametreMax ? '  ·  au plus large ' + g.diametreMax + ' cm' : '')
     + (g.debitExterne ? '  ·  débit externalisé' : '');
   card.appendChild(dims);
 
@@ -2879,7 +2888,7 @@ function nouvSupprimerLigne(idx) {
 // ─── Grume sheet ──────────────────────────────────────────────────────────
 // Mesure au diamètre seulement (la circonférence est retirée le 24 nov. 2026).
 var grumeDraft = { longueur: 3.00, diametre: 30, quantite: 1 };
-var grumeMentionExt = null;
+var grumeMesureMax = null;
 
 function ouvrirGrumeSheet() {
   localStorage.removeItem('duramen_mesure_methode'); // ancien choix diamètre / circonférence
@@ -2898,7 +2907,7 @@ function majVolSheet() {
   var v  = calcVol(grumeDraft.diametre, grumeDraft.longueur) * grumeDraft.quantite;
   var el = document.getElementById('grume-sheet-vol');
   if (el) el.textContent = v.toFixed(3) + ' m³';
-  if (grumeMentionExt) grumeMentionExt.maj(grumeDraft.diametre);
+  if (grumeMesureMax) grumeMesureMax.maj(grumeDraft.diametre);
 }
 
 function construireContenuGrumeSheet() {
@@ -2927,8 +2936,8 @@ function construireContenuGrumeSheet() {
   content.appendChild(rowD);
 
   // Grosse grume : débit externalisé, signalé sous la molette
-  grumeMentionExt = creerMentionExternalise();
-  content.appendChild(grumeMentionExt.el);
+  grumeMesureMax = creerMesurePlusLarge(null);
+  content.appendChild(grumeMesureMax.el);
 
   // Volume calculé
   var volEl = cel('div', 'grume-sheet-vol', '— m³');
@@ -2956,9 +2965,12 @@ function construireContenuGrumeSheet() {
 }
 
 function enregistrerGrumeDraft() {
-  var debitExterne = DuramenCore.debitExternalise(grumeDraft.diametre, limiteScierie());
+  var debitExterne = grumeMesureMax ? grumeMesureMax.debitExterne()
+    : DuramenCore.debitExternalise(grumeDraft.diametre, limiteScierie());
+  var diametreMax  = grumeMesureMax ? grumeMesureMax.lire() : null;
   // Une saisie = une grume : les nouvelles mesures remplacent les précédentes
   nouvGrumes = [{ longueur: grumeDraft.longueur, diametre: grumeDraft.diametre, quantite: 1,
+                  diametreMax: diametreMax,
                   debitExterne: debitExterne }];
   nouvRendreGrumes();
   nouvSauverBrouillon();
@@ -3216,6 +3228,7 @@ async function nouvConfirmer(options) {
     grumes:       grumesFlat,
     etat:         etat,
     nom_intemperie: tempete.valeur || null,
+    diametre_max_cm: (nouvGrumes[0] && nouvGrumes[0].diametreMax) || null,
     debit_externe: nouvGrumes.some(function (g) { return !!g.debitExterne; }),
     latitude:     nouvGPS.lat,
     longitude:    nouvGPS.lon,
@@ -3610,20 +3623,46 @@ function creerChoixBoutons(labelTxt, options, valeur, onChange) {
   };
 }
 
-// Sous la molette du diamètre : à partir de la limite (80 cm), une ligne
-// dit que le débit sera externalisé. L'agent n'a rien à répondre.
-function creerMentionExternalise() {
-  var lim  = limiteScierie();
-  var d    = 0;
-  var bloc = cel('div', 'info-box hidden',
+// Diamètre au plus large (choix du 24 nov. 2026, option 2) : dès que le
+// Ø médian atteint 60 cm (limite − 20), une deuxième molette « Ø au plus
+// large » apparaît. Le débit est externalisé si le plus grand des deux
+// diamètres atteint la limite (80 cm). La base refait ce calcul elle-même
+// (et pour toutes les grumes si la limite change).
+function creerMesurePlusLarge(valeurInitiale) {
+  var lim    = limiteScierie();
+  var median = 0;
+  var maxi   = parseFloat(valeurInitiale) || 0;
+  var visible = false, initialise = false;
+  var bloc = cel('div', '');
+  var row  = cel('div', 'grume-sheet-row hidden');
+  row.appendChild(cel('div', 'grume-sheet-label', 'Ø au plus large'));
+  var drum = creerDrum(DIA_VALS, maxi || 60,
+    function (v) { return v + ' cm'; },
+    function (v) { maxi = v; majMention(); });
+  row.appendChild(drum);
+  var mention = cel('div', 'info-box hidden',
     lim + ' cm ou plus : débit externalisé (hors scierie mobile).');
+  bloc.appendChild(row);
+  bloc.appendChild(mention);
+  function externalise() { return DuramenCore.debitExternalise(Math.max(median, visible ? maxi : 0), lim); }
+  function majMention() { mention.classList.toggle('hidden', !externalise()); }
   return {
     el: bloc,
-    maj: function (diametre) {
-      d = diametre;
-      bloc.classList.toggle('hidden', !DuramenCore.debitExternalise(d, lim));
+    maj: function (diametreMedian) {
+      median  = diametreMedian;
+      visible = DuramenCore.questionGrosBout(median, lim) === 'question';
+      row.classList.toggle('hidden', !visible);
+      // Le plus large ne peut pas être plus petit que le milieu
+      if (visible && (!initialise || maxi < median)) {
+        if (maxi < median) maxi = median;
+        initialise = true;
+        setTimeout(function () { drum._aller(maxi); }, 0);
+      }
+      majMention();
     },
-    debitExterne: function () { return DuramenCore.debitExternalise(d, lim); }
+    // Ø au plus large saisi, ou null s'il n'a pas été demandé
+    lire: function () { return visible ? maxi : null; },
+    debitExterne: externalise
   };
 }
 
