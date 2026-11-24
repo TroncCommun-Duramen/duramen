@@ -140,6 +140,9 @@ HH:MM — [commit: abc1234] résultat final
 13:24 — Décisions : le débit externe est un simple marquage sur la grume ; la circonférence est retirée
 — Base : tables `noms_personnalises` et `reglages`, colonnes `etat`, `debit_externe`, `gps_precision`, `position_manuelle`, fonctions `corriger_grume` (10 paramètres) et `placer_position_grume`, causes « Coupe sécuritaire » passées en « Coupe sanitaire »
 — Branche `feat/grumes-a-part` (cache v66) et branche `feat/gps-precis` (cache v67), testées dans un navigateur. En attente de validation
+13:40 — Coffre Obsidian trouvé au 11 mai (verrou git du 7 oct.). Notes de juin sauvées dans `_notes-juin-2026/` et reportées sur GitHub, coffre remis à jour et vérifié
+13:49 — Questions : marque après 60 cm, calcul au diamètre médian gardé
+13:50 — Validation du porteur : fusion des deux branches dans `main`, cache v68, tests rejoués 53/53
 
 ---
 

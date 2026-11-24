@@ -15,7 +15,7 @@ En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une cop
 
 ## Session 24 novembre 2026 — Retours terrain : causes, « Autre », grumes à part, GPS
 
-Deux branches en attente de validation du porteur : `feat/grumes-a-part` (cache `duramen-v66`) et `feat/gps-precis` (cache `duramen-v67`). Toutes deux partent de `main` : à la fusion de la seconde, garder le numéro de cache le plus haut.
+Validées par le porteur et fusionnées dans `main` le 24 nov. 2026 (branches `feat/grumes-a-part` et `feat/gps-precis`). Mobile en cache `duramen-v68`. Tests rejoués sur la version fusionnée : 53/53.
 
 Décisions du porteur :
 - Causes d'abattage : « Intempérie (tempête, neige…) » remplace « chablis ». « Coupe sécuritaire » disparaît : ses grumes passent en « Coupe sanitaire » (fait dans la base le 24 nov.).

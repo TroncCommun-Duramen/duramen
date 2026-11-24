@@ -98,8 +98,8 @@ Suites de la fusion du 3 nov. 2026 :
 
 | Étape | État |
 |-------|------|
-| Retours terrain du 24 nov. : causes revues, « Autre » mémorisé (cause, essence), état de la grume (à part), marque « Débit externe », circonférence retirée. Branche `feat/grumes-a-part`, testée dans un navigateur | En attente de validation |
-| GPS précis pendant la saisie, marge d'erreur affichée, placement à la main au bureau. Branche `feat/gps-precis`, testée dans un navigateur | En attente de validation |
+| Retours terrain du 24 nov. : causes revues, « Autre » mémorisé (cause, essence), état de la grume (à part), marque « Débit externe », circonférence retirée. Branche `feat/grumes-a-part` | ✅ Validée et fusionnée dans `main` le 24 nov. 2026 (cache v68) |
+| GPS précis pendant la saisie, marge d'erreur affichée, placement à la main au bureau. Branche `feat/gps-precis` | ✅ Validée et fusionnée dans `main` le 24 nov. 2026 (cache v68) |
 | Cote exacte du gros bout accepté par la scierie mobile : 80 cm provisoire, à confirmer avec le scieur (réglage `diametre_gros_bout_max_cm` dans la table `reglages`, sans toucher au code) | À faire (porteur) |
 | Garder la passerelle Supabase (vue `lots`, fonction `lots_partages()`, colonne `extractions.cause_abattage`) tant que la nouvelle version n'est pas validée sur le terrain : c'est elle qui permet de revenir à l'ancienne version. Ensuite, la supprimer | En attente de validation terrain |
 | Version bureau : illustration de la page d'accueil (`bureau/illustration-accueil.jpg`, © Paquito Couet pour Tronc Commun) | ✅ Fait le 14 nov. 2026 |
@@ -127,11 +127,11 @@ Suites de la fusion du 3 nov. 2026 :
 | 6 | A8 — `supprimerLot` n'efface pas les extractions liées (volumes sortis orphelins) | Feature | Moyenne |
 | 7 | ~~A6 — Grumes déjà extraites re-sélectionnables~~ ✅ fait et fusionné le 2 juil. : chaque extraction enregistre les clés de ses grumes (`extractions.grumes_keys`, colonne créée dans Supabase le 2 juil.), la sélection ne les propose plus, et un bloc « Bilan du stock » (entrées / sorties / solde à une date choisie) garde la trace même stock vide. Mobile + bureau. | Feature | ✅ Fait |
 | 7b | ~~Brouillon de saisie perdu au rechargement de la page~~ ✅ fait et fusionné le 2 juil. : restauration silencieuse (plus de boîte « Reprendre ? » qui effaçait le brouillon sur Annuler, restauration même sans grume). | Feature | ✅ Fait |
-| 8 | ~~A9 — Mode circonférence : volume affiché ≠ volume enregistré~~ disparaît avec le retrait de la circonférence (`feat/grumes-a-part`, 24 nov. 2026) | Feature | ✅ À la fusion |
+| 8 | ~~A9 — Mode circonférence : volume affiché ≠ volume enregistré~~ disparu avec le retrait de la circonférence (24 nov. 2026) | Feature | ✅ Fait |
 | 9 | ~~A10 — Supprimer l'ancien formulaire mort~~ ✅ fait et fusionné le 2 juil. : étapes 1-3 d'index.html, panneau Territoire, 16 fonctions orphelines d'app.js et blocs ui.css associés retirés (~1 440 lignes), theme-color aligné, `icon-512 copie.png` supprimée. Note : `supprimerLot` faisait partie du code mort retiré — l'UI n'offre plus aucune suppression de lot (A8 à repenser). | Structure + Feature | ✅ Fait |
 | 10 | A11 — ~~GPS sans timeout~~ GPS refait (`feat/gps-precis`, 24 nov. 2026) · overlay « Chargement » clignote à chaque rafraîchissement auto | Feature | Basse |
 | 11 | **Points d'entrée par profession** — Aiguillage à l'entrée selon le métier : bûcheron/élagueur → ajout de bois, scieur mobile → débit, menuisier → prélèvement. Une fois le rôle choisi, seuls les écrans de ce parcours restent visibles (les autres onglets disparaissent de la navigation). Bouton discret « Changer de rôle ». Choix mémorisé en localStorage. Stock présenté en 2 états : grume brute / grume débitée. | À définir | À définir |
-| 12 | **Géolocalisation manuelle des grumes** — Placement à la main sur une carte, au bureau, pour une grume sans position (`feat/gps-precis`, 24 nov. 2026) | Feature (bureau) | En attente de validation |
+| 12 | **Géolocalisation manuelle des grumes** — Placement à la main sur une carte, au bureau, pour une grume sans position (24 nov. 2026) | Feature (bureau) | ✅ Fait |
 | 13 | **Lieu de stockage** — Sélection du lieu de stockage par liste déroulante. Plus tard (non prioritaire) : capacité maximale d'accueil par lieu, avec signal d'alerte si le lot enregistré dépasse la capacité restante. | À définir | À définir |
 | 14 | **Identification unique de chaque grume** — Saisie de l'identifiant par photo smartphone de la plaque d'identification apposée sur la grume, avec saisie manuelle du numéro en alternative. L'identifiant suit la grume sur tout son parcours : stockage → débit scieur → transformation menuisier. | À définir | À définir |
 | 15 | **Transformation par le scieur mobile dans le stock** — Point majeur, à traiter dans une session dédiée. Opération de débit : grume brute → bois débité, avec traçabilité (filiation grume → lots débités). | À définir | À définir |
