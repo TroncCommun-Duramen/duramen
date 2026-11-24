@@ -104,6 +104,8 @@ Suites de la fusion du 3 nov. 2026 :
 | Stock mobile allégé : bilan à une date et boutons d'export retirés (ils restent au bureau) | ✅ Fusionné le 24 nov. 2026 (cache v71) |
 | Fiche de grume allégée (numéro, essence, cubage, date de débit ; bande de couleur d'état ; toucher = Corriger), titre « date de débit du + au − urgent », règle des 80 cm sans question, « débit externalisé ». Branche `feat/fiche-grume-allegee` | ✅ Fusionnée le 24 nov. 2026 (cache v74) |
 | Nom de la tempête (cause Intempérie), noms partagés entre toutes les communes. Branche `feat/nom-tempete` | ✅ Fusionnée le 24 nov. 2026 (cache v74), 73 vérifications |
+| Boutons de choix de l'état aux couleurs de l'état (gris clair, or, ardoise) | ✅ Fusionné le 24 nov. 2026 (cache v75) |
+| iPhone : bouton « Préremplir le contact » au-dessus du clavier en nommant une grume (remplissage automatique de Safari). Proposé : renommer le champ et retirer « Numéro » du titre | En attente de décision |
 | Tablettes (service de Nantes) : afficher la version téléphone (barre du bas, accueil, ticket retour) jusqu'à la largeur d'une tablette, contenu centré. Captures téléphone identiques avant/après exigées | À faire, après les deux branches |
 | Cote exacte du gros bout accepté par la scierie mobile : 80 cm provisoire, à confirmer avec le scieur (réglage `diametre_gros_bout_max_cm` dans la table `reglages`, sans toucher au code) | À faire (porteur) |
 | Garder la passerelle Supabase (vue `lots`, fonction `lots_partages()`, colonne `extractions.cause_abattage`) tant que la nouvelle version n'est pas validée sur le terrain : c'est elle qui permet de revenir à l'ancienne version. Ensuite, la supprimer | En attente de validation terrain |

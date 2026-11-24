@@ -150,6 +150,9 @@ HH:MM — [commit: abc1234] résultat final
 19:59 — Débit externalisé collé à la date ; titre « du + au − urgent » ; tempête valable pour toutes les communes ; question du mode portrait (déjà demandé, ne règle pas tout)
 20:01 — Validation des propositions. Fusion des deux branches précédentes (cache v71). Branches `feat/fiche-grume-allegee` (v72) et `feat/nom-tempete` (v73) testées, essai de fusion des deux : 73/73. En attente de validation
 20:13 — Validation du porteur : fusion des deux branches dans `main`, cache v74, tests 73/73
+20:27 — Question : bouton bleu « Préremplir le contact » en nommant une grume. Remplissage automatique de l'iPhone (mot « Numéro », id `modal-nom-input`). Correction proposée, en attente
+20:29 — Demande : boutons de choix de l'état aux couleurs de l'état (gris clair, or, ardoise) au lieu de l'indigo
+20:31 — Validation : fusion de `feat/couleur-choix-etat` dans `main`, cache v75
 
 ---
 
