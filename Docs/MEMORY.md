@@ -13,6 +13,18 @@ En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une cop
 
 ---
 
+## Session 24 novembre 2026 (soir) — Couleurs d'état, stock allégé, tempêtes
+
+Décisions du porteur :
+- État de la grume en trois couleurs : standard gris clair (`--pierre`/`--neige`), exceptionnelle or (`--or` #E8B93A), mauvais état ardoise (`--ardoise` #4A4A44). Trois clartés différentes : lisibles au soleil et pour les personnes qui voient mal les couleurs.
+- Stock mobile : plus de bilan à une date, plus d'export (restent au bureau). Fiche d'une grume : numéro, essence, cubage, date de débit, et l'état en bande de couleur. Le reste se lit dans « Corriger » (toucher la fiche).
+- Titre : « Grumes en stock — date de débit du + au − urgent ».
+- 80 cm : la règle seule, sur le Ø médian mesuré, sans question. On dit « débit externalisé », jamais « débit externe » ni « gros bout ». Réglage `diametre_max_scierie_cm` (l'ancien `diametre_gros_bout_max_cm` reste pour les téléphones pas à jour). La fonction `questionGrosBout` de core.js n'est plus utilisée.
+- Intempérie : nom de la tempête facultatif, valable pour toutes les communes (table `tempetes`, lisible par toute commune connectée ; colonne `grumes.nom_intemperie` ; `corriger_grume` à 11 paramètres).
+- Tablettes : le mode portrait est déjà demandé (`portrait-primary` dans manifest.json) mais ne règle pas tout : au-dessus de 600 px l'app passe en « grand écran » (pas d'accueil, pas de ticket retour, onglets petits). Solution retenue : déplacer ce seuil, contenu centré. À faire à part, avec captures téléphone identiques avant/après.
+
+---
+
 ## Session 24 novembre 2026 — Retours terrain : causes, « Autre », grumes à part, GPS
 
 Validées par le porteur et fusionnées dans `main` le 24 nov. 2026 (branches `feat/grumes-a-part` et `feat/gps-precis`). Mobile en cache `duramen-v68`. Tests rejoués sur la version fusionnée : 53/53.
