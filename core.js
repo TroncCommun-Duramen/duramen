@@ -502,8 +502,56 @@ var DuramenCore = (function () {
     return { ok: true, erreur: '' };
   }
 
+  // ═══ Grumes à part et débit externe (ajouts du 24 nov. 2026) ═══
+  // Ajouts uniquement : aucune fonction existante n'est modifiée.
+
+  // État d'une grume : où la ranger. Codes enregistrés dans la base (colonne etat).
+  var ETATS_GRUME = [
+    ['standard',       'Standard'],
+    ['exceptionnelle', 'Exceptionnelle'],
+    ['mauvais_etat',   'Mauvais état']
+  ];
+  function libelleEtatGrume(code) {
+    for (var i = 0; i < ETATS_GRUME.length; i++) if (ETATS_GRUME[i][0] === code) return ETATS_GRUME[i][1];
+    return 'Standard';
+  }
+  // Grume à stocker à part (exceptionnelle ou en mauvais état) ?
+  function grumeAPart(grume) {
+    return !!grume && (grume.etat === 'exceptionnelle' || grume.etat === 'mauvais_etat');
+  }
+
+  // Diamètre maximal au gros bout pour la scierie mobile. La valeur réelle
+  // vient de la base (table reglages) ; celle-ci sert sans réseau.
+  var DIAMETRE_GROS_BOUT_MAX_DEFAUT = 80;
+  // On mesure le Ø médian. Le gros bout est plus large : à partir de
+  // (limite − 20 cm) de Ø médian, l'agent dit si le gros bout dépasse la limite.
+  var ECART_QUESTION_GROS_BOUT = 20;
+
+  // Que faire pour ce Ø médian ? 'non' : sous le seuil, rien à demander ;
+  // 'question' : l'agent répond oui/non ; 'oui' : débit externe d'office.
+  function questionGrosBout(diametreMedian, limite) {
+    var lim = parseFloat(limite) || DIAMETRE_GROS_BOUT_MAX_DEFAUT;
+    var d   = parseFloat(diametreMedian) || 0;
+    if (d >= lim) return 'oui';
+    if (d >= lim - ECART_QUESTION_GROS_BOUT) return 'question';
+    return 'non';
+  }
+
+  // Comparer deux noms sans tenir compte des accents, majuscules et espaces :
+  // « érable », « Erable » et « ÉRABLE » sont le même nom.
+  function cleNom(texte) {
+    return String(texte || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
   // ─── API publique ─────────────────────────────────────────────────────────
   return {
+    ETATS_GRUME:           ETATS_GRUME,
+    libelleEtatGrume:      libelleEtatGrume,
+    grumeAPart:            grumeAPart,
+    DIAMETRE_GROS_BOUT_MAX_DEFAUT: DIAMETRE_GROS_BOUT_MAX_DEFAUT,
+    questionGrosBout:      questionGrosBout,
+    cleNom:                cleNom,
     validerCorrectionGrume: validerCorrectionGrume,
     NUMERO_GRUME_CHIFFRES: NUMERO_GRUME_CHIFFRES,
     VALEUR_INCONNUE:       VALEUR_INCONNUE,

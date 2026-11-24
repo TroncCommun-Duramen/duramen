@@ -293,6 +293,16 @@ async function bChargerDonnees(options) {
     ]);
     if (!bCommune || bCommune.code !== pour) return false;   // déconnexion entre-temps
     lots = (r[0] || []).map(function (l) { return Object.assign({}, l, { grumes: l.grumes || [] }); });
+    // Noms ajoutés avec « Autre » et réglages : jamais bloquants
+    try {
+      var nr = await Promise.all([
+        bSbSelect('noms_personnalises', 'commune_code=eq.' + code + '&select=type,nom&order=nom.asc'),
+        bSbSelect('reglages', 'select=cle,valeur')
+      ]);
+      bNomsPerso = nr[0] || [];
+      bReglages  = {};
+      (nr[1] || []).forEach(function (x) { bReglages[x.cle] = parseFloat(x.valeur); });
+    } catch (e3) { /* on garde les listes déjà chargées */ }
     extractions = r[1] || [];
     campagnes   = r[2] || [];
     bDernierChargement = Date.now();
@@ -550,6 +560,13 @@ function bAfficherGrumes() {
     if (reservees[g.id])                      etat = el('span', 'b-badge b-badge-campagne', 'À débiter — ' + (reservees[g.id].nom || 'campagne'));
     else if (!DuramenCore.estNumerotee(g))    etat = el('span', 'b-badge b-badge-alerte', 'En attente de marquage');
     else                                      etat = el('span', 'b-badge b-badge-neutre', 'En stock');
+    var marques = bBadgesEtatGrume(g);
+    if (marques.length) {
+      var cellMarques = el('div', 'b-debit-ligne');
+      cellMarques.appendChild(etat);
+      marques.forEach(function (b) { cellMarques.appendChild(b); });
+      etat = cellMarques;
+    }
     // Correction possible tant que la grume n'est dans aucune campagne
     if (DuramenCore.validerCorrectionGrume(g).ok) {
       var cellEtat = el('div', 'b-debit-ligne');
@@ -581,12 +598,95 @@ var B_OPTIONS_PROVENANCE = [
 ];
 var B_OPTIONS_CAUSE = [
   ['Coupe sanitaire', 'Coupe sanitaire'],
-  ['Intempérie', 'Intempérie (chablis, neige…)'],
+  ['Intempérie', 'Intempérie (tempête, neige…)'],
   ['Aménagement', 'Aménagement urbain'],
-  ['Coupe sécuritaire', 'Coupe sécuritaire'],
   ['Gestion durable', 'Gestion durable'],
   ['Autre', 'Autre'], ['Inconnue', 'Inconnue']
 ];
+
+// ─── Noms ajoutés par la commune avec « Autre » (cause, essence) ─────────
+// Mêmes noms que sur le mobile (table noms_personnalises).
+var B_VALEUR_AUTRE = '__autre__';
+var bNomsPerso = [];
+var bReglages  = {};
+
+function bLimiteGrosBout() {
+  return bReglages.diametre_gros_bout_max_cm || DuramenCore.DIAMETRE_GROS_BOUT_MAX_DEFAUT;
+}
+function bNomsDuType(type) {
+  var vus = {}, liste = [];
+  bNomsPerso.forEach(function (n) {
+    if (n.type !== type) return;
+    var k = DuramenCore.cleNom(n.nom);
+    if (!k || vus[k]) return;
+    vus[k] = true;
+    liste.push(n.nom);
+  });
+  return liste.sort(function (a, b) { return a.localeCompare(b, 'fr'); });
+}
+// Choix de base, puis noms de la commune, puis « Autre… », puis « Inconnue »
+function bOptionsAvecNoms(base, type) {
+  var choix    = base.filter(function (o) { return o[0] !== 'Autre' && o[0] !== 'Inconnue'; });
+  var inconnue = base.filter(function (o) { return o[0] === 'Inconnue'; });
+  var cles = {};
+  choix.forEach(function (o) { cles[DuramenCore.cleNom(o[0])] = true; });
+  var perso = bNomsDuType(type)
+    .filter(function (n) { return !cles[DuramenCore.cleNom(n)]; })
+    .map(function (n) { return [n, n]; });
+  return choix.concat(perso, [[B_VALEUR_AUTRE, 'Autre… (écrire le nom)']], inconnue);
+}
+// Texte écrit dans « Autre » → { valeur, nouveau }. S'il correspond à un
+// choix de la liste (aux accents et majuscules près), on garde ce choix.
+function bResoudreNomAutre(options, texte) {
+  var t = String(texte || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+  if (!t) return { valeur: '', nouveau: false };
+  var k = DuramenCore.cleNom(t);
+  for (var i = 0; i < options.length; i++) {
+    var o = options[i];
+    if (!o[0] || o[0] === B_VALEUR_AUTRE) continue;
+    if (DuramenCore.cleNom(o[0]) === k || DuramenCore.cleNom(o[1]) === k) return { valeur: o[0], nouveau: false };
+  }
+  return { valeur: t.charAt(0).toUpperCase() + t.slice(1), nouveau: true };
+}
+// Liste avec « Autre… » : ce choix ouvre un champ pour écrire le nom
+function bChoixAvecAutre(options, valeur) {
+  var s = bSelectCorrection(options, valeur);
+  var liste = options.slice();
+  if (valeur && !liste.some(function (o) { return o[0] === valeur; })) liste.unshift([valeur, valeur]);
+  var inp = bInput('text', '', { maxlength: '60', placeholder: 'Écrire le nom — il sera proposé la prochaine fois' });
+  var bloc = el('div', 'b-choix-autre');
+  bloc.appendChild(s);
+  bloc.appendChild(inp);
+  function maj() { inp.classList.toggle('hidden', s.value !== B_VALEUR_AUTRE); }
+  s.addEventListener('change', function () { maj(); if (s.value === B_VALEUR_AUTRE) inp.focus(); });
+  maj();
+  return {
+    el: bloc,
+    lire: function () {
+      if (s.value !== B_VALEUR_AUTRE) return { valeur: s.value, nouveau: false };
+      return bResoudreNomAutre(liste, inp.value);
+    }
+  };
+}
+// Garde un nouveau nom pour les prochaines saisies de la commune
+async function bMemoriserNom(type, nom) {
+  if (!nom || !bCommune) return;
+  var k = DuramenCore.cleNom(nom);
+  if (bNomsDuType(type).some(function (n) { return DuramenCore.cleNom(n) === k; })) return;
+  bNomsPerso.push({ type: type, nom: nom });
+  try {
+    await bSbInsert('noms_personnalises', { commune_code: bCommune.code, type: type, nom: nom });
+  } catch (e) { /* déjà enregistré par un autre poste, ou pas de réseau : la liste reste utilisable */ }
+}
+
+// Badges d'une grume : à stocker à part, débit externe
+function bBadgesEtatGrume(g) {
+  var liste = [];
+  if (g.etat === 'exceptionnelle') liste.push(el('span', 'b-badge b-badge-apart', 'Exceptionnelle · à part'));
+  if (g.etat === 'mauvais_etat')   liste.push(el('span', 'b-badge b-badge-apart', 'Mauvais état · à part'));
+  if (g.debit_externe)             liste.push(el('span', 'b-badge b-badge-externe', 'Débit externe'));
+  return liste;
+}
 // Mêmes bornes que les molettes du mobile
 var B_LONGUEUR_MIN = 1.70, B_LONGUEUR_MAX = 12;
 var B_DIAMETRE_MIN = 20,   B_DIAMETRE_MAX = 150;
@@ -610,7 +710,8 @@ function bSelectCorrection(options, valeur) {
 // a corrigé la même grume pendant la saisie.
 function bEtatGrume(g) {
   var m = DuramenCore.mesuresGrume(g);
-  return [g.essence, g.provenance, g.cause, g.date_abattage || '', g.repere || '', m.longueur, m.diametre].join('|');
+  return [g.essence, g.provenance, g.cause, g.date_abattage || '', g.repere || '', m.longueur, m.diametre,
+          g.etat || 'standard', !!g.debit_externe].join('|');
 }
 
 function bTexteDateCorrection(iso) { return iso ? fmtDate(iso) : 'inconnue'; }
@@ -625,22 +726,32 @@ function bOuvrirCorrectionGrume(id) {
   var md = bOuvrirModale('Corriger la grume — ' + nomGrume(g),
     'Tout se corrige sauf le numéro. Le volume se recalcule.');
 
-  var sEss = bSelectCorrection(DuramenCore.ESSENCES_ORDRE.map(function (e) { return [e, e]; }), g.essence);
+  var sEss = bChoixAvecAutre(bOptionsAvecNoms(DuramenCore.ESSENCES_ORDRE.map(function (e) { return [e, e]; }), 'essence'), g.essence);
   var sPro = bSelectCorrection(B_OPTIONS_PROVENANCE, g.provenance);
-  var sCau = bSelectCorrection(B_OPTIONS_CAUSE, g.cause);
+  var sCau = bChoixAvecAutre(bOptionsAvecNoms(B_OPTIONS_CAUSE, 'cause'), g.cause);
+  var sEtat = bSelectCorrection(DuramenCore.ETATS_GRUME, g.etat || 'standard');
+  // Gros bout au-delà de la limite de la scierie mobile : débit externe
+  var limGB = bLimiteGrosBout();
+  var sGB = bSelectCorrection([['', '— Répondre —'], ['non', 'Non'], ['oui', 'Oui']],
+    g.debit_externe ? 'oui' : 'non');
   var iDate = bInput('date', g.date_abattage || '', { max: jourISO() });
   var iLon  = bInput('number', avant.longueur, { min: B_LONGUEUR_MIN, max: B_LONGUEUR_MAX, step: '0.05' });
   var iDia  = bInput('number', avant.diametre, { min: B_DIAMETRE_MIN, max: B_DIAMETRE_MAX, step: '1' });
   var iRep  = bInput('text', g.repere || '', { placeholder: 'Ex. : 3e grume de la pile, côté portail', maxlength: '80' });
 
-  md.corps.appendChild(bChamp('Essence', sEss));
+  md.corps.appendChild(bChamp('Essence', sEss.el));
   md.corps.appendChild(bChamp('Provenance', sPro));
-  md.corps.appendChild(bChamp('Cause d\'abattage', sCau));
+  md.corps.appendChild(bChamp('Cause d\'abattage', sCau.el));
+  md.corps.appendChild(bChamp('État de la grume (à part si exceptionnelle ou en mauvais état)', sEtat));
   md.corps.appendChild(bChamp('Abattue le (vide si la date est inconnue)', iDate, 'b-champ-court'));
   var mesures = el('div', 'b-debit-ligne');
   mesures.appendChild(bChamp('Longueur (m) · ' + fmtNb(B_LONGUEUR_MIN, 2) + ' à ' + B_LONGUEUR_MAX, iLon, 'b-champ-court'));
   mesures.appendChild(bChamp('Diamètre (cm) · ' + B_DIAMETRE_MIN + ' à ' + B_DIAMETRE_MAX, iDia, 'b-champ-court'));
   md.corps.appendChild(mesures);
+  var champGB = bChamp('Gros bout de plus de ' + limGB + ' cm ? (débit hors scierie mobile)', sGB, 'b-champ-court');
+  md.corps.appendChild(champGB);
+  var noteGB = el('div', 'b-note', 'Ø médian de ' + limGB + ' cm ou plus : débit externe.');
+  md.corps.appendChild(noteGB);
   md.corps.appendChild(bChamp('Repère pour retrouver la grume (facultatif)', iRep));
 
   // Supprimer : pour une grume saisie par erreur (doublon…). À part, en rouge.
@@ -664,16 +775,35 @@ function bOuvrirCorrectionGrume(id) {
     var nouveau = arrondiM3(calcVol(m.diametre, m.longueur));
     synth.textContent = nouveau === ancien ? 'Volume : ' + m3(nouveau) : 'Volume : ' + m3(ancien) + ' → ' + m3(nouveau);
   }
+  function majGrosBout() {
+    var mode = DuramenCore.questionGrosBout(lireMesures().diametre, limGB);
+    champGB.classList.toggle('hidden', mode !== 'question');
+    noteGB.classList.toggle('hidden', mode !== 'oui');
+  }
+  function lireDebitExterne() {
+    var mode = DuramenCore.questionGrosBout(lireMesures().diametre, limGB);
+    if (mode === 'oui') return true;
+    if (mode === 'non') return false;
+    return sGB.value === '' ? null : sGB.value === 'oui';
+  }
   iLon.oninput = majVolume;
-  iDia.oninput = majVolume;
+  iDia.oninput = function () { majVolume(); majGrosBout(); };
   majVolume();
+  majGrosBout();
 
   md.pied.appendChild(synth);
   md.pied.appendChild(bouton('b-btn b-btn-ghost', 'Annuler', bFermerModale));
   md.pied.appendChild(bouton('b-btn b-btn-primary', 'Enregistrer', function () {
     var m = lireMesures();
+    var ess = sEss.lire(), cau = sCau.lire();
+    if (!ess.valeur) { bShowToast('Écrivez le nom de l\'essence.', true); return; }
+    if (!cau.valeur) { bShowToast('Écrivez la cause d\'abattage.', true); return; }
+    var debitExterne = lireDebitExterne();
+    if (debitExterne === null) { bShowToast('Le gros bout fait-il plus de ' + limGB + ' cm ? Répondez Oui ou Non.', true); return; }
     bEnregistrerCorrection(g, vu, {
-      essence: sEss.value, provenance: sPro.value, cause: sCau.value,
+      essence: ess.valeur, provenance: sPro.value, cause: cau.valeur,
+      essenceNouvelle: ess.nouveau, causeNouvelle: cau.nouveau,
+      etat: sEtat.value, debitExterne: debitExterne,
       abattage: iDate.value, repere: iRep.value.trim(),
       longueur: m.longueur, diametre: m.diametre
     });
@@ -698,6 +828,8 @@ async function bEnregistrerCorrection(g, vu, n) {
   comparer('Essence', g.essence || '—', n.essence);
   comparer('Provenance', g.provenance || '—', n.provenance);
   comparer('Cause', g.cause || '—', n.cause);
+  comparer('État', DuramenCore.libelleEtatGrume(g.etat), DuramenCore.libelleEtatGrume(n.etat));
+  comparer('Débit externe', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
   comparer('Abattue le', bTexteDateCorrection(g.date_abattage), bTexteDateCorrection(n.abattage));
   comparer('Longueur', fmtNb(avant.longueur, 2) + ' m', fmtNb(n.longueur, 2) + ' m');
   comparer('Diamètre', avant.diametre + ' cm', n.diametre + ' cm');
@@ -723,8 +855,11 @@ async function bEnregistrerCorrection(g, vu, n) {
     await bSbRpc('corriger_grume', {
       p_id: g.id, p_essence: n.essence, p_provenance: n.provenance, p_cause: n.cause,
       p_date_abattage: n.abattage || null, p_repere: n.repere,
-      p_longueur: n.longueur, p_diametre: n.diametre
+      p_longueur: n.longueur, p_diametre: n.diametre,
+      p_etat: n.etat, p_debit_externe: n.debitExterne
     });
+    if (n.essenceNouvelle) await bMemoriserNom('essence', n.essence);
+    if (n.causeNouvelle)   await bMemoriserNom('cause', n.cause);
     vider(document.getElementById('b-modales'));
     await bChargerDonnees({ interne: true });
     bShowToast(nomGrume(g) + ' corrigée.');
@@ -1061,6 +1196,7 @@ function bLigneChoixDebit(g, majResume) {
   tete.appendChild(el('span', 'b-prep-nom', nomGrume(g) + ' · ' + (g.essence || '')));
   tete.appendChild(el('span', 'b-prep-meta', texteDimensions(g) + ' · ' + m3(g.vol_utile)));
   tete.appendChild(bBadgeUrgence(g));
+  bBadgesEtatGrume(g).forEach(function (b) { tete.appendChild(b); });
   bloc.appendChild(tete);
 
   var debitOk = DuramenCore.validerDebitGrume(g);
@@ -1951,7 +2087,8 @@ function bTableauExport(type, source) {
 
   if (type === 'grumes_stock' || type === 'grumes_toutes') {
     entetes = ['Commune', 'N° grume', 'Essence', 'Longueur m', 'Diamètre cm', 'Volume m3', 'Date d\'abattage',
-               'Année de coupe', 'Provenance', 'Cause', 'Repère', 'Date de saisie', 'État', 'À débiter avant le', 'Campagne'];
+               'Année de coupe', 'Provenance', 'Cause', 'Repère', 'Date de saisie', 'État', 'À débiter avant le', 'Campagne',
+               'Rangement', 'Débit externe'];
     colVol = 5;
     var reservees = grumesADebiter(), sorties = clesGrumesSorties();
     var base = type === 'grumes_toutes' ? lots : (metro ? bMetroGrumes : DuramenCore.getGrumesEnStock());
@@ -1973,7 +2110,9 @@ function bTableauExport(type, source) {
         DuramenCore.abattageInconnu(g) ? csvTexte('Inconnue') : csvDate(g.date_abattage),
         csvTexte(g.annee || ''), csvTexte(g.provenance || ''), csvTexte(g.cause || ''), csvTexte(g.repere || ''),
         csvDate(g.date_iso || g.created_at), csvTexte(etat),
-        enStock && u.dateLimite ? csvDate(u.dateLimite) : '""', csvTexte(camp)
+        enStock && u.dateLimite ? csvDate(u.dateLimite) : '""', csvTexte(camp),
+        csvTexte(DuramenCore.grumeAPart(g) ? 'À part — ' + DuramenCore.libelleEtatGrume(g.etat) : 'Standard'),
+        csvTexte(g.debit_externe ? 'Oui' : 'Non')
       ] });
     });
   }
