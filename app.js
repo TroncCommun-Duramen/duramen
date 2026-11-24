@@ -284,6 +284,7 @@ async function chargerDonnees(options) {
       (regl || []).forEach(function (r) { reglages[r.cle] = parseFloat(r.valeur); });
       localStorage.setItem('duramen_reglages_cache', JSON.stringify(reglages));
     } catch (eNoms) { chargerNomsEtReglagesCache(); }
+    majListesSaisie();
     lots = rawLots.map(function (l) {
       return Object.assign({}, l, {
         volBrut:    l.vol_brut    || 0,
@@ -315,6 +316,7 @@ async function chargerDonnees(options) {
       extractions = cachedExt ? JSON.parse(cachedExt) : [];
       campagnes   = lireJSONLocal('duramen_campagnes_cache') || [];
       chargerNomsEtReglagesCache();
+      majListesSaisie();
       mettreAJourHeaderStats();
       mettreAJourAccueil();
       afficherHistorique();
@@ -2753,6 +2755,7 @@ function ouvrirApp() {
   if (btnCommune) btnCommune.textContent = communeConnectee.nom;
   var btnCommunaute = document.getElementById('histo-btn-communaute');
   if (btnCommunaute) btnCommunaute.textContent = 'métropole';
+  chargerNomsEtReglagesCache();
   initialiserPanelSaisie();
   captureGPS();
   chargerDonnees();
@@ -3512,20 +3515,25 @@ function creerChoixAvecAutre(id, labelTxt, options, valeur, onChange) {
   l.htmlFor = id;
   var sel = document.createElement('select');
   sel.id  = id;
-  var liste = options.slice();
-  if (valeur && !liste.some(function (o) { return o[0] === valeur; })) liste.unshift([valeur, valeur]);
-  liste.forEach(function (opt) {
-    var o = document.createElement('option');
-    o.value = opt[0];
-    o.textContent = opt[1];
-    sel.appendChild(o);
-  });
+  var liste = [];
+  function remplir(opts, val) {
+    liste = opts.slice();
+    if (val && !liste.some(function (o) { return o[0] === val; })) liste.unshift([val, val]);
+    while (sel.firstChild) sel.removeChild(sel.firstChild);
+    liste.forEach(function (opt) {
+      var o = document.createElement('option');
+      o.value = opt[0];
+      o.textContent = opt[1];
+      sel.appendChild(o);
+    });
+  }
+  remplir(options, valeur);
   var inp = document.createElement('input');
   inp.type = 'text';
   inp.id   = id + '-autre';
   inp.maxLength    = 60;
   inp.autocomplete = 'off';
-  inp.placeholder  = 'Écrire le nom — il sera proposé la prochaine fois';
+  inp.placeholder  = 'Écrire le nom';
   function majChamp() { inp.classList.toggle('hidden', sel.value !== VALEUR_AUTRE); }
   sel.addEventListener('change', function () {
     majChamp();
@@ -3543,8 +3551,21 @@ function creerChoixAvecAutre(id, labelTxt, options, valeur, onChange) {
     lire: function () {
       if (sel.value !== VALEUR_AUTRE) return { valeur: sel.value, nouveau: false };
       return resoudreNomAutre(liste, inp.value);
+    },
+    // Nouvelle liste (noms arrivés de la base) : le choix en cours est gardé
+    majOptions: function (opts) {
+      var v = sel.value;
+      remplir(opts, v);
+      sel.value = v;
+      majChamp();
     }
   };
+}
+
+// Noms de la commune arrivés de la base : listes de la saisie mises à jour
+function majListesSaisie() {
+  if (choixEssenceSaisie) choixEssenceSaisie.majOptions([['', '— Choisir —']].concat(optionsEssences()));
+  if (choixCauseSaisie)   choixCauseSaisie.majOptions([['', '— Choisir —']].concat(optionsCauses()));
 }
 
 // Boutons à choix unique (ex. état de la grume). lire() rend le code choisi.

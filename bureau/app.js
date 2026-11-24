@@ -653,7 +653,7 @@ function bChoixAvecAutre(options, valeur) {
   var s = bSelectCorrection(options, valeur);
   var liste = options.slice();
   if (valeur && !liste.some(function (o) { return o[0] === valeur; })) liste.unshift([valeur, valeur]);
-  var inp = bInput('text', '', { maxlength: '60', placeholder: 'Écrire le nom — il sera proposé la prochaine fois' });
+  var inp = bInput('text', '', { maxlength: '60', placeholder: 'Écrire le nom' });
   var bloc = el('div', 'b-choix-autre');
   bloc.appendChild(s);
   bloc.appendChild(inp);
