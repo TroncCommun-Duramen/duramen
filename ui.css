@@ -2521,3 +2521,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   .field textarea,
   .feedback-textarea { font-size: max(16px, 1rem); }
 }
+
+/* ═══ GPS : marge d'erreur trop grande (24 nov. 2026) ═══ */
+/* Noir sur orange, comme les autres alertes */
+.saisie-chip.saisie-chip-alerte { background: var(--orange); color: var(--sumi); }

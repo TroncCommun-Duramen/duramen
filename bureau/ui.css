@@ -1280,3 +1280,9 @@ body {
   .b-mentions-titre { font-size: 26px; }
   .b-mentions-tete { flex-direction: column; }
 }
+
+/* ═══ Carte : placer une grume sans position (24 nov. 2026) ═══ */
+.b-carte { height: 60vh; min-height: 360px; border: 1px solid var(--pierre); border-radius: 8px; }
+/* Les couleurs des points passent ici, pas dans le JS */
+.b-carte-point { stroke: var(--sumi); stroke-width: 1; fill: var(--cendre); fill-opacity: 0.9; }
+.b-carte-choix { stroke: var(--sumi); stroke-width: 2; fill: var(--orange); fill-opacity: 1; }
