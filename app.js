@@ -2643,7 +2643,8 @@ function ouvrirApp() {
   envoyerFileEnvoi().then(function (nb) { if (nb) chargerDonnees({ silencieux: true }); });
   demarrerRafraichissement();
   mettreAJourAccueil();
-  if (window.innerWidth <= 600) {
+  // Téléphone et tablette (jusqu'à 1199 px, même seuil que ui.css) : accueil
+  if (window.innerWidth <= 1199) {
     var btnAccueil = document.querySelector('[data-panel="accueil"]');
     if (btnAccueil) switchTab('accueil', btnAccueil);
   }
