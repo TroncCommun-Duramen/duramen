@@ -2458,3 +2458,17 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 /* ═══ GPS : marge d'erreur trop grande (24 nov. 2026) ═══ */
 /* Noir sur orange, comme les autres alertes */
 .saisie-chip.saisie-chip-alerte { background: var(--orange); color: var(--sumi); }
+
+/* ═══ Fiche de grume allégée (24 nov. 2026) ═══ */
+/* L'état se lit à la bande de couleur, sans texte :
+   gris clair = standard, or = exceptionnelle, ardoise = mauvais état */
+.histo-lot-card.fiche-grume { border-left-width: 8px; border-left-style: solid; }
+.fiche-etat-standard       { border-left-color: var(--pierre); }
+.fiche-etat-exceptionnelle { border-left-color: var(--or); }
+.fiche-etat-mauvais_etat   { border-left-color: var(--ardoise); }
+/* Toucher la fiche ouvre « Corriger » */
+.fiche-touchable { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.fiche-touchable:active { background: var(--neige); }
+.fiche-touchable:focus-visible { outline: 2px solid var(--sumi); outline-offset: 2px; }
+/* Débit externalisé : cadre orange autour de la date de débit */
+.badge-urgence.badge-debit-externalise { border: 2px solid var(--orange); }
