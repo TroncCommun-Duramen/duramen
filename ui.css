@@ -191,7 +191,7 @@ main {
    tailles de police fixées ici sont écrasées plus bas. Le rattrapage est
    en fin de fichier, section « Taille minimale des champs ».
 ══════════════════════ */
-@media (max-width: 600px) {
+@media (max-width: 1199px) {
   .header-inner { padding: 12px 14px 10px; gap: 10px; }
   .logo-mark { width: 42px; height: 42px; }
   .logo-mark svg { width: 42px; height: 42px; }
@@ -548,7 +548,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 
 /* ─── ACCUEIL MOBILE ─── */
-@media (min-width: 601px) {
+@media (min-width: 1200px) {
   #panel-accueil { display: none !important; }
 }
 
@@ -885,7 +885,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   gap: 14px;
   margin-bottom: 24px;
 }
-@media (max-width: 600px) {
+@media (max-width: 1199px) {
   .saisie-selects { grid-template-columns: 1fr; }
 }
 
@@ -2178,7 +2178,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 
 /* Mobile : un peu plus de place pour les modales sciage */
-@media (max-width: 600px) {
+@media (max-width: 1199px) {
   .sciage-modal { padding: 22px 16px; max-height: 92vh; }
 }
 
@@ -2406,7 +2406,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .loading-box { border-radius: var(--border-radius-card); box-shadow: var(--ombre-posee); }
 
 /* Sur téléphone : 16 px au moins pour tout ce qui se lit ou se saisit à la connexion */
-@media (max-width: 600px) {
+@media (max-width: 1199px) {
   .login-card { padding: 0 24px 28px; }
   .login-card::before { margin: 0 -24px 24px; }
   .login-sub { font-size: 1rem; }
@@ -2428,7 +2428,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
    Ce bloc est placé en fin de fichier, après les règles de base : à
    priorité égale, la dernière écrite l'emporte. max(16px, 1rem) garde la
    taille choisie par l'agent dans son téléphone si elle est plus grande. */
-@media (max-width: 600px) {
+@media (max-width: 1199px) {
   .field input,
   .field select,
   .field textarea,
@@ -2477,3 +2477,16 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .grume-choix-3 .grume-methode-btn.active[data-valeur="standard"]       { background: var(--pierre);  color: var(--sumi);  border-color: var(--pierre); }
 .grume-choix-3 .grume-methode-btn.active[data-valeur="exceptionnelle"] { background: var(--or);      color: var(--sumi);  border-color: var(--or); }
 .grume-choix-3 .grume-methode-btn.active[data-valeur="mauvais_etat"]   { background: var(--ardoise); color: var(--washi); border-color: var(--ardoise); }
+
+/* ═══ Tablette (24 nov. 2026) ═══
+   De 601 à 1199 px, la tablette affiche la version téléphone (barre du bas,
+   accueil, ticket retour). Le seuil des blocs « mobile » est passé de 600 à
+   1199 px ; le même seuil est dans app.js (ouverture sur l'accueil).
+   Ici, la tablette seule : le contenu reste centré sur une largeur de
+   téléphone confortable, en portrait comme en paysage. Rien ne change
+   sous 601 px (téléphone) ni à partir de 1200 px (ordinateur). */
+@media (min-width: 601px) and (max-width: 1199px) {
+  main,
+  .bottom-nav-inner,
+  #grume-sheet { width: 100%; max-width: 680px; margin-left: auto; margin-right: auto; }
+}
