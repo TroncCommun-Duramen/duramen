@@ -153,6 +153,7 @@ HH:MM — [commit: abc1234] résultat final
 20:27 — Question : bouton bleu « Préremplir le contact » en nommant une grume. Remplissage automatique de l'iPhone (mot « Numéro », id `modal-nom-input`). Correction proposée, en attente
 20:29 — Demande : boutons de choix de l'état aux couleurs de l'état (gris clair, or, ardoise) au lieu de l'indigo
 20:31 — Validation : fusion de `feat/couleur-choix-etat` dans `main`, cache v75
+20:33 — Validation de l'approche tablette. Branche `feat/tablette` (cache v76) : 60 captures téléphone/ordinateur identiques avant/après, tests 34/34 à 390, 768 et 1180 px. En attente de validation
 
 ---
 
