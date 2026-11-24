@@ -130,6 +130,17 @@ HH:MM — [commit: abc1234] résultat final
 09:00 — [commit: b53ee76] Bouton « Supprimer cette grume » dans la fenêtre « Corriger », sur `feat/supprimer-grume`. Base : table `grumes_supprimees`, fonction `supprimer_grume`, suppression directe fermée. En attente de validation
 08:50 — Validation du porteur : fusion de `feat/supprimer-grume` dans `main`
 
+## Session 2026-11-24
+
+12:56 — Retours terrain : causes d'abattage, « Autre » à mémoriser (cause, essence), grumes à part, grumes de plus de 80 cm à débiter en externe. Proposition demandée avant tout
+13:03 — Décisions : anciens « Coupe sécuritaire » en « Coupe sanitaire », limite au gros bout, simple avertissement, grume en mauvais état sciable
+13:11 — GPS : rester simple pour les agents, précision suffisante pour une carte ? 4 propositions, toutes retenues
+13:17 — Demande : faire les mises à jour sur GitHub et en local
+13:22 — Décision : question oui/non sur le gros bout à partir de 60 cm de Ø médian
+13:24 — Décisions : le débit externe est un simple marquage sur la grume ; la circonférence est retirée
+— Base : tables `noms_personnalises` et `reglages`, colonnes `etat`, `debit_externe`, `gps_precision`, `position_manuelle`, fonctions `corriger_grume` (10 paramètres) et `placer_position_grume`, causes « Coupe sécuritaire » passées en « Coupe sanitaire »
+— Branche `feat/grumes-a-part` (cache v66) et branche `feat/gps-precis` (cache v67), testées dans un navigateur. En attente de validation
+
 ---
 
 ## Voir aussi

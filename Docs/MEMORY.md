@@ -13,6 +13,40 @@ En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une cop
 
 ---
 
+## Session 24 novembre 2026 — Retours terrain : causes, « Autre », grumes à part, GPS
+
+Deux branches en attente de validation du porteur : `feat/grumes-a-part` (cache `duramen-v66`) et `feat/gps-precis` (cache `duramen-v67`). Toutes deux partent de `main` : à la fusion de la seconde, garder le numéro de cache le plus haut.
+
+Décisions du porteur :
+- Causes d'abattage : « Intempérie (tempête, neige…) » remplace « chablis ». « Coupe sécuritaire » disparaît : ses grumes passent en « Coupe sanitaire » (fait dans la base le 24 nov.).
+- « Autre » pour la cause et l'essence : on écrit le nom, il est proposé ensuite à toute la commune.
+- Grume à stocker à part : état *Standard*, *Exceptionnelle* ou *Mauvais état*. Elle reste dans le stock et peut entrer en campagne comme les autres.
+- Gros bout au-delà de la limite de la scierie mobile (80 cm, cote exacte à confirmer avec le scieur) : un simple marquage « Débit externe » sur la grume, sans blocage.
+- On mesure le Ø médian. À partir de 60 cm (limite − 20), l'app demande « Gros bout de plus de 80 cm ? » (oui/non). À 80 cm de Ø médian ou plus : débit externe d'office.
+- Mesure au diamètre seul : le calcul par la circonférence est retiré (règle aussi A9).
+- GPS : position prise pendant la saisie, la plus précise gardée, marge d'erreur affichée. Sans position : placement à la main au bureau. Rien à faire pour l'agent.
+
+`feat/grumes-a-part` :
+- `core.js` (ajouts) : `ETATS_GRUME`, `libelleEtatGrume`, `grumeAPart`, `questionGrosBout`, `cleNom`, `DIAMETRE_GROS_BOUT_MAX_DEFAUT`.
+- Mobile : listes avec « Autre… (écrire le nom) ». Le nom est comparé aux choix existants sans accents ni majuscules : « erable » reprend « Érable ». Sans réseau, le nom attend dans la file d'envoi sans s'afficher dans le bandeau. Copie gardée sur le téléphone (`duramen_noms_cache`, `duramen_reglages_cache`).
+- Mobile : choix de l'état à la saisie et à la correction, question du gros bout sous la molette du diamètre, badges dans le stock et dans la préparation de campagne, ligne « À stocker à part » au-dessus du stock, colonnes d'export.
+- Bureau : mêmes listes, état et gros bout dans la correction, badges, colonnes « Rangement » et « Débit externe » à l'export.
+
+`feat/gps-precis` :
+- Mobile : GPS démarré à l'ouverture de l'onglet Nouveau, arrêté ailleurs et téléphone en veille. Puce GPS du téléphone (`enableHighAccuracy`) : marche sans réseau. Position la plus précise gardée, figée à l'enregistrement. Puce « GPS · ±8 m », orange au-delà de 50 m.
+- Bureau : badge « Sans position » et bouton « Placer sur la carte ». Fond IGN (plan ou photo aérienne, Géoplateforme), Leaflet 1.9.4 chargé à l'ouverture de la carte avec contrôle d'intégrité.
+
+Base Supabase (ajouts, déjà en place) :
+- Table `noms_personnalises` (commune_code, type `cause`/`essence`, nom) : lecture et ajout par sa commune, un nom une seule fois par commune (majuscules ignorées).
+- Table `reglages` : lisible par tous. `diametre_gros_bout_max_cm` = 80.
+- `grumes` : colonnes `etat` (`standard`, `exceptionnelle`, `mauvais_etat`), `debit_externe`, `gps_precision` (m), `position_manuelle`.
+- `corriger_grume` à 10 paramètres (+ `p_etat`, `p_debit_externe`). L'ancienne à 8 paramètres reste pour les téléphones pas encore à jour.
+- Fonction `placer_position_grume(p_id, p_latitude, p_longitude)` : sa commune, point en France métropolitaine.
+
+Tests : règles de la base rejouées en SQL puis annulées. Navigateur, base imitée : 39 vérifications sur la première branche (mobile et bureau, hors ligne compris), 14 sur la seconde (GPS simulé, carte).
+
+---
+
 ## Session 20 novembre 2026 — Supprimer une grume saisie par erreur
 
 Validée par le porteur et fusionnée dans `main` le 20 nov. 2026 (branche `feat/supprimer-grume`). Mobile en cache `duramen-v65`.
