@@ -3562,8 +3562,10 @@ function creerQuestionGrosBout(reponseInitiale, onChange) {
 }
 
 // Badges d'une grume : à stocker à part, débit externe
+// Trois couleurs : standard (gris clair), exceptionnelle (or), mauvais état (ardoise)
 function creerBadgesEtatGrume(g) {
   var liste = [];
+  if (!DuramenCore.grumeAPart(g))  liste.push(cel('span', 'histo-badge badge-etat-standard', 'Standard'));
   if (g.etat === 'exceptionnelle') liste.push(cel('span', 'histo-badge badge-etat-exceptionnelle', 'Exceptionnelle · à part'));
   if (g.etat === 'mauvais_etat')   liste.push(cel('span', 'histo-badge badge-etat-mauvais', 'Mauvais état · à part'));
   if (g.debit_externe)             liste.push(cel('span', 'histo-badge badge-debit-externe', 'Débit externe'));

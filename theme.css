@@ -23,6 +23,10 @@
   --orange:       #d35400;
   --vert:         #788d5d;   /* validation, enregistrement */
 
+  /* ─── État de la grume (24 nov. 2026) ─── */
+  --or:           #E8B93A;   /* grume exceptionnelle — texte --sumi (contraste 10:1) */
+  --ardoise:      #4A4A44;   /* grume en mauvais état — texte --washi (contraste 8:1) */
+
   /* ─── Typographie ─── */
   --font-display:         'Outfit', sans-serif;
   --font-body:            'Outfit', sans-serif;

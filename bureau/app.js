@@ -791,10 +791,12 @@ async function bMemoriserNom(type, nom) {
 }
 
 // Badges d'une grume : à stocker à part, débit externe
+// Trois couleurs : standard (gris clair), exceptionnelle (or), mauvais état (ardoise)
 function bBadgesEtatGrume(g) {
   var liste = [];
-  if (g.etat === 'exceptionnelle') liste.push(el('span', 'b-badge b-badge-apart', 'Exceptionnelle · à part'));
-  if (g.etat === 'mauvais_etat')   liste.push(el('span', 'b-badge b-badge-apart', 'Mauvais état · à part'));
+  if (!DuramenCore.grumeAPart(g))  liste.push(el('span', 'b-badge b-badge-etat-standard', 'Standard'));
+  if (g.etat === 'exceptionnelle') liste.push(el('span', 'b-badge b-badge-etat-exceptionnelle', 'Exceptionnelle · à part'));
+  if (g.etat === 'mauvais_etat')   liste.push(el('span', 'b-badge b-badge-etat-mauvais', 'Mauvais état · à part'));
   if (g.debit_externe)             liste.push(el('span', 'b-badge b-badge-externe', 'Débit externe'));
   return liste;
 }
