@@ -149,6 +149,7 @@ HH:MM — [commit: abc1234] résultat final
 19:32 — Décisions : 80 cm règle seule ; fiche de stock réduite à numéro, essence, cubage, date de débit ; nommer la tempête ; tablettes. « Avant tout changement, propose »
 19:59 — Débit externalisé collé à la date ; titre « du + au − urgent » ; tempête valable pour toutes les communes ; question du mode portrait (déjà demandé, ne règle pas tout)
 20:01 — Validation des propositions. Fusion des deux branches précédentes (cache v71). Branches `feat/fiche-grume-allegee` (v72) et `feat/nom-tempete` (v73) testées, essai de fusion des deux : 73/73. En attente de validation
+20:13 — Validation du porteur : fusion des deux branches dans `main`, cache v74, tests 73/73
 
 ---
 
