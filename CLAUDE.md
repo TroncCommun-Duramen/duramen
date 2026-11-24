@@ -232,3 +232,41 @@ Types :
 ## 11. Règles rédactionnelles — TOUJOURS APPLIQUER
 
 Voir Docs/REDACTION.md.
+
+---
+
+## 12. Usage et récolte de données — éviter l'usine à gaz
+
+**Principe.** Duramen est un tout, qui sert à deux niveaux :
+- **l'usage** : les agents saisissent et gèrent leur stock au quotidien ;
+- **la récolte** : ce qu'ils saisissent devient une donnée déclarative (non vérifiée), analysée ailleurs (synthèse, cartographie).
+
+L'app recueille, elle n'analyse pas.
+
+**Avant d'ajouter un champ, un écran ou un affichage, répondre à :**
+1. Sert-il au geste de l'agent, maintenant ? → dans l'app (mobile ou bureau selon qui l'utilise).
+2. Sert-il seulement à l'analyse ?
+   - donnée à recueillir → un champ de saisie le plus simple possible, sans afficher de résultat ;
+   - calcul, graphique, bilan → synthèse ou cartographie, pas l'app.
+3. Peut-on l'obtenir sans solliciter l'agent (calcul de la base, GPS, valeur par défaut) ? → alors on ne lui demande rien.
+
+**Repères :**
+- mobile = saisir et consulter son stock ;
+- bureau = suivi des projets et extraction brute (tableur), sans interprétation ;
+- analyse = synthèse et cartographie, outils séparés, en lecture seule sur la base.
+
+**JAMAIS** supprimer un champ de saisie parce qu'il « fait analytique » : vérifier d'abord s'il nourrit la synthèse ou la carte.
+
+**Signaux d'usine à gaz — les signaler au porteur avant de coder :**
+- l'action principale d'un écran n'est plus visible sans faire défiler ;
+- un champ dont l'agent ne peut pas comprendre l'utilité ;
+- une même information affichée à deux endroits ;
+- une règle qui ne s'explique pas en une phrase.
+
+**Mises à jour non bloquantes et sans conflit :**
+- Une mise à jour ne doit jamais empêcher un agent de travailler : une ancienne version encore en cache doit continuer à lire et écrire sans erreur.
+- Base Supabase : on ajoute (colonne avec valeur par défaut, table, fonction), on ne renomme ni ne supprime sans période de transition.
+- Les fonctions de la base déjà utilisées gardent leur ancienne forme ; on ajoute une variante, on ne remplace pas.
+- Un brouillon en cours (`duramen_draft`) et les données hors ligne ne sont jamais perdus par une mise à jour.
+- La nouvelle version s'installe sans interrompre une saisie (pas de rechargement forcé en plein formulaire).
+- Une règle métier partagée par le mobile et le bureau est calculée par la base, pas dupliquée dans chaque version : une seule source de vérité.
