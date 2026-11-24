@@ -13,6 +13,15 @@ En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une cop
 
 ---
 
+## Session 24 novembre 2026 (21 h) — Diamètre au plus large
+
+- Le porteur revient sur la règle des 80 cm : la limite de la scierie porte sur le diamètre au plus large, pas sur le Ø médian. Choix de l'option 2 : mesurer le diamètre au plus large dès 60 cm de Ø médian (plutôt qu'une question oui/non).
+- Raison : la cote de 80 cm n'est pas définitive. La base calcule « débit externalisé » elle-même (déclencheur `grumes_debit_externe`, plus grand des deux diamètres ≥ réglage `diametre_max_scierie_cm`) et recalcule toutes les grumes si le réglage change (déclencheur `reglages_recalcul_debit`). Le `debit_externe` envoyé par l'app est remplacé par ce calcul.
+- Base : colonne `grumes.diametre_max_cm`, `corriger_grume` à 12 paramètres (+ `p_diametre_max`).
+- Branche `feat/diametre-plus-large` (v77), en attente de validation. La branche `feat/tablette` (v76) attend aussi.
+
+---
+
 ## Session 24 novembre 2026 (soir) — Couleurs d'état, stock allégé, tempêtes
 
 Décisions du porteur :
