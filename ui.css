@@ -2472,3 +2472,8 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .fiche-touchable:focus-visible { outline: 2px solid var(--sumi); outline-offset: 2px; }
 /* Débit externalisé : cadre orange autour de la date de débit */
 .badge-urgence.badge-debit-externalise { border: 2px solid var(--orange); }
+
+/* ═══ Choix de l'état de la grume : mêmes couleurs que la bande de la fiche ═══ */
+.grume-choix-3 .grume-methode-btn.active[data-valeur="standard"]       { background: var(--pierre);  color: var(--sumi);  border-color: var(--pierre); }
+.grume-choix-3 .grume-methode-btn.active[data-valeur="exceptionnelle"] { background: var(--or);      color: var(--sumi);  border-color: var(--or); }
+.grume-choix-3 .grume-methode-btn.active[data-valeur="mauvais_etat"]   { background: var(--ardoise); color: var(--washi); border-color: var(--ardoise); }
