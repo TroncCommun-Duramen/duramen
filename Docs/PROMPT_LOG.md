@@ -143,6 +143,9 @@ HH:MM — [commit: abc1234] résultat final
 13:40 — Coffre Obsidian trouvé au 11 mai (verrou git du 7 oct.). Notes de juin sauvées dans `_notes-juin-2026/` et reportées sur GitHub, coffre remis à jour et vérifié
 13:49 — Questions : marque après 60 cm, calcul au diamètre médian gardé
 13:50 — Validation du porteur : fusion des deux branches dans `main`, cache v68, tests rejoués 53/53
+19:08 — Demande : 3 couleurs pour l'état des grumes, proposition d'abord. Proposition : gris clair, or, ardoise
+19:19 — Validation des couleurs. Demandes : « débit externalisé » au lieu de « débit externe », plus de « gros bout » ; retirer bilan et exports du stock mobile ; proposition pour le diamètre 80
+— Branches `feat/couleurs-etat-grume` (v70) et `feat/stock-mobile-allege` (v69), testées. En attente de validation
 
 ---
 

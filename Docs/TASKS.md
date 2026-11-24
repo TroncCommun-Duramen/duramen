@@ -100,6 +100,9 @@ Suites de la fusion du 3 nov. 2026 :
 |-------|------|
 | Retours terrain du 24 nov. : causes revues, « Autre » mémorisé (cause, essence), état de la grume (à part), marque « Débit externe », circonférence retirée. Branche `feat/grumes-a-part` | ✅ Validée et fusionnée dans `main` le 24 nov. 2026 (cache v68) |
 | GPS précis pendant la saisie, marge d'erreur affichée, placement à la main au bureau. Branche `feat/gps-precis` | ✅ Validée et fusionnée dans `main` le 24 nov. 2026 (cache v68) |
+| Trois couleurs d'état de grume : standard gris clair, exceptionnelle or (`--or`), mauvais état ardoise (`--ardoise`). Mobile et bureau. Branche `feat/couleurs-etat-grume` (cache v70) | En attente de validation |
+| Stock mobile allégé : bilan à une date et boutons d'export retirés (ils restent au bureau). Branche `feat/stock-mobile-allege` (cache v69) | En attente de validation |
+| Diamètre 80 cm : reformuler en « débit externalisé », sans le terme « gros bout ». Proposition faite le 24 nov. | En attente de décision |
 | Cote exacte du gros bout accepté par la scierie mobile : 80 cm provisoire, à confirmer avec le scieur (réglage `diametre_gros_bout_max_cm` dans la table `reglages`, sans toucher au code) | À faire (porteur) |
 | Garder la passerelle Supabase (vue `lots`, fonction `lots_partages()`, colonne `extractions.cause_abattage`) tant que la nouvelle version n'est pas validée sur le terrain : c'est elle qui permet de revenir à l'ancienne version. Ensuite, la supprimer | En attente de validation terrain |
 | Version bureau : illustration de la page d'accueil (`bureau/illustration-accueil.jpg`, © Paquito Couet pour Tronc Commun) | ✅ Fait le 14 nov. 2026 |
