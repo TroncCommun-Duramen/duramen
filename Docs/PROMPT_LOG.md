@@ -157,6 +157,7 @@ HH:MM — [commit: abc1234] résultat final
 20:59 — Mail aux services de Nantes demandé (améliorations suite au rendez-vous, points de Karl Hervouet). Remarque : la règle des 80 cm portait sur le Ø médian, pas sur le plus large
 21:03 — Décision : revenir à une mesure dès 60 cm. Deux options proposées
 21:04 — Option 2 retenue : diamètre au plus large. Branche `feat/diametre-plus-large` (v77), tests 87/87. En attente de validation
+21:14 — Validation : fusion de `feat/tablette` et `feat/diametre-plus-large` dans `main`, cache v78. Tests rejoués sur téléphone, tablette portrait et paysage, bureau : 163/163
 
 ---
 
