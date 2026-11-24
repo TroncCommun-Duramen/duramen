@@ -1282,7 +1282,9 @@ body {
 }
 
 /* ═══ Grumes à part, débit externe (24 nov. 2026) ═══ */
-.b-badge-apart   { background: var(--washi); color: var(--sumi); border: 2px solid var(--sumi); font-weight: var(--font-weight-semibold); }
+.b-badge-etat-standard       { background: var(--neige);   color: var(--sumi);  border: 1px solid var(--pierre); font-weight: var(--font-weight-semibold); }
+.b-badge-etat-exceptionnelle { background: var(--or);      color: var(--sumi);  border: 1px solid var(--or); font-weight: var(--font-weight-semibold); }
+.b-badge-etat-mauvais        { background: var(--ardoise); color: var(--washi); border: 1px solid var(--ardoise); font-weight: var(--font-weight-semibold); }
 .b-badge-externe { background: var(--washi); color: var(--sumi); border: 2px solid var(--orange); font-weight: var(--font-weight-semibold); }
 /* Liste avec « Autre… » : le champ du nom vient sous la liste */
 .b-choix-autre { display: flex; flex-direction: column; gap: 6px; }

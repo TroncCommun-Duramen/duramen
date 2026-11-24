@@ -2526,20 +2526,21 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 /* Trois choix côte à côte (état de la grume) */
 .grume-methode-toggle.grume-choix-3 { grid-template-columns: repeat(3, 1fr); }
 
-/* Grume à ranger à part : cadre plein, lisible au soleil */
+/* État de la grume : trois couleurs, trois clartés (clair, vif, foncé),
+   reconnaissables au soleil et par les personnes qui voient mal les couleurs */
+.badge-etat-standard,
 .badge-etat-exceptionnelle,
 .badge-etat-mauvais,
 .badge-debit-externe {
   line-height: 1.4;
   padding: 3px 8px;
-  background: var(--washi);
-  color: var(--sumi);
-  border: 2px solid var(--sumi);
   font-weight: var(--font-weight-semibold);
 }
-.badge-etat-mauvais { border-color: var(--rouge); color: var(--rouge); }
+.badge-etat-standard       { background: var(--neige);   color: var(--sumi);  border: 1px solid var(--pierre); }
+.badge-etat-exceptionnelle { background: var(--or);      color: var(--sumi);  border: 1px solid var(--or); }
+.badge-etat-mauvais        { background: var(--ardoise); color: var(--washi); border: 1px solid var(--ardoise); }
 /* Débit hors scierie mobile : cadre orange */
-.badge-debit-externe { border-color: var(--orange); }
+.badge-debit-externe       { background: var(--washi);   color: var(--sumi);  border: 2px solid var(--orange); }
 
 /* ═══ GPS : marge d'erreur trop grande (24 nov. 2026) ═══ */
 /* Noir sur orange, comme les autres alertes */
