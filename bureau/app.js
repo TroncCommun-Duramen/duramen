@@ -721,8 +721,10 @@ var B_VALEUR_AUTRE = '__autre__';
 var bNomsPerso = [];
 var bReglages  = {};
 
-function bLimiteGrosBout() {
-  return bReglages.diametre_gros_bout_max_cm || DuramenCore.DIAMETRE_GROS_BOUT_MAX_DEFAUT;
+// Diamètre (Ø médian, cm) à partir duquel le débit est externalisé
+function bLimiteScierie() {
+  return bReglages.diametre_max_scierie_cm || bReglages.diametre_gros_bout_max_cm
+    || DuramenCore.DIAMETRE_GROS_BOUT_MAX_DEFAUT;
 }
 function bNomsDuType(type) {
   var vus = {}, liste = [];
@@ -797,7 +799,7 @@ function bBadgesEtatGrume(g) {
   if (!DuramenCore.grumeAPart(g))  liste.push(el('span', 'b-badge b-badge-etat-standard', 'Standard'));
   if (g.etat === 'exceptionnelle') liste.push(el('span', 'b-badge b-badge-etat-exceptionnelle', 'Exceptionnelle · à part'));
   if (g.etat === 'mauvais_etat')   liste.push(el('span', 'b-badge b-badge-etat-mauvais', 'Mauvais état · à part'));
-  if (g.debit_externe)             liste.push(el('span', 'b-badge b-badge-externe', 'Débit externe'));
+  if (g.debit_externe)             liste.push(el('span', 'b-badge b-badge-externe', 'Débit externalisé'));
   return liste;
 }
 // Mêmes bornes que les molettes du mobile
@@ -843,10 +845,8 @@ function bOuvrirCorrectionGrume(id) {
   var sPro = bSelectCorrection(B_OPTIONS_PROVENANCE, g.provenance);
   var sCau = bChoixAvecAutre(bOptionsAvecNoms(B_OPTIONS_CAUSE, 'cause'), g.cause);
   var sEtat = bSelectCorrection(DuramenCore.ETATS_GRUME, g.etat || 'standard');
-  // Gros bout au-delà de la limite de la scierie mobile : débit externe
-  var limGB = bLimiteGrosBout();
-  var sGB = bSelectCorrection([['', '— Répondre —'], ['non', 'Non'], ['oui', 'Oui']],
-    g.debit_externe ? 'oui' : 'non');
+  // Débit externalisé : décidé par le diamètre seul (règle du 24 nov. 2026)
+  var limExt = bLimiteScierie();
   var iDate = bInput('date', g.date_abattage || '', { max: jourISO() });
   var iLon  = bInput('number', avant.longueur, { min: B_LONGUEUR_MIN, max: B_LONGUEUR_MAX, step: '0.05' });
   var iDia  = bInput('number', avant.diametre, { min: B_DIAMETRE_MIN, max: B_DIAMETRE_MAX, step: '1' });
@@ -861,10 +861,8 @@ function bOuvrirCorrectionGrume(id) {
   mesures.appendChild(bChamp('Longueur (m) · ' + fmtNb(B_LONGUEUR_MIN, 2) + ' à ' + B_LONGUEUR_MAX, iLon, 'b-champ-court'));
   mesures.appendChild(bChamp('Diamètre (cm) · ' + B_DIAMETRE_MIN + ' à ' + B_DIAMETRE_MAX, iDia, 'b-champ-court'));
   md.corps.appendChild(mesures);
-  var champGB = bChamp('Gros bout de plus de ' + limGB + ' cm ? (débit hors scierie mobile)', sGB, 'b-champ-court');
-  md.corps.appendChild(champGB);
-  var noteGB = el('div', 'b-note', 'Ø médian de ' + limGB + ' cm ou plus : débit externe.');
-  md.corps.appendChild(noteGB);
+  var noteExt = el('div', 'b-note', limExt + ' cm ou plus : débit externalisé (hors scierie mobile).');
+  md.corps.appendChild(noteExt);
   md.corps.appendChild(bChamp('Repère pour retrouver la grume (facultatif)', iRep));
 
   // Supprimer : pour une grume saisie par erreur (doublon…). À part, en rouge.
@@ -888,21 +886,12 @@ function bOuvrirCorrectionGrume(id) {
     var nouveau = arrondiM3(calcVol(m.diametre, m.longueur));
     synth.textContent = nouveau === ancien ? 'Volume : ' + m3(nouveau) : 'Volume : ' + m3(ancien) + ' → ' + m3(nouveau);
   }
-  function majGrosBout() {
-    var mode = DuramenCore.questionGrosBout(lireMesures().diametre, limGB);
-    champGB.classList.toggle('hidden', mode !== 'question');
-    noteGB.classList.toggle('hidden', mode !== 'oui');
-  }
-  function lireDebitExterne() {
-    var mode = DuramenCore.questionGrosBout(lireMesures().diametre, limGB);
-    if (mode === 'oui') return true;
-    if (mode === 'non') return false;
-    return sGB.value === '' ? null : sGB.value === 'oui';
-  }
+  function lireDebitExterne() { return DuramenCore.debitExternalise(lireMesures().diametre, limExt); }
+  function majExternalise() { noteExt.classList.toggle('hidden', !lireDebitExterne()); }
   iLon.oninput = majVolume;
-  iDia.oninput = function () { majVolume(); majGrosBout(); };
+  iDia.oninput = function () { majVolume(); majExternalise(); };
   majVolume();
-  majGrosBout();
+  majExternalise();
 
   md.pied.appendChild(synth);
   md.pied.appendChild(bouton('b-btn b-btn-ghost', 'Annuler', bFermerModale));
@@ -912,7 +901,6 @@ function bOuvrirCorrectionGrume(id) {
     if (!ess.valeur) { bShowToast('Écrivez le nom de l\'essence.', true); return; }
     if (!cau.valeur) { bShowToast('Écrivez la cause d\'abattage.', true); return; }
     var debitExterne = lireDebitExterne();
-    if (debitExterne === null) { bShowToast('Le gros bout fait-il plus de ' + limGB + ' cm ? Répondez Oui ou Non.', true); return; }
     bEnregistrerCorrection(g, vu, {
       essence: ess.valeur, provenance: sPro.value, cause: cau.valeur,
       essenceNouvelle: ess.nouveau, causeNouvelle: cau.nouveau,
@@ -942,7 +930,7 @@ async function bEnregistrerCorrection(g, vu, n) {
   comparer('Provenance', g.provenance || '—', n.provenance);
   comparer('Cause', g.cause || '—', n.cause);
   comparer('État', DuramenCore.libelleEtatGrume(g.etat), DuramenCore.libelleEtatGrume(n.etat));
-  comparer('Débit externe', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
+  comparer('Débit externalisé', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
   comparer('Abattue le', bTexteDateCorrection(g.date_abattage), bTexteDateCorrection(n.abattage));
   comparer('Longueur', fmtNb(avant.longueur, 2) + ' m', fmtNb(n.longueur, 2) + ' m');
   comparer('Diamètre', avant.diametre + ' cm', n.diametre + ' cm');
@@ -2201,7 +2189,7 @@ function bTableauExport(type, source) {
   if (type === 'grumes_stock' || type === 'grumes_toutes') {
     entetes = ['Commune', 'N° grume', 'Essence', 'Longueur m', 'Diamètre cm', 'Volume m3', 'Date d\'abattage',
                'Année de coupe', 'Provenance', 'Cause', 'Repère', 'Date de saisie', 'État', 'À débiter avant le', 'Campagne',
-               'Rangement', 'Débit externe'];
+               'Rangement', 'Débit externalisé'];
     colVol = 5;
     var reservees = grumesADebiter(), sorties = clesGrumesSorties();
     var base = type === 'grumes_toutes' ? lots : (metro ? bMetroGrumes : DuramenCore.getGrumesEnStock());
