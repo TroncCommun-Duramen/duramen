@@ -1113,31 +1113,15 @@ function rendreHistoriqueContenu(container, lotsData, options) {
 
   container.appendChild(bloc);
 
-  // ── Grumes à ranger à part, grumes à débiter hors scierie mobile ────
-  var nbExc = lotsData.filter(function (l) { return l.etat === 'exceptionnelle'; }).length;
-  var nbMau = lotsData.filter(function (l) { return l.etat === 'mauvais_etat'; }).length;
-  var nbExt = lotsData.filter(function (l) { return l.debit_externe; }).length;
-  if (nbExc || nbMau) {
-    var parts = [];
-    if (nbExc) parts.push(nbExc + (nbExc > 1 ? ' exceptionnelles' : ' exceptionnelle'));
-    if (nbMau) parts.push(nbMau + ' en mauvais état');
-    container.appendChild(cel('div', 'info-box', 'À stocker à part : ' + parts.join(', ') + '.'));
-  }
-  if (nbExt) {
-    container.appendChild(cel('div', 'info-box', 'Débit externe : ' + nbExt + (nbExt > 1 ? ' grumes' : ' grume')
-      + ' (gros bout de plus de ' + limiteGrosBout() + ' cm).'));
-  }
-
   // ── Par essence ─────────────────────────────────────────────────────
   container.appendChild(cel('div', 'histo-section-title', 'Par essence'));
 
   var parEss = {};
   lotsData.forEach(function (l) {
     var e = l.essence || 'Autre';
-    if (!parEss[e]) parEss[e] = { vol: 0, lots: 0, causes: [] };
+    if (!parEss[e]) parEss[e] = { vol: 0, lots: 0 };
     parEss[e].vol  += l.vol_utile || 0;
     parEss[e].lots += 1;
-    if (l.cause && parEss[e].causes.indexOf(l.cause) === -1) parEss[e].causes.push(l.cause);
   });
 
   var essList = cel('div', '');
@@ -1157,10 +1141,7 @@ function rendreHistoriqueContenu(container, lotsData, options) {
       top.appendChild(cel('span', 'histo-essence-vol', d.vol.toFixed(3) + ' m³'));
       item.appendChild(top);
 
-      item.appendChild(cel('div', 'histo-essence-meta',
-        d.lots + (d.lots > 1 ? ' grumes' : ' grume') +
-        (d.causes.length ? ' — ' + d.causes.join(', ') : '')
-      ));
+      item.appendChild(cel('div', 'histo-essence-meta', d.lots + (d.lots > 1 ? ' grumes' : ' grume')));
 
       var track = cel('div', 'histo-bar-track');
       var fill  = cel('div', 'histo-bar-fill ' + ton);
@@ -1171,55 +1152,58 @@ function rendreHistoriqueContenu(container, lotsData, options) {
     });
   container.appendChild(essList);
 
-  // ── Lots récents ────────────────────────────────────────────────────
+  // ── Fiches de grume ─────────────────────────────────────────────────
+  // Fiche allégée (24 nov. 2026) : numéro, essence, cubage, date de débit.
+  // L'état se lit à la bande de couleur ; le reste est dans « Corriger ».
   container.appendChild(cel('div', 'histo-section-title mt-16',
-    options.urgence ? 'Grumes en stock — les plus urgentes d\'abord' : 'Grumes récentes'));
+    options.urgence ? 'Grumes en stock — date de débit du + au − urgent' : 'Grumes récentes'));
 
   var lotsList = cel('div', '');
   var aAfficher = options.urgence ? grumesParUrgence(lotsData) : lotsData.slice(0, 5);
   aAfficher.forEach(function (lot) {
-    var card   = cel('div', 'histo-lot-card');
+    var etat   = DuramenCore.grumeAPart(lot) ? lot.etat : 'standard';
+    var card   = cel('div', 'histo-lot-card fiche-grume fiche-etat-' + etat);
     var header = cel('div', 'histo-lot-header');
-    header.appendChild(cel('div', 'histo-lot-nom', nomAfficheGrume(lot)));
+    header.appendChild(cel('div', 'histo-lot-nom', nomAfficheGrume(lot) + (lot.essence ? ' · ' + lot.essence : '')));
     header.appendChild(cel('div', 'histo-lot-vol', (lot.vol_utile || 0).toFixed(3) + ' m³'));
     card.appendChild(header);
+    // Sans numéro : de quoi retrouver la grume sur place
     if (!DuramenCore.estNumerotee(lot)) {
       var m = DuramenCore.mesuresGrume(lot);
       card.appendChild(cel('div', 'histo-essence-meta',
-        formatNb(m.longueur, 2) + ' m × ' + m.diametre + ' cm · ' + texteAbattageGrume(lot)
-        + (lot.provenance ? ' · ' + lot.provenance : '') + (lot.repere ? ' · ' + lot.repere : '')));
+        formatNb(m.longueur, 2) + ' m × ' + m.diametre + ' cm' + (lot.repere ? ' · ' + lot.repere : '')));
     }
-
-    var badges = cel('div', 'histo-badges');
-    if (lot.commune) badges.appendChild(cel('span', 'histo-badge histo-badge-commune', lot.commune));
-    if (lot.essence) badges.appendChild(cel('span', 'histo-badge histo-badge-essence', lot.essence));
-    if (lot.cause)   badges.appendChild(cel('span', 'histo-badge histo-badge-cause',   lot.cause));
-    creerBadgesEtatGrume(lot).forEach(function (b) { badges.appendChild(b); });
-    if (!DuramenCore.estNumerotee(lot)) {
-      badges.appendChild(cel('span', 'histo-badge badge-urgence badge-urgence-alerte', 'En attente de marquage'));
+    if (options.urgence) {
+      var ligne = cel('div', 'histo-badges');
+      ligne.appendChild(creerBadgeDebit(lot));
+      card.appendChild(ligne);
+    } else if (lot.commune) {
+      card.appendChild(cel('div', 'histo-essence-meta', lot.commune));
     }
-    if (options.urgence) badges.appendChild(creerBadgeUrgence(lot));
-    if (options.aDebiter && options.aDebiter[lot.id]) {
-      badges.appendChild(cel('span', 'histo-badge badge-a-debiter',
-        'À débiter — ' + (options.aDebiter[lot.id].nom || 'campagne')));
-    }
-    card.appendChild(badges);
-    // Stock de ma commune : attribuer un numéro, corriger une erreur de saisie
+    // Stock de ma commune : toucher la fiche ouvre « Corriger »
     if (options.marquage) {
-      var actsM = cel('div', 'sciage-campagne-actions');
-      if (DuramenCore.validerCorrectionGrume(lot).ok) {
-        var bCor  = cel('button', 'btn btn-outline', 'Corriger');
-        bCor.type = 'button';
-        bCor.onclick = (function (g) { return function () { ouvrirCorrectionGrume(g); }; })(lot);
-        actsM.appendChild(bCor);
-      }
+      var corrigeable = DuramenCore.validerCorrectionGrume(lot).ok;
+      card.classList.add('fiche-touchable');
+      card.setAttribute('role', 'button');
+      card.tabIndex = 0;
+      card.setAttribute('aria-label', 'Corriger ' + nomAfficheGrume(lot));
+      var ouvrir = (function (g, ok) {
+        return function (e) {
+          if (e && e.target && e.target.closest && e.target.closest('button')) return;
+          if (ok) ouvrirCorrectionGrume(g);
+          else showError('Cette grume est dans une campagne de sciage : elle ne se corrige plus.');
+        };
+      })(lot, corrigeable);
+      card.addEventListener('click', ouvrir);
+      card.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ouvrir(e); } });
       if (!DuramenCore.estNumerotee(lot)) {
+        var actsM = cel('div', 'sciage-campagne-actions');
         var bNum  = cel('button', 'btn btn-primary', 'Attribuer un numéro');
         bNum.type = 'button';
         bNum.onclick = (function (g) { return function () { ouvrirAttributionNumero(g); }; })(lot);
         actsM.appendChild(bNum);
+        card.appendChild(actsM);
       }
-      if (actsM.firstChild) card.appendChild(actsM);
     }
     lotsList.appendChild(card);
   });
@@ -1294,6 +1278,19 @@ function creerBadgeUrgence(grume) {
   else if (u.niveau === 'alerte') txt = 'Débit urgent — avant le ' + formatDateFr(u.dateLimite);
   else                            txt = 'Débit avant le ' + formatDateFr(u.dateLimite);
   return cel('span', 'histo-badge badge-urgence badge-urgence-' + u.niveau, txt);
+}
+// Date de débit d'une grume ; une grume trop grosse pour la scierie mobile
+// porte « externalisé » dans la même ligne, cadre orange.
+function creerBadgeDebit(grume) {
+  var u   = DuramenCore.urgenceDebitGrume(grume);
+  var ext = grume.debit_externe ? ' externalisé' : '';
+  var txt;
+  if (u.inconnue)                  txt = 'Date d\'abattage inconnue — débit' + ext + ' à faire vite';
+  else if (u.niveau === 'depasse') txt = 'Délai de débit' + ext + ' dépassé (' + formatDateFr(u.dateLimite) + ')';
+  else if (u.niveau === 'alerte')  txt = 'Débit' + ext + ' urgent — avant le ' + formatDateFr(u.dateLimite);
+  else                             txt = 'Débit' + ext + ' avant le ' + formatDateFr(u.dateLimite);
+  return cel('span', 'histo-badge badge-urgence badge-urgence-' + u.niveau
+    + (grume.debit_externe ? ' badge-debit-externalise' : ''), txt);
 }
 function creerBadgeSechage(dateSec) {
   var sec = new Date(dateSec) <= new Date();
@@ -1528,12 +1525,12 @@ function ouvrirCorrectionGrume(g) {
   rowD.appendChild(cel('div', 'grume-sheet-label', 'Ø médian'));
   var drumD = creerDrum(DIA_VALS, mes.diametre,
     function (v) { return v + ' cm'; },
-    function (v) { mes.diametre = v; majVolume(); questionGB.maj(v); });
+    function (v) { mes.diametre = v; majVolume(); mentionExt.maj(v); });
   rowD.appendChild(drumD);
   modal.appendChild(rowD);
-  var questionGB = creerQuestionGrosBout(!!g.debit_externe);
-  questionGB.maj(mes.diametre);
-  modal.appendChild(questionGB.el);
+  var mentionExt = creerMentionExternalise();
+  mentionExt.maj(mes.diametre);
+  modal.appendChild(mentionExt.el);
   modal.appendChild(volEl);
   majVolume();
 
@@ -1560,7 +1557,7 @@ function ouvrirCorrectionGrume(g) {
     comparer('Provenance', g.provenance || '—', n.provenance);
     comparer('Cause', g.cause || '—', n.cause);
     comparer('État', DuramenCore.libelleEtatGrume(g.etat), DuramenCore.libelleEtatGrume(n.etat));
-    comparer('Débit externe', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
+    comparer('Débit externalisé', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
     comparer('Abattue le', texteDateCorrection(g.date_abattage), texteDateCorrection(n.abattage));
     comparer('Longueur', formatNb(avant.longueur, 2) + ' m', formatNb(n.longueur, 2) + ' m');
     comparer('Diamètre', avant.diametre + ' cm', n.diametre + ' cm');
@@ -1573,10 +1570,7 @@ function ouvrirCorrectionGrume(g) {
     var ess = cEss.lire(), cau = cCau.lire();
     if (!ess.valeur) { showError('Écrivez le nom de l\'essence.'); return; }
     if (!cau.valeur) { showError("Écrivez la cause d'abattage."); return; }
-    var debitExterne = questionGB.debitExterne();
-    if (debitExterne === null) {
-      showError('Le gros bout fait-il plus de ' + limiteGrosBout() + ' cm ? Répondez Oui ou Non.'); return;
-    }
+    var debitExterne = mentionExt.debitExterne();
     var n = {
       essence:    ess.valeur,
       provenance: cPro.select.value,
@@ -2833,7 +2827,7 @@ function creerCarteGrume(idx) {
 
   var dims = cel('div', 'grume-summary-dims');
   dims.textContent = 'L ' + g.longueur.toFixed(2) + ' m  ·  Ø ' + g.diametre + ' cm'
-    + (g.debitExterne ? '  ·  débit externe' : '');
+    + (g.debitExterne ? '  ·  débit externalisé' : '');
   card.appendChild(dims);
 
   var right = cel('div', 'grume-summary-right');
@@ -2874,7 +2868,7 @@ function nouvSupprimerLigne(idx) {
 // ─── Grume sheet ──────────────────────────────────────────────────────────
 // Mesure au diamètre seulement (la circonférence est retirée le 24 nov. 2026).
 var grumeDraft = { longueur: 3.00, diametre: 30, quantite: 1 };
-var grumeQuestionGB = null;
+var grumeMentionExt = null;
 
 function ouvrirGrumeSheet() {
   localStorage.removeItem('duramen_mesure_methode'); // ancien choix diamètre / circonférence
@@ -2893,7 +2887,7 @@ function majVolSheet() {
   var v  = calcVol(grumeDraft.diametre, grumeDraft.longueur) * grumeDraft.quantite;
   var el = document.getElementById('grume-sheet-vol');
   if (el) el.textContent = v.toFixed(3) + ' m³';
-  if (grumeQuestionGB) grumeQuestionGB.maj(grumeDraft.diametre);
+  if (grumeMentionExt) grumeMentionExt.maj(grumeDraft.diametre);
 }
 
 function construireContenuGrumeSheet() {
@@ -2921,9 +2915,9 @@ function construireContenuGrumeSheet() {
   rowD.appendChild(drumD);
   content.appendChild(rowD);
 
-  // Grosse grume : le gros bout dépasse-t-il la limite de la scierie mobile ?
-  grumeQuestionGB = creerQuestionGrosBout(null);
-  content.appendChild(grumeQuestionGB.el);
+  // Grosse grume : débit externalisé, signalé sous la molette
+  grumeMentionExt = creerMentionExternalise();
+  content.appendChild(grumeMentionExt.el);
 
   // Volume calculé
   var volEl = cel('div', 'grume-sheet-vol', '— m³');
@@ -2951,11 +2945,7 @@ function construireContenuGrumeSheet() {
 }
 
 function enregistrerGrumeDraft() {
-  var debitExterne = grumeQuestionGB ? grumeQuestionGB.debitExterne() : false;
-  if (debitExterne === null) {
-    showError('Le gros bout fait-il plus de ' + limiteGrosBout() + ' cm ? Répondez Oui ou Non.');
-    return;
-  }
+  var debitExterne = DuramenCore.debitExternalise(grumeDraft.diametre, limiteScierie());
   // Une saisie = une grume : les nouvelles mesures remplacent les précédentes
   nouvGrumes = [{ longueur: grumeDraft.longueur, diametre: grumeDraft.diametre, quantite: 1,
                   debitExterne: debitExterne }];
@@ -3360,9 +3350,11 @@ function chargerNomsEtReglagesCache() {
   reglages  = lireJSONLocal('duramen_reglages_cache') || {};
 }
 
-// Diamètre maximal au gros bout pour la scierie mobile (cm)
-function limiteGrosBout() {
-  return reglages.diametre_gros_bout_max_cm || DuramenCore.DIAMETRE_GROS_BOUT_MAX_DEFAUT;
+// Diamètre (Ø médian, cm) à partir duquel le débit est externalisé :
+// trop gros pour la scierie mobile. Réglage modifiable dans la base.
+function limiteScierie() {
+  return reglages.diametre_max_scierie_cm || reglages.diametre_gros_bout_max_cm
+    || DuramenCore.DIAMETRE_GROS_BOUT_MAX_DEFAUT;
 }
 
 // Noms d'un type : ceux de la base et ceux qui attendent le réseau
@@ -3518,57 +3510,30 @@ function creerChoixBoutons(labelTxt, options, valeur, onChange) {
   };
 }
 
-// Question « Gros bout de plus de 80 cm ? » sous le Ø médian. Au-delà de la
-// limite, la grume se débite hors de la scierie mobile : on la marque.
-// debitExterne() rend true, false, ou null tant que l'agent n'a pas répondu.
-function creerQuestionGrosBout(reponseInitiale, onChange) {
-  var lim  = limiteGrosBout();
-  var rep  = (reponseInitiale === true || reponseInitiale === false) ? reponseInitiale : null;
-  var mode = 'non';
-  var bloc = cel('div', 'field hidden');
-  var txt  = cel('label', '', '');
-  bloc.appendChild(txt);
-  var choix = cel('div', 'grume-methode-toggle');
-  var bNon  = cel('button', 'grume-methode-btn', 'Non');
-  var bOui  = cel('button', 'grume-methode-btn', 'Oui');
-  bNon.type = 'button';
-  bOui.type = 'button';
-  function rendre() {
-    bNon.classList.toggle('active', rep === false);
-    bOui.classList.toggle('active', rep === true);
-  }
-  bNon.onclick = function () { rep = false; rendre(); if (onChange) onChange(); };
-  bOui.onclick = function () { rep = true;  rendre(); if (onChange) onChange(); };
-  choix.appendChild(bNon);
-  choix.appendChild(bOui);
-  bloc.appendChild(choix);
-  rendre();
+// Sous la molette du diamètre : à partir de la limite (80 cm), une ligne
+// dit que le débit sera externalisé. L'agent n'a rien à répondre.
+function creerMentionExternalise() {
+  var lim  = limiteScierie();
+  var d    = 0;
+  var bloc = cel('div', 'info-box hidden',
+    lim + ' cm ou plus : débit externalisé (hors scierie mobile).');
   return {
     el: bloc,
-    maj: function (diametreMedian) {
-      mode = DuramenCore.questionGrosBout(diametreMedian, lim);
-      bloc.classList.toggle('hidden', mode === 'non');
-      choix.classList.toggle('hidden', mode !== 'question');
-      txt.textContent = mode === 'oui'
-        ? 'Ø médian de ' + lim + ' cm ou plus : débit externe (hors scierie mobile).'
-        : 'Gros bout de plus de ' + lim + ' cm ?';
+    maj: function (diametre) {
+      d = diametre;
+      bloc.classList.toggle('hidden', !DuramenCore.debitExternalise(d, lim));
     },
-    debitExterne: function () {
-      if (mode === 'oui') return true;
-      if (mode === 'non') return false;
-      return rep;
-    }
+    debitExterne: function () { return DuramenCore.debitExternalise(d, lim); }
   };
 }
 
-// Badges d'une grume : à stocker à part, débit externe
 // Trois couleurs : standard (gris clair), exceptionnelle (or), mauvais état (ardoise)
 function creerBadgesEtatGrume(g) {
   var liste = [];
   if (!DuramenCore.grumeAPart(g))  liste.push(cel('span', 'histo-badge badge-etat-standard', 'Standard'));
   if (g.etat === 'exceptionnelle') liste.push(cel('span', 'histo-badge badge-etat-exceptionnelle', 'Exceptionnelle · à part'));
   if (g.etat === 'mauvais_etat')   liste.push(cel('span', 'histo-badge badge-etat-mauvais', 'Mauvais état · à part'));
-  if (g.debit_externe)             liste.push(cel('span', 'histo-badge badge-debit-externe', 'Débit externe'));
+  if (g.debit_externe)             liste.push(cel('span', 'histo-badge badge-debit-externe', 'Débit externalisé'));
   return liste;
 }
 

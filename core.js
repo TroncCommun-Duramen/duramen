@@ -544,8 +544,17 @@ var DuramenCore = (function () {
       .toLowerCase().replace(/\s+/g, ' ').trim();
   }
 
+  // Règle du 24 nov. 2026 (remplace la question sur le gros bout) : à partir
+  // de la limite, mesurée sur le Ø médian, la grume est trop grosse pour la
+  // scierie mobile. Son débit est externalisé. Aucune question à l'agent.
+  function debitExternalise(diametre, limite) {
+    var lim = parseFloat(limite) || DIAMETRE_GROS_BOUT_MAX_DEFAUT;
+    return (parseFloat(diametre) || 0) >= lim;
+  }
+
   // ─── API publique ─────────────────────────────────────────────────────────
   return {
+    debitExternalise:      debitExternalise,
     ETATS_GRUME:           ETATS_GRUME,
     libelleEtatGrume:      libelleEtatGrume,
     grumeAPart:            grumeAPart,
