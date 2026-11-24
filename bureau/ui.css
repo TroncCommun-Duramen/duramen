@@ -1280,3 +1280,9 @@ body {
   .b-mentions-titre { font-size: 26px; }
   .b-mentions-tete { flex-direction: column; }
 }
+
+/* ═══ Grumes à part, débit externe (24 nov. 2026) ═══ */
+.b-badge-apart   { background: var(--washi); color: var(--sumi); border: 2px solid var(--sumi); font-weight: var(--font-weight-semibold); }
+.b-badge-externe { background: var(--washi); color: var(--sumi); border: 2px solid var(--orange); font-weight: var(--font-weight-semibold); }
+/* Liste avec « Autre… » : le champ du nom vient sous la liste */
+.b-choix-autre { display: flex; flex-direction: column; gap: 6px; }

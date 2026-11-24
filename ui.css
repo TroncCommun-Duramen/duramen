@@ -2521,3 +2521,22 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   .field textarea,
   .feedback-textarea { font-size: max(16px, 1rem); }
 }
+
+/* ═══ Grumes à part, débit externe (24 nov. 2026) ═══ */
+/* Trois choix côte à côte (état de la grume) */
+.grume-methode-toggle.grume-choix-3 { grid-template-columns: repeat(3, 1fr); }
+
+/* Grume à ranger à part : cadre plein, lisible au soleil */
+.badge-etat-exceptionnelle,
+.badge-etat-mauvais,
+.badge-debit-externe {
+  line-height: 1.4;
+  padding: 3px 8px;
+  background: var(--washi);
+  color: var(--sumi);
+  border: 2px solid var(--sumi);
+  font-weight: var(--font-weight-semibold);
+}
+.badge-etat-mauvais { border-color: var(--rouge); color: var(--rouge); }
+/* Débit hors scierie mobile : cadre orange */
+.badge-debit-externe { border-color: var(--orange); }
