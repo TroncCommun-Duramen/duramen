@@ -385,7 +385,8 @@ function nomGrume(g) {
 }
 function texteDimensions(g) {
   var m = DuramenCore.mesuresGrume(g);
-  return fmtNb(m.longueur, 2) + ' m × ' + m.diametre + ' cm';
+  return fmtNb(m.longueur, 2) + ' m × ' + m.diametre + ' cm'
+    + (g.diametre_max_cm ? ' (' + g.diametre_max_cm + ' cm au plus large)' : '');
 }
 function texteAbattage(g) {
   if (DuramenCore.abattageInconnu(g)) return 'Date inconnue';
@@ -858,7 +859,7 @@ function bSelectCorrection(options, valeur) {
 function bEtatGrume(g) {
   var m = DuramenCore.mesuresGrume(g);
   return [g.essence, g.provenance, g.cause, g.date_abattage || '', g.repere || '', m.longueur, m.diametre,
-          g.etat || 'standard', !!g.debit_externe, g.nom_intemperie || ''].join('|');
+          g.etat || 'standard', !!g.debit_externe, g.nom_intemperie || '', g.diametre_max_cm || ''].join('|');
 }
 
 function bTexteDateCorrection(iso) { return iso ? fmtDate(iso) : 'inconnue'; }
@@ -899,6 +900,10 @@ function bOuvrirCorrectionGrume(id) {
   var mesures = el('div', 'b-debit-ligne');
   mesures.appendChild(bChamp('Longueur (m) · ' + fmtNb(B_LONGUEUR_MIN, 2) + ' à ' + B_LONGUEUR_MAX, iLon, 'b-champ-court'));
   mesures.appendChild(bChamp('Diamètre (cm) · ' + B_DIAMETRE_MIN + ' à ' + B_DIAMETRE_MAX, iDia, 'b-champ-court'));
+  // Dès 60 cm de Ø médian : diamètre au plus large (débit externalisé au-delà de la limite)
+  var iMax = bInput('number', g.diametre_max_cm || '', { min: '20', max: String(B_DIAMETRE_MAX), step: '1' });
+  var champMax = bChamp('Ø au plus large (cm)', iMax, 'b-champ-court');
+  mesures.appendChild(champMax);
   md.corps.appendChild(mesures);
   var noteExt = el('div', 'b-note', limExt + ' cm ou plus : débit externalisé (hors scierie mobile).');
   md.corps.appendChild(noteExt);
@@ -925,10 +930,22 @@ function bOuvrirCorrectionGrume(id) {
     var nouveau = arrondiM3(calcVol(m.diametre, m.longueur));
     synth.textContent = nouveau === ancien ? 'Volume : ' + m3(nouveau) : 'Volume : ' + m3(ancien) + ' → ' + m3(nouveau);
   }
-  function lireDebitExterne() { return DuramenCore.debitExternalise(lireMesures().diametre, limExt); }
-  function majExternalise() { noteExt.classList.toggle('hidden', !lireDebitExterne()); }
+  function plusLargeDemande() { return DuramenCore.questionGrosBout(lireMesures().diametre, limExt) === 'question'; }
+  function lireDiametreMax() {
+    if (!plusLargeDemande()) return null;
+    var v = Math.round(parseFloat(String(iMax.value).replace(',', '.')) || 0);
+    return v > 0 ? v : null;
+  }
+  function lireDebitExterne() {
+    return DuramenCore.debitExternalise(Math.max(lireMesures().diametre, lireDiametreMax() || 0), limExt);
+  }
+  function majExternalise() {
+    champMax.classList.toggle('hidden', !plusLargeDemande());
+    noteExt.classList.toggle('hidden', !lireDebitExterne());
+  }
   iLon.oninput = majVolume;
   iDia.oninput = function () { majVolume(); majExternalise(); };
+  iMax.oninput = majExternalise;
   majVolume();
   majExternalise();
 
@@ -940,7 +957,11 @@ function bOuvrirCorrectionGrume(id) {
     if (!ess.valeur) { bShowToast('Écrivez le nom de l\'essence.', true); return; }
     if (!cau.valeur) { bShowToast('Écrivez la cause d\'abattage.', true); return; }
     var debitExterne = lireDebitExterne();
+    var diametreMax  = lireDiametreMax();
+    if (plusLargeDemande() && !diametreMax) { bShowToast('Indiquez le diamètre au plus large.', true); return; }
+    if (diametreMax && diametreMax < m.diametre) { bShowToast('Le diamètre au plus large ne peut pas être plus petit que le Ø médian.', true); return; }
     bEnregistrerCorrection(g, vu, {
+      diametreMax: diametreMax,
       essence: ess.valeur, provenance: sPro.value, cause: cau.valeur,
       essenceNouvelle: ess.nouveau, causeNouvelle: cau.nouveau,
       etat: sEtat.value, debitExterne: debitExterne,
@@ -971,6 +992,7 @@ async function bEnregistrerCorrection(g, vu, n) {
   comparer('Cause', g.cause || '—', n.cause);
   comparer('Tempête', g.nom_intemperie || '—', n.tempete || '—');
   comparer('État', DuramenCore.libelleEtatGrume(g.etat), DuramenCore.libelleEtatGrume(n.etat));
+  comparer('Ø au plus large', g.diametre_max_cm ? g.diametre_max_cm + ' cm' : '—', n.diametreMax ? n.diametreMax + ' cm' : '—');
   comparer('Débit externalisé', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
   comparer('Abattue le', bTexteDateCorrection(g.date_abattage), bTexteDateCorrection(n.abattage));
   comparer('Longueur', fmtNb(avant.longueur, 2) + ' m', fmtNb(n.longueur, 2) + ' m');
@@ -999,7 +1021,8 @@ async function bEnregistrerCorrection(g, vu, n) {
       p_date_abattage: n.abattage || null, p_repere: n.repere,
       p_longueur: n.longueur, p_diametre: n.diametre,
       p_etat: n.etat, p_debit_externe: n.debitExterne,
-      p_nom_intemperie: n.tempete || null
+      p_nom_intemperie: n.tempete || null,
+      p_diametre_max: n.diametreMax
     });
     if (n.tempeteNouvelle) await bMemoriserTempete(n.tempete);
     if (n.essenceNouvelle) await bMemoriserNom('essence', n.essence);
@@ -2232,7 +2255,7 @@ function bTableauExport(type, source) {
   if (type === 'grumes_stock' || type === 'grumes_toutes') {
     entetes = ['Commune', 'N° grume', 'Essence', 'Longueur m', 'Diamètre cm', 'Volume m3', 'Date d\'abattage',
                'Année de coupe', 'Provenance', 'Cause', 'Repère', 'Date de saisie', 'État', 'À débiter avant le', 'Campagne',
-               'Rangement', 'Débit externalisé', 'Tempête'];
+               'Rangement', 'Débit externalisé', 'Tempête', 'Ø au plus large (cm)'];
     colVol = 5;
     var reservees = grumesADebiter(), sorties = clesGrumesSorties();
     var base = type === 'grumes_toutes' ? lots : (metro ? bMetroGrumes : DuramenCore.getGrumesEnStock());
@@ -2257,7 +2280,8 @@ function bTableauExport(type, source) {
         enStock && u.dateLimite ? csvDate(u.dateLimite) : '""', csvTexte(camp),
         csvTexte(DuramenCore.grumeAPart(g) ? 'À part — ' + DuramenCore.libelleEtatGrume(g.etat) : 'Standard'),
         csvTexte(g.debit_externe ? 'Oui' : 'Non'),
-        csvTexte(g.nom_intemperie || '')
+        csvTexte(g.nom_intemperie || ''),
+        g.diametre_max_cm || '""'
       ] });
     });
   }
