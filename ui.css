@@ -2540,3 +2540,7 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .badge-etat-mauvais { border-color: var(--rouge); color: var(--rouge); }
 /* Débit hors scierie mobile : cadre orange */
 .badge-debit-externe { border-color: var(--orange); }
+
+/* ═══ GPS : marge d'erreur trop grande (24 nov. 2026) ═══ */
+/* Noir sur orange, comme les autres alertes */
+.saisie-chip.saisie-chip-alerte { background: var(--orange); color: var(--sumi); }

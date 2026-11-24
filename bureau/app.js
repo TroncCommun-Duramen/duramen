@@ -560,21 +560,22 @@ function bAfficherGrumes() {
     if (reservees[g.id])                      etat = el('span', 'b-badge b-badge-campagne', 'À débiter — ' + (reservees[g.id].nom || 'campagne'));
     else if (!DuramenCore.estNumerotee(g))    etat = el('span', 'b-badge b-badge-alerte', 'En attente de marquage');
     else                                      etat = el('span', 'b-badge b-badge-neutre', 'En stock');
-    var marques = bBadgesEtatGrume(g);
-    if (marques.length) {
-      var cellMarques = el('div', 'b-debit-ligne');
-      cellMarques.appendChild(etat);
-      marques.forEach(function (b) { cellMarques.appendChild(b); });
-      etat = cellMarques;
+    var cellEtat = el('div', 'b-debit-ligne');
+    cellEtat.appendChild(etat);
+    // Grume à ranger à part, débit externe
+    bBadgesEtatGrume(g).forEach(function (b) { cellEtat.appendChild(b); });
+    // Pas de position GPS à la saisie : on la place à la main sur la carte
+    if (!bAPosition(g)) {
+      cellEtat.appendChild(el('span', 'b-badge b-badge-neutre', 'Sans position'));
+      cellEtat.appendChild(bouton('b-btn b-btn-ghost b-btn-petit', 'Placer sur la carte',
+        (function (id) { return function () { bOuvrirPlacerPosition(id); }; })(g.id)));
     }
     // Correction possible tant que la grume n'est dans aucune campagne
     if (DuramenCore.validerCorrectionGrume(g).ok) {
-      var cellEtat = el('div', 'b-debit-ligne');
-      cellEtat.appendChild(etat);
       cellEtat.appendChild(bouton('b-btn b-btn-ghost b-btn-petit', 'Corriger',
         (function (id) { return function () { bOuvrirCorrectionGrume(id); }; })(g.id)));
-      etat = cellEtat;
     }
+    etat = cellEtat;
     var nom = DuramenCore.estNumerotee(g) ? g.nom : (g.repere ? '— (repère : ' + g.repere + ')' : '—');
     tbody.appendChild(bTr([
       { t: nom, cls: 'b-essence-nom' }, g.essence || '—', texteDimensions(g),
@@ -583,6 +584,116 @@ function bAfficherGrumes() {
     ]));
   });
   tbody.appendChild(bTr([pl(grumes.length, 'grume'), '', '', { t: m3(total), cls: 'b-vol' }, '', '', '', ''], 'b-tr-total'));
+}
+
+// ─── Placer une grume sur la carte (position manquante) ──────────────────
+// Sans position GPS à la saisie (pas de satellites, GPS refusé…), un
+// responsable place le point à la main. Fond de carte IGN (Géoplateforme),
+// bibliothèque Leaflet chargée seulement à l'ouverture de la carte.
+var B_LEAFLET_JS  = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+var B_LEAFLET_CSS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+var B_IGN_WMTS = 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&STYLE=normal'
+  + '&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}';
+var B_CENTRE_METROPOLE = [47.218, -1.553];   // Nantes
+var bLeafletPromesse = null;
+
+function bAPosition(g) {
+  return g.latitude !== null && g.latitude !== undefined && g.longitude !== null && g.longitude !== undefined;
+}
+
+function bChargerLeaflet() {
+  if (window.L) return Promise.resolve();
+  if (bLeafletPromesse) return bLeafletPromesse;
+  bLeafletPromesse = new Promise(function (ok, ko) {
+    var css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = B_LEAFLET_CSS;
+    css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+    css.crossOrigin = '';
+    document.head.appendChild(css);
+    var js = document.createElement('script');
+    js.src = B_LEAFLET_JS;
+    js.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+    js.crossOrigin = '';
+    js.onload  = function () { ok(); };
+    js.onerror = function () { bLeafletPromesse = null; ko(new Error('carte')); };
+    document.head.appendChild(js);
+  });
+  return bLeafletPromesse;
+}
+
+async function bOuvrirPlacerPosition(id) {
+  var g = lots.find(function (x) { return x.id === id; });
+  if (!g) { bShowToast('Cette grume n\'est plus dans la liste.', true); return; }
+  var md = bOuvrirModale('Placer ' + nomGrume(g) + ' sur la carte',
+    'Cliquez à l\'endroit où l\'arbre a été abattu. Les points gris sont les autres grumes de la commune.', true);
+  var carteEl = el('div', 'b-carte');
+  md.corps.appendChild(carteEl);
+  var info = el('div', 'b-synthese', 'Aucun point choisi.');
+  var choix = null;
+  md.pied.appendChild(info);
+  md.pied.appendChild(bouton('b-btn b-btn-ghost', 'Annuler', bFermerModale));
+  md.pied.appendChild(bouton('b-btn b-btn-primary', 'Enregistrer la position', function () {
+    if (!choix) { bShowToast('Cliquez d\'abord sur la carte.', true); return; }
+    bEnregistrerPosition(g, choix);
+  }));
+
+  try {
+    await bChargerLeaflet();
+  } catch (e) {
+    carteEl.textContent = 'La carte ne se charge pas. Vérifiez le réseau, puis réessayez.';
+    return;
+  }
+  if (!carteEl.isConnected) return;   // fenêtre fermée pendant le chargement
+
+  // Centrée sur les grumes déjà placées de la commune, sinon sur Nantes
+  var places = lots.filter(bAPosition);
+  var centre = B_CENTRE_METROPOLE, zoom = 11;
+  if (places.length) {
+    centre = [
+      places.reduce(function (s, x) { return s + x.latitude; }, 0) / places.length,
+      places.reduce(function (s, x) { return s + x.longitude; }, 0) / places.length
+    ];
+    zoom = 14;
+  }
+  var carte = L.map(carteEl).setView(centre, zoom);
+  var attribution = '© <a href="https://www.ign.fr/" target="_blank" rel="noopener">IGN</a> Géoplateforme';
+  var plan  = L.tileLayer(B_IGN_WMTS + '&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&FORMAT=image/png',
+    { maxZoom: 19, attribution: attribution }).addTo(carte);
+  var photo = L.tileLayer(B_IGN_WMTS + '&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&FORMAT=image/jpeg',
+    { maxZoom: 19, attribution: attribution });
+  L.control.layers({ 'Plan': plan, 'Photo aérienne': photo }).addTo(carte);
+  places.forEach(function (x) {
+    L.circleMarker([x.latitude, x.longitude], { radius: 5, className: 'b-carte-point' })
+      .bindTooltip(el('span', '', nomGrume(x) + ' · ' + (x.essence || ''))).addTo(carte);
+  });
+  var marque = null;
+  carte.on('click', function (e) {
+    choix = { lat: e.latlng.lat, lon: e.latlng.lng };
+    if (!marque) marque = L.circleMarker(e.latlng, { radius: 9, className: 'b-carte-choix' }).addTo(carte);
+    else marque.setLatLng(e.latlng);
+    info.textContent = 'Point choisi : ' + choix.lat.toFixed(5) + ', ' + choix.lon.toFixed(5);
+  });
+  // La fenêtre vient de s'ouvrir : la carte mesure sa place
+  setTimeout(function () { carte.invalidateSize(); }, 100);
+}
+
+async function bEnregistrerPosition(g, choix) {
+  bShowLoading(true);
+  try {
+    await bSbRpc('placer_position_grume', { p_id: g.id, p_latitude: choix.lat, p_longitude: choix.lon });
+    vider(document.getElementById('b-modales'));
+    await bChargerDonnees({ interne: true });
+    bShowToast('Position de ' + nomGrume(g) + ' enregistrée.');
+  } catch (err) {
+    var m = err.message || '';
+    if (err.reseau)                     bShowToast('Pas de réseau : rien n\'a été enregistré. Réessayez avec réseau.', true);
+    else if (/POSITION INVALIDE/.test(m)) bShowToast('Ce point est hors de France : choisissez un autre point.', true);
+    else if (/INTROUVABLE/.test(m))     bShowToast('Grume introuvable : rechargez la page.', true);
+    else                                bShowToast('Erreur : ' + m, true);
+  } finally {
+    bShowLoading(false);
+  }
 }
 
 // ─── Corriger une grume (erreur de saisie) ───────────────────────────────

@@ -2793,7 +2793,7 @@ function fermerMentions() {
 
 var nouvGrumes    = [];
 var choixEssenceSaisie = null, choixCauseSaisie = null, choixEtatSaisie = null;
-var nouvGPS       = { lat: null, lon: null };
+var nouvGPS       = { lat: null, lon: null, precision: null };
 var nouvDate      = new Date();
 var nouvAnnee     = String(new Date().getFullYear());
 // Date d'abattage : 'AAAA-MM-JJ' ou 'inconnue' (grume saisie après coup)
@@ -2836,31 +2836,79 @@ var DIA_VALS = genDiametres(); // 20 → 150, pas 1 cm
 // ─── Volume d'une grume ── V = π × (d/200)² × L ──────────────────────────
 function calcVol(d, l) { return Math.PI * Math.pow(d / 200, 2) * l; }
 
-// ─── GPS silencieux ───────────────────────────────────────────────────────
-function captureGPS() {
-  var chip = document.getElementById('saisie-gps-chip');
-  if (chip) chip.textContent = 'GPS · en cours…';
-  if (!navigator.geolocation) {
-    if (chip) chip.textContent = 'GPS non supporté';
-    return;
+// ─── GPS pendant la saisie ────────────────────────────────────────────────
+// La mesure démarre à l'ouverture de l'onglet Nouveau et continue tant que
+// le formulaire est affiché : l'app garde la position la plus précise. Elle
+// est figée quand la grume est enregistrée. On utilise la puce GPS du
+// téléphone (satellites) : elle marche sans réseau, à 3-10 m près à
+// découvert. L'agent n'a rien à faire : la puce affiche la marge d'erreur.
+var gpsSuivi  = null;          // suivi en cours (null : arrêté)
+var gpsStatut = 'recherche';   // 'recherche' | 'ok' | 'refuse' | 'indisponible'
+var GPS_PRECISION_ALERTE_M = 50;   // au-delà, la puce passe en orange
+
+function afficherEtatGPS() {
+  var c = document.getElementById('saisie-gps-chip');
+  if (!c) return;
+  var texte, alerte = false;
+  if (gpsStatut === 'refuse')            { texte = 'GPS · refusé (toucher pour réessayer)'; alerte = true; }
+  else if (gpsStatut === 'indisponible') { texte = 'GPS · indisponible'; alerte = true; }
+  else if (nouvGPS.precision === null)   { texte = 'GPS · recherche…'; }
+  else {
+    texte  = 'GPS · ±' + nouvGPS.precision + ' m';
+    alerte = nouvGPS.precision > GPS_PRECISION_ALERTE_M;
   }
-  var wid = navigator.geolocation.watchPosition(function (pos) {
-    navigator.geolocation.clearWatch(wid);
-    nouvGPS.lat = +pos.coords.latitude.toFixed(6);
-    nouvGPS.lon = +pos.coords.longitude.toFixed(6);
-    var c = document.getElementById('saisie-gps-chip');
-    if (c) c.textContent = 'GPS · actif';
-  }, function (err) {
-    navigator.geolocation.clearWatch(wid);
-    var c = document.getElementById('saisie-gps-chip');
-    if (!c) return;
-    if (err.code === 1) {
-      c.textContent = 'GPS · refusé';
-    } else {
-      c.textContent = 'GPS · inactif';
-    }
-  }, { enableHighAccuracy: false, maximumAge: 60000 });
+  c.textContent = texte;
+  c.classList.toggle('saisie-chip-alerte', alerte);
 }
+
+function demarrerGPS() {
+  if (gpsSuivi !== null) return;
+  if (!navigator.geolocation) { gpsStatut = 'indisponible'; afficherEtatGPS(); return; }
+  gpsStatut = 'recherche';
+  afficherEtatGPS();
+  gpsSuivi = navigator.geolocation.watchPosition(function (pos) {
+    var prec = Math.round(pos.coords.accuracy);
+    gpsStatut = 'ok';
+    // On ne garde une nouvelle position que si elle est plus précise
+    if (nouvGPS.precision === null || prec < nouvGPS.precision) {
+      nouvGPS = {
+        lat: +pos.coords.latitude.toFixed(6),
+        lon: +pos.coords.longitude.toFixed(6),
+        precision: prec
+      };
+    }
+    afficherEtatGPS();
+  }, function (err) {
+    if (err.code === 1) { arreterGPS(); gpsStatut = 'refuse'; }
+    // Autres cas (pas encore de satellites) : le suivi continue
+    afficherEtatGPS();
+  }, { enableHighAccuracy: true, maximumAge: 0 });
+}
+
+function arreterGPS() {
+  if (gpsSuivi !== null && navigator.geolocation) navigator.geolocation.clearWatch(gpsSuivi);
+  gpsSuivi = null;
+}
+
+// Nouvelle grume (ou toucher la puce) : on repart de zéro
+function captureGPS() {
+  arreterGPS();
+  nouvGPS = { lat: null, lon: null, precision: null };
+  gpsStatut = 'recherche';
+  if (panelSaisieActif()) demarrerGPS();
+  else afficherEtatGPS();
+}
+
+function panelSaisieActif() {
+  var p = document.getElementById('panel-saisie');
+  return !!p && p.classList.contains('active') && document.visibilityState !== 'hidden';
+}
+
+// Téléphone en veille ou autre application : le GPS s'arrête (batterie)
+document.addEventListener('visibilitychange', function () {
+  if (!communeConnectee) return;
+  if (panelSaisieActif()) demarrerGPS(); else arreterGPS();
+});
 
 // ─── Helper createElement ─────────────────────────────────────────────────
 function cel(tag, cls, txt) {
@@ -3058,7 +3106,6 @@ function nouvAnnuler() {
   effacerBrouillonSaisie();
   nouvGrumes = [];
   nouvDate   = new Date();
-  nouvGPS    = { lat: null, lon: null };
   initialiserPanelSaisie();
   captureGPS();
 }
@@ -3293,7 +3340,8 @@ async function nouvConfirmer(options) {
     etat:         etat,
     debit_externe: nouvGrumes.some(function (g) { return !!g.debitExterne; }),
     latitude:     nouvGPS.lat,
-    longitude:    nouvGPS.lon
+    longitude:    nouvGPS.lon,
+    gps_precision: nouvGPS.precision
   };
 
   try {
@@ -3327,7 +3375,6 @@ async function nouvConfirmer(options) {
     // Réinitialiser le formulaire
     nouvGrumes = [];
     nouvDate   = new Date();
-    nouvGPS    = { lat: null, lon: null };
     initialiserPanelSaisie();
     captureGPS();
   } catch (err) {
@@ -3684,11 +3731,12 @@ function initialiserPanelSaisie() {
   var meta     = cel('div', 'saisie-meta');
   var dateStr  = nouvDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   meta.appendChild(cel('div', 'saisie-chip', dateStr));
-  var gpsChip  = cel('div', 'saisie-chip', 'GPS · en cours…');
+  var gpsChip  = cel('div', 'saisie-chip', '');
   gpsChip.id      = 'saisie-gps-chip';
   gpsChip.onclick = captureGPS;
   meta.appendChild(gpsChip);
   panel.appendChild(meta);
+  afficherEtatGPS();
 
   // ── Date d'abattage (aujourd'hui par défaut, ou date passée, ou inconnue)
   var anneeRow = cel('div', 'saisie-annee-row');
@@ -3847,6 +3895,8 @@ function switchTab(panel, btn) {
   btn.classList.add('active');
   if (panel === 'stock')      afficherExtraction();
   if (panel === 'historique') afficherHistorique();
+  // Le GPS ne tourne que sur l'onglet Nouveau
+  if (panel === 'saisie') demarrerGPS(); else arreterGPS();
 }
 
 
