@@ -183,7 +183,7 @@ function fileEnvoiCommune() {
 
 function mettreAJourBandeauEnvoi() {
   // Les noms ajoutés avec « Autre » partent sans rien afficher
-  var f    = fileEnvoiCommune().filter(function (it) { return it.table !== 'noms_personnalises'; });
+  var f    = fileEnvoiCommune().filter(function (it) { return it.table !== 'noms_personnalises' && it.table !== 'tempetes'; });
   var el   = document.getElementById('envoi-attente-banner');
   if (!f.length) { if (el) el.classList.add('hidden'); return; }
   if (!el) {
@@ -283,6 +283,8 @@ async function chargerDonnees(options) {
       reglages = {};
       (regl || []).forEach(function (r) { reglages[r.cle] = parseFloat(r.valeur); });
       localStorage.setItem('duramen_reglages_cache', JSON.stringify(reglages));
+      tempetesConnues = (await sbSelect('tempetes', 'select=nom&order=created_at.desc')).map(function (t) { return t.nom; });
+      localStorage.setItem('duramen_tempetes_cache', JSON.stringify(tempetesConnues));
     } catch (eNoms) { chargerNomsEtReglagesCache(); }
     majListesSaisie();
     lots = rawLots.map(function (l) {
@@ -1488,10 +1490,14 @@ function ouvrirCorrectionGrume(g) {
   // Essence, provenance, cause (« Autre… » permet d'écrire un nom)
   var cEss = creerChoixAvecAutre('corr-essence', 'Essence *', optionsEssences(), g.essence);
   var cPro = creerChoixCorrection('corr-provenance', 'Provenance *', OPTIONS_PROVENANCE, g.provenance);
-  var cCau = creerChoixAvecAutre('corr-cause', "Cause d'abattage *", optionsCauses(), g.cause);
+  var cTem = creerChampTempete('corr-tempete', g.nom_intemperie || '');
+  var cCau = creerChoixAvecAutre('corr-cause', "Cause d'abattage *", optionsCauses(), g.cause,
+    function () { cTem.maj(cCau.lire().valeur); });
   modal.appendChild(cEss.field);
   modal.appendChild(cPro.field);
   modal.appendChild(cCau.field);
+  cTem.maj(cCau.lire().valeur);
+  modal.appendChild(cTem.field);
   var cEtat = creerChoixBoutons('État de la grume', DuramenCore.ETATS_GRUME, g.etat || 'standard');
   modal.appendChild(cEtat.field);
 
@@ -1559,6 +1565,7 @@ function ouvrirCorrectionGrume(g) {
     comparer('Essence', g.essence || '—', n.essence);
     comparer('Provenance', g.provenance || '—', n.provenance);
     comparer('Cause', g.cause || '—', n.cause);
+    comparer('Tempête', g.nom_intemperie || '—', n.tempete || '—');
     comparer('État', DuramenCore.libelleEtatGrume(g.etat), DuramenCore.libelleEtatGrume(n.etat));
     comparer('Débit externe', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
     comparer('Abattue le', texteDateCorrection(g.date_abattage), texteDateCorrection(n.abattage));
@@ -1581,6 +1588,7 @@ function ouvrirCorrectionGrume(g) {
       essence:    ess.valeur,
       provenance: cPro.select.value,
       cause:      cau.valeur,
+      tempete:    cTem.lire(cau.valeur).valeur,
       etat:       cEtat.lire(),
       debitExterne: debitExterne,
       abattage:   iDate.value,
@@ -1600,8 +1608,10 @@ function ouvrirCorrectionGrume(g) {
         p_id: g.id, p_essence: n.essence, p_provenance: n.provenance, p_cause: n.cause,
         p_date_abattage: n.abattage || null, p_repere: n.repere,
         p_longueur: n.longueur, p_diametre: n.diametre,
-        p_etat: n.etat, p_debit_externe: n.debitExterne
+        p_etat: n.etat, p_debit_externe: n.debitExterne,
+        p_nom_intemperie: n.tempete || null
       });
+      if (n.tempete) await memoriserTempete(n.tempete);
       if (ess.nouveau) await memoriserNom('essence', n.essence);
       if (cau.nouveau) await memoriserNom('cause', n.cause);
       fermer();
@@ -2667,7 +2677,7 @@ function fermerMentions() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 var nouvGrumes    = [];
-var choixEssenceSaisie = null, choixCauseSaisie = null, choixEtatSaisie = null;
+var choixEssenceSaisie = null, choixCauseSaisie = null, choixEtatSaisie = null, champTempeteSaisie = null;
 var nouvGPS       = { lat: null, lon: null, precision: null };
 var nouvDate      = new Date();
 var nouvAnnee     = String(new Date().getFullYear());
@@ -3161,6 +3171,7 @@ async function nouvConfirmer(options) {
   var provenance = proEl.value;
   var cause      = cau.valeur;
   var etat       = choixEtatSaisie ? choixEtatSaisie.lire() : 'standard';
+  var tempete    = champTempeteSaisie ? champTempeteSaisie.lire(cause) : { valeur: '', nouveau: false };
   var repEl      = document.getElementById('modal-repere-input');
   var repere     = repEl ? repEl.value.trim() : '';
   var nom        = null;
@@ -3213,6 +3224,7 @@ async function nouvConfirmer(options) {
     date_iso:     nouvDate.toISOString(),
     grumes:       grumesFlat,
     etat:         etat,
+    nom_intemperie: tempete.valeur || null,
     debit_externe: nouvGrumes.some(function (g) { return !!g.debitExterne; }),
     latitude:     nouvGPS.lat,
     longitude:    nouvGPS.lon,
@@ -3234,6 +3246,7 @@ async function nouvConfirmer(options) {
     // Nouveaux noms écrits dans « Autre » : proposés aux prochaines saisies
     if (ess.nouveau) await memoriserNom('essence', essence, !envoye);
     if (cau.nouveau) await memoriserNom('cause', cause, !envoye);
+    if (tempete.nouveau) await memoriserTempete(tempete.valeur, !envoye);
     if (envoye) await chargerDonnees();
     nouvFermerModal();
     effacerBrouillonSaisie();
@@ -3285,6 +3298,7 @@ function nouvSauverBrouillon() {
     provenance:   proEl ? proEl.value : '',
     cause:        choixCauseSaisie ? choixCauseSaisie.select.value : '',
     causeAutre:   choixCauseSaisie ? choixCauseSaisie.input.value : '',
+    tempete:      champTempeteSaisie ? champTempeteSaisie.input.value : '',
     etat:         choixEtatSaisie ? choixEtatSaisie.lire() : 'standard',
     annee:      nouvAnnee,
     abattage:   nouvAbattage,
@@ -3314,6 +3328,10 @@ function nouvRestaurerBrouillon() {
     restaurerChoixAvecAutre(choixEssenceSaisie, d.essence, d.essenceAutre);
     if (proEl) proEl.value = d.provenance || '';
     restaurerChoixAvecAutre(choixCauseSaisie, d.cause, d.causeAutre);
+    if (champTempeteSaisie) {
+      champTempeteSaisie.input.value = d.tempete || '';
+      champTempeteSaisie.maj(choixCauseSaisie.lire().valeur);
+    }
     if (choixEtatSaisie && d.etat) choixEtatSaisie.ecrire(d.etat);
     if (d.abattage) {
       nouvAbattage = d.abattage;
@@ -3353,11 +3371,13 @@ var OPTIONS_CAUSE = [
 var nomsPerso    = [];   // [{ type: 'cause' | 'essence', nom }]
 var reglages     = {};   // réglages lus dans la base (table reglages)
 var VALEUR_AUTRE = '__autre__';
+var tempetesConnues = [];   // noms de tempête, partagés entre toutes les communes
 
 function chargerNomsEtReglagesCache() {
   var c = lireJSONLocal('duramen_noms_cache');
   nomsPerso = (c && communeConnectee && c.commune === communeConnectee.nom && Array.isArray(c.noms)) ? c.noms : [];
   reglages  = lireJSONLocal('duramen_reglages_cache') || {};
+  tempetesConnues = lireJSONLocal('duramen_tempetes_cache') || [];
 }
 
 // Diamètre maximal au gros bout pour la scierie mobile (cm)
@@ -3488,6 +3508,84 @@ function creerChoixAvecAutre(id, labelTxt, options, valeur, onChange) {
 function majListesSaisie() {
   if (choixEssenceSaisie) choixEssenceSaisie.majOptions([['', '— Choisir —']].concat(optionsEssences()));
   if (choixCauseSaisie)   choixCauseSaisie.majOptions([['', '— Choisir —']].concat(optionsCauses()));
+  if (champTempeteSaisie) champTempeteSaisie.majListe();
+}
+
+// ─── Nom de la tempête (cause « Intempérie ») ────────────────────────────
+// Champ facultatif. Les noms déjà saisis, par toutes les communes, sont
+// proposés. lire() rend { valeur, nouveau } ; valeur vide si rien n'est écrit.
+function tempetesProposees() {
+  var enAttente = fileEnvoiCommune()
+    .filter(function (it) { return it.table === 'tempetes'; })
+    .map(function (it) { return it.data.nom; });
+  var vus = {}, liste = [];
+  enAttente.concat(tempetesConnues).forEach(function (n) {
+    var k = DuramenCore.cleNom(n);
+    if (!k || vus[k]) return;
+    vus[k] = true;
+    liste.push(n);
+  });
+  return liste;
+}
+
+function creerChampTempete(id, valeur, onChange) {
+  var f = cel('div', 'field hidden');
+  var l = cel('label', '', 'Nom de la tempête (facultatif)');
+  l.htmlFor = id;
+  var inp = document.createElement('input');
+  inp.type = 'text';
+  inp.id   = id;
+  inp.maxLength    = 60;
+  inp.autocomplete = 'off';
+  inp.placeholder  = 'Ex. Ciarán';
+  inp.value = valeur || '';
+  var dl = document.createElement('datalist');
+  dl.id = id + '-liste';
+  function remplirListe() {
+    while (dl.firstChild) dl.removeChild(dl.firstChild);
+    tempetesProposees().forEach(function (n) {
+      var o = document.createElement('option');
+      o.value = n;
+      dl.appendChild(o);
+    });
+  }
+  remplirListe();
+  inp.setAttribute('list', dl.id);
+  if (onChange) inp.addEventListener('input', onChange);
+  f.appendChild(l);
+  f.appendChild(inp);
+  f.appendChild(dl);
+  return {
+    field: f, input: inp,
+    majListe: remplirListe,
+    // Le champ ne s'affiche que pour la cause « Intempérie »
+    maj: function (cause) { f.classList.toggle('hidden', cause !== 'Intempérie'); },
+    lire: function (cause) {
+      if (cause !== 'Intempérie') return { valeur: '', nouveau: false };
+      var t = inp.value.replace(/\s+/g, ' ').trim().slice(0, 60);
+      if (!t) return { valeur: '', nouveau: false };
+      var k = DuramenCore.cleNom(t);
+      var connu = tempetesProposees().filter(function (n) { return DuramenCore.cleNom(n) === k; })[0];
+      if (connu) return { valeur: connu, nouveau: false };
+      return { valeur: t.charAt(0).toUpperCase() + t.slice(1), nouveau: true };
+    }
+  };
+}
+
+// Garde un nouveau nom de tempête pour toutes les communes
+async function memoriserTempete(nom, sansReseau) {
+  if (!nom || !communeConnectee) return;
+  var k = DuramenCore.cleNom(nom);
+  if (tempetesProposees().some(function (n) { return DuramenCore.cleNom(n) === k; })) return;
+  var ligne = { id: crypto.randomUUID(), nom: nom, commune_code: communeConnectee.code };
+  tempetesConnues.unshift(nom);
+  localStorage.setItem('duramen_tempetes_cache', JSON.stringify(tempetesConnues));
+  if (sansReseau) { ajouterFileEnvoi('tempetes', ligne, { sansRetour: true }); return; }
+  try {
+    await sbInsert('tempetes', ligne, { sansRetour: true });
+  } catch (err) {
+    if (err.reseau) ajouterFileEnvoi('tempetes', ligne, { sansRetour: true });
+  }
 }
 
 // Boutons à choix unique (ex. état de la grume). lire() rend le code choisi.
@@ -3647,9 +3745,15 @@ function initialiserPanelSaisie() {
   selGrid.appendChild(creerSelectSaisie('saisie-provenance', 'Provenance *',
     [['', '— Choisir —']].concat(OPTIONS_PROVENANCE)));
   choixCauseSaisie = creerChoixAvecAutre('saisie-cause', "Cause d'abattage *",
-    [['', '— Choisir —']].concat(optionsCauses()), '', nouvSauverBrouillon);
+    [['', '— Choisir —']].concat(optionsCauses()), '', function () {
+      if (champTempeteSaisie) champTempeteSaisie.maj(choixCauseSaisie.lire().valeur);
+      nouvSauverBrouillon();
+    });
   selGrid.appendChild(choixCauseSaisie.field);
   panel.appendChild(selGrid);
+  // Intempérie : nommer la tempête (facultatif)
+  champTempeteSaisie = creerChampTempete('saisie-tempete', '', nouvSauverBrouillon);
+  panel.appendChild(champTempeteSaisie.field);
 
   // ── État : une grume exceptionnelle ou en mauvais état se range à part
   choixEtatSaisie = creerChoixBoutons('État de la grume', DuramenCore.ETATS_GRUME, 'standard',

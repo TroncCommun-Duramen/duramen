@@ -297,9 +297,11 @@ async function bChargerDonnees(options) {
     try {
       var nr = await Promise.all([
         bSbSelect('noms_personnalises', 'commune_code=eq.' + code + '&select=type,nom&order=nom.asc'),
-        bSbSelect('reglages', 'select=cle,valeur')
+        bSbSelect('reglages', 'select=cle,valeur'),
+        bSbSelect('tempetes', 'select=nom&order=created_at.desc')
       ]);
       bNomsPerso = nr[0] || [];
+      bTempetes  = (nr[2] || []).map(function (t) { return t.nom; });
       bReglages  = {};
       (nr[1] || []).forEach(function (x) { bReglages[x.cle] = parseFloat(x.valeur); });
     } catch (e3) { /* on garde les listes déjà chargées */ }
@@ -720,6 +722,7 @@ var B_OPTIONS_CAUSE = [
 var B_VALEUR_AUTRE = '__autre__';
 var bNomsPerso = [];
 var bReglages  = {};
+var bTempetes  = [];   // noms de tempête, partagés entre toutes les communes
 
 function bLimiteGrosBout() {
   return bReglages.diametre_gros_bout_max_cm || DuramenCore.DIAMETRE_GROS_BOUT_MAX_DEFAUT;
@@ -790,6 +793,35 @@ async function bMemoriserNom(type, nom) {
   } catch (e) { /* déjà enregistré par un autre poste, ou pas de réseau : la liste reste utilisable */ }
 }
 
+// Nom de la tempête : champ avec les noms déjà saisis par toutes les communes
+function bChampTempete(valeur) {
+  var inp = bInput('text', valeur || '', { maxlength: '60', placeholder: 'Ex. Ciarán', list: 'b-tempetes-liste' });
+  var dl = document.createElement('datalist');
+  dl.id = 'b-tempetes-liste';
+  bTempetes.forEach(function (n) { var o = document.createElement('option'); o.value = n; dl.appendChild(o); });
+  var bloc = el('div', 'b-choix-autre');
+  bloc.appendChild(inp);
+  bloc.appendChild(dl);
+  return {
+    el: bloc,
+    lire: function (cause) {
+      if (cause !== 'Intempérie') return { valeur: '', nouveau: false };
+      var t = inp.value.replace(/\s+/g, ' ').trim().slice(0, 60);
+      if (!t) return { valeur: '', nouveau: false };
+      var k = DuramenCore.cleNom(t);
+      var connu = bTempetes.filter(function (n) { return DuramenCore.cleNom(n) === k; })[0];
+      if (connu) return { valeur: connu, nouveau: false };
+      return { valeur: t.charAt(0).toUpperCase() + t.slice(1), nouveau: true };
+    }
+  };
+}
+async function bMemoriserTempete(nom) {
+  if (!nom || !bCommune) return;
+  bTempetes.unshift(nom);
+  try { await bSbInsert('tempetes', { nom: nom, commune_code: bCommune.code }); }
+  catch (e) { /* déjà enregistrée par une autre commune, ou pas de réseau */ }
+}
+
 // Badges d'une grume : à stocker à part, débit externe
 // Trois couleurs : standard (gris clair), exceptionnelle (or), mauvais état (ardoise)
 function bBadgesEtatGrume(g) {
@@ -824,7 +856,7 @@ function bSelectCorrection(options, valeur) {
 function bEtatGrume(g) {
   var m = DuramenCore.mesuresGrume(g);
   return [g.essence, g.provenance, g.cause, g.date_abattage || '', g.repere || '', m.longueur, m.diametre,
-          g.etat || 'standard', !!g.debit_externe].join('|');
+          g.etat || 'standard', !!g.debit_externe, g.nom_intemperie || ''].join('|');
 }
 
 function bTexteDateCorrection(iso) { return iso ? fmtDate(iso) : 'inconnue'; }
@@ -843,6 +875,7 @@ function bOuvrirCorrectionGrume(id) {
   var sPro = bSelectCorrection(B_OPTIONS_PROVENANCE, g.provenance);
   var sCau = bChoixAvecAutre(bOptionsAvecNoms(B_OPTIONS_CAUSE, 'cause'), g.cause);
   var sEtat = bSelectCorrection(DuramenCore.ETATS_GRUME, g.etat || 'standard');
+  var sTem  = bChampTempete(g.nom_intemperie);
   // Gros bout au-delà de la limite de la scierie mobile : débit externe
   var limGB = bLimiteGrosBout();
   var sGB = bSelectCorrection([['', '— Répondre —'], ['non', 'Non'], ['oui', 'Oui']],
@@ -855,6 +888,12 @@ function bOuvrirCorrectionGrume(id) {
   md.corps.appendChild(bChamp('Essence', sEss.el));
   md.corps.appendChild(bChamp('Provenance', sPro));
   md.corps.appendChild(bChamp('Cause d\'abattage', sCau.el));
+  // Intempérie : nom de la tempête (facultatif)
+  var champTem = bChamp('Nom de la tempête (facultatif)', sTem.el);
+  md.corps.appendChild(champTem);
+  function majTempete() { champTem.classList.toggle('hidden', sCau.lire().valeur !== 'Intempérie'); }
+  sCau.el.querySelector('select').addEventListener('change', majTempete);
+  majTempete();
   md.corps.appendChild(bChamp('État de la grume (à part si exceptionnelle ou en mauvais état)', sEtat));
   md.corps.appendChild(bChamp('Abattue le (vide si la date est inconnue)', iDate, 'b-champ-court'));
   var mesures = el('div', 'b-debit-ligne');
@@ -917,6 +956,7 @@ function bOuvrirCorrectionGrume(id) {
       essence: ess.valeur, provenance: sPro.value, cause: cau.valeur,
       essenceNouvelle: ess.nouveau, causeNouvelle: cau.nouveau,
       etat: sEtat.value, debitExterne: debitExterne,
+      tempete: sTem.lire(cau.valeur).valeur, tempeteNouvelle: sTem.lire(cau.valeur).nouveau,
       abattage: iDate.value, repere: iRep.value.trim(),
       longueur: m.longueur, diametre: m.diametre
     });
@@ -941,6 +981,7 @@ async function bEnregistrerCorrection(g, vu, n) {
   comparer('Essence', g.essence || '—', n.essence);
   comparer('Provenance', g.provenance || '—', n.provenance);
   comparer('Cause', g.cause || '—', n.cause);
+  comparer('Tempête', g.nom_intemperie || '—', n.tempete || '—');
   comparer('État', DuramenCore.libelleEtatGrume(g.etat), DuramenCore.libelleEtatGrume(n.etat));
   comparer('Débit externe', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
   comparer('Abattue le', bTexteDateCorrection(g.date_abattage), bTexteDateCorrection(n.abattage));
@@ -969,8 +1010,10 @@ async function bEnregistrerCorrection(g, vu, n) {
       p_id: g.id, p_essence: n.essence, p_provenance: n.provenance, p_cause: n.cause,
       p_date_abattage: n.abattage || null, p_repere: n.repere,
       p_longueur: n.longueur, p_diametre: n.diametre,
-      p_etat: n.etat, p_debit_externe: n.debitExterne
+      p_etat: n.etat, p_debit_externe: n.debitExterne,
+      p_nom_intemperie: n.tempete || null
     });
+    if (n.tempeteNouvelle) await bMemoriserTempete(n.tempete);
     if (n.essenceNouvelle) await bMemoriserNom('essence', n.essence);
     if (n.causeNouvelle)   await bMemoriserNom('cause', n.cause);
     vider(document.getElementById('b-modales'));
@@ -2201,7 +2244,7 @@ function bTableauExport(type, source) {
   if (type === 'grumes_stock' || type === 'grumes_toutes') {
     entetes = ['Commune', 'N° grume', 'Essence', 'Longueur m', 'Diamètre cm', 'Volume m3', 'Date d\'abattage',
                'Année de coupe', 'Provenance', 'Cause', 'Repère', 'Date de saisie', 'État', 'À débiter avant le', 'Campagne',
-               'Rangement', 'Débit externe'];
+               'Rangement', 'Débit externe', 'Tempête'];
     colVol = 5;
     var reservees = grumesADebiter(), sorties = clesGrumesSorties();
     var base = type === 'grumes_toutes' ? lots : (metro ? bMetroGrumes : DuramenCore.getGrumesEnStock());
@@ -2225,7 +2268,8 @@ function bTableauExport(type, source) {
         csvDate(g.date_iso || g.created_at), csvTexte(etat),
         enStock && u.dateLimite ? csvDate(u.dateLimite) : '""', csvTexte(camp),
         csvTexte(DuramenCore.grumeAPart(g) ? 'À part — ' + DuramenCore.libelleEtatGrume(g.etat) : 'Standard'),
-        csvTexte(g.debit_externe ? 'Oui' : 'Non')
+        csvTexte(g.debit_externe ? 'Oui' : 'Non'),
+        csvTexte(g.nom_intemperie || '')
       ] });
     });
   }
