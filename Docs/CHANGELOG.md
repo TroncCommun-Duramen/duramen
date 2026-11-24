@@ -106,6 +106,22 @@ Base Supabase (déjà en place, sans effet sur la version en ligne) :
 
 ---
 
+## 24 juin 2026
+
+> Note reportée le 24 nov. 2026 depuis le coffre Obsidian.
+
+### Fix — Volumes 0.000 m³ en vue Nantes Métropole
+- `fix(app)` — `rendreHistoriqueContenu()` : volumes par essence calculés depuis `vol_utile` des lots (`lotsData`) au lieu de `DuramenCore.getStock()`. En vue communauté, `getStock()` ne contient que les données de la commune connectée → 0.000 m³ pour toutes les essences des autres communes.
+- `fix(sw)` — Cache incrémenté `duramen-v30` → `duramen-v31`.
+- Commits : `be1cc64` (fix app.js) · `eb9e840` (fix sw.js)
+
+### Fix — Total M³ BRUTS à 0 en vue Nantes Métropole
+- `fix(app)` — `totalVol` calculé depuis `getStock()` (même cause). Corrigé en sommant `vol_utile` depuis `lotsData`.
+- `fix(sw)` — Cache incrémenté `duramen-v31` → `duramen-v32`.
+- Commit : `1b0c70c`
+
+---
+
 ## 26 avril 2026
 
 ### Audit et conformité design system
