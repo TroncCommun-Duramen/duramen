@@ -1290,3 +1290,36 @@ a.b-btn { display: inline-flex; align-items: center; text-decoration: none; box-
 /* Les couleurs des points passent ici, pas dans le JS */
 .b-carte-point { stroke: var(--sumi); stroke-width: 1; fill: var(--cendre); fill-opacity: 0.9; }
 .b-carte-choix { stroke: var(--sumi); stroke-width: 2; fill: var(--orange); fill-opacity: 1; }
+
+/* ═══ Trait à main levée (25 nov. 2026) ═══
+   Même esprit que l'app mobile : trait d'encre, coins un peu inégaux
+   (variables dans ../theme.css). Pour revenir en arrière, retirer ce bloc. */
+
+/* Cadres */
+.b-stat-block,
+.b-filtre-card,
+.b-table-wrap,
+.b-fiche-infos,
+.b-vide,
+.b-liste-cochable,
+.b-prep-grume { border: var(--trait-main); border-radius: var(--rayon-main); }
+.b-modale,
+.b-feedback-card,
+.b-mentions-encadre,
+.b-etapes,
+.b-carte { border-radius: var(--rayon-main); }
+.b-carte { border: var(--trait-main); }
+
+/* Champs et boutons : coins doucement inégaux */
+.b-btn,
+.b-input,
+.b-select-filtre,
+.b-select-sm,
+.b-login-input,
+.b-login-btn,
+.b-deconnexion-btn,
+.b-feedback-type-btn,
+.b-feedback-textarea,
+.b-feedback-btn-envoyer,
+.b-feedback-btn-effacer,
+.b-mentions-btn { border-radius: var(--rayon-main-doux); }
