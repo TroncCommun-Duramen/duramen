@@ -521,6 +521,29 @@ function bTonEssence(ess) {
   return (info ? info.color : 'ec-autre').replace(/^ec-/, '');
 }
 
+// Hachures des camemberts (25 nov. 2026) : comme les surfaces du document de
+// synthèse, chaque part est faite de traits répétés à la couleur de l'essence
+// (ou de la teinte de commune), sur un fond très léger de la même couleur.
+// Le trait est un petit rectangle : il prend la couleur de la classe (fill).
+function bMotifHachure(svg, id, cls) {
+  var defs = svg.querySelector('defs');
+  if (!defs) { defs = document.createElementNS(SVG_NS, 'defs'); svg.appendChild(defs); }
+  if (svg.querySelector('#' + id)) return 'url(#' + id + ')';
+  var pat = document.createElementNS(SVG_NS, 'pattern');
+  pat.setAttribute('id', id);
+  pat.setAttribute('patternUnits', 'userSpaceOnUse');
+  pat.setAttribute('width', '3');
+  pat.setAttribute('height', '6');
+  pat.setAttribute('patternTransform', 'rotate(35)');
+  var trait = document.createElementNS(SVG_NS, 'rect');
+  trait.setAttribute('width', '0.9');
+  trait.setAttribute('height', '6');
+  trait.setAttribute('class', cls);
+  pat.appendChild(trait);
+  defs.appendChild(pat);
+  return 'url(#' + id + ')';
+}
+
 // Camembert des grumes de la commune : une part par essence, à sa couleur
 function bDessinerEssences(grumes) {
   var svg     = document.getElementById('b-grumes-donut-svg');
@@ -540,6 +563,11 @@ function bDessinerEssences(grumes) {
     path.setAttribute('d', bPiePath(cx, cy, r, a0, a1));
     path.setAttribute('class', 'b-part-essence b-ess-' + bTonEssence(ess));
     svg.appendChild(path);
+    var hach = document.createElementNS(SVG_NS, 'path');
+    hach.setAttribute('d', path.getAttribute('d'));
+    hach.setAttribute('class', 'b-part-hachure');
+    hach.setAttribute('fill', bMotifHachure(svg, 'b-hach-ess-' + bTonEssence(ess), 'b-ess-' + bTonEssence(ess)));
+    svg.appendChild(hach);
     if (pct > 0.05) {
       var mid = a0 + (a1 - a0) / 2;
       var txt = document.createElementNS(SVG_NS, 'text');
@@ -2268,6 +2296,12 @@ function bDessinerCommunes(data) {
   segments.forEach(function (seg, i) {
     var dash = seg.vol / total * circonf;
     cercle('b-trait-' + (i % NB_TEINTES), dash);
+    // Les mêmes traits répétés que le camembert des essences, sur l'anneau
+    var c = svg.lastChild;
+    var h = c.cloneNode(false);
+    h.setAttribute('class', 'b-anneau b-anneau-hachure');
+    h.setAttribute('stroke', bMotifHachure(svg, 'b-hach-teinte-' + (i % NB_TEINTES), 'b-teinte-' + (i % NB_TEINTES)));
+    svg.appendChild(h);
     offset += dash;
     var item = el('div', 'b-donut-legende-item');
     item.appendChild(el('div', 'b-donut-legende-dot b-teinte-' + (i % NB_TEINTES)));
