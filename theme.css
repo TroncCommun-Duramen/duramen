@@ -113,7 +113,8 @@
   --rayon-main:        15px 10px 14px 9px / 9px 14px 10px 15px;   /* cartes, boutons de l'accueil */
   --rayon-main-doux:   10px 7px 9px 6px / 6px 9px 7px 10px;       /* champs, boutons */
   --rayon-picto:       12px 9px 13px 8px / 9px 13px 8px 12px;     /* carré des pictogrammes */
-  --hachures-indigo:   repeating-linear-gradient(-55deg, rgba(43, 63, 140, 0.10) 0 0.6px, transparent 0.6px 5px);
+  --hachures-indigo:   repeating-linear-gradient(-55deg, rgba(43, 63, 140, 0.13) 0 0.6px, transparent 0.6px 3px);
+  --hachures-indigo-dense: repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.22) 0 0.6px, transparent 0.6px 3px);   /* blanc sur indigo : commune, Métropole, choix actif */
   --hachures-or:       repeating-linear-gradient(0deg, var(--or) 0 1.5px, var(--washi) 1.5px 3px);
   --hachures-ardoise:  repeating-linear-gradient(45deg, var(--ardoise) 0 1.5px, var(--pierre) 1.5px 3px);
 
