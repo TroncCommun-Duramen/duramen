@@ -183,7 +183,7 @@ function fileEnvoiCommune() {
 
 function mettreAJourBandeauEnvoi() {
   // Les noms ajoutés avec « Autre » partent sans rien afficher
-  var f    = fileEnvoiCommune().filter(function (it) { return it.table !== 'noms_personnalises' && it.table !== 'tempetes'; });
+  var f    = fileEnvoiCommune().filter(function (it) { return it.table !== 'noms_personnalises' && it.table !== 'tempetes' && it.table !== 'parcs'; });
   var el   = document.getElementById('envoi-attente-banner');
   if (!f.length) { if (el) el.classList.add('hidden'); return; }
   if (!el) {
@@ -285,6 +285,8 @@ async function chargerDonnees(options) {
       localStorage.setItem('duramen_reglages_cache', JSON.stringify(reglages));
       tempetesConnues = (await sbSelect('tempetes', 'select=nom&order=created_at.desc')).map(function (t) { return t.nom; });
       localStorage.setItem('duramen_tempetes_cache', JSON.stringify(tempetesConnues));
+      parcsConnus = (await sbSelect('parcs', 'select=nom&order=nom.asc')).map(function (t) { return t.nom; });
+      localStorage.setItem('duramen_parcs_cache', JSON.stringify({ commune: communeConnectee.nom, noms: parcsConnus }));
     } catch (eNoms) { chargerNomsEtReglagesCache(); }
     majListesSaisie();
     lots = rawLots.map(function (l) {
@@ -1364,7 +1366,8 @@ function ouvrirAttributionNumero(g) {
   // De quoi reconnaître la bonne grume sur le site
   var m = DuramenCore.mesuresGrume(g);
   modal.appendChild(cel('p', 'modal-sub', (g.essence || '') + ' · ' + formatNb(m.longueur, 2) + ' m × '
-    + m.diametre + ' cm · ' + texteAbattageGrume(g) + (g.provenance ? ' · ' + g.provenance : '')));
+    + m.diametre + ' cm · ' + texteAbattageGrume(g) + (g.provenance ? ' · ' + g.provenance : '')
+    + (g.nom_parc ? ' · ' + g.nom_parc : '')));
   if (g.repere) modal.appendChild(cel('div', 'info-box', 'Repère : ' + g.repere));
 
   var apercu = cel('p', 'modal-sub', '');
@@ -1497,12 +1500,17 @@ function ouvrirCorrectionGrume(g) {
   var cEss = creerChoixAvecAutre('corr-essence', 'Essence *', optionsEssences(), g.essence);
   var cPro = creerChoixCorrection('corr-provenance', 'Provenance *', OPTIONS_PROVENANCE, g.provenance);
   var cTem = creerChampTempete('corr-tempete', g.nom_intemperie || '');
+  var cParc = creerChampParc('corr-parc', g.nom_parc || '', null,
+    function () { return { lat: g.latitude, lon: g.longitude }; });
+  cPro.select.addEventListener('change', function () { cParc.maj(cPro.select.value); });
   var cCau = creerChoixAvecAutre('corr-cause', "Cause d'abattage *", optionsCauses(), g.cause,
     function () { cTem.maj(cCau.lire().valeur); });
   modal.appendChild(cEss.field);
   modal.appendChild(cPro.field);
+  modal.appendChild(cParc.field);
   modal.appendChild(cCau.field);
   cTem.maj(cCau.lire().valeur);
+  cParc.maj(cPro.select.value);
   modal.appendChild(cTem.field);
   var cEtat = creerChoixBoutons('État de la grume', DuramenCore.ETATS_GRUME, g.etat || 'standard');
   modal.appendChild(cEtat.field);
@@ -1571,6 +1579,7 @@ function ouvrirCorrectionGrume(g) {
     comparer('Provenance', g.provenance || '—', n.provenance);
     comparer('Cause', g.cause || '—', n.cause);
     comparer('Tempête', g.nom_intemperie || '—', n.tempete || '—');
+    comparer('Parc', g.nom_parc || '—', n.parc || '—');
     comparer('État', DuramenCore.libelleEtatGrume(g.etat), DuramenCore.libelleEtatGrume(n.etat));
     comparer('Ø au plus large', g.diametre_max_cm ? g.diametre_max_cm + ' cm' : '—', n.diametreMax ? n.diametreMax + ' cm' : '—');
     comparer('Débit externalisé', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
@@ -1593,6 +1602,7 @@ function ouvrirCorrectionGrume(g) {
       provenance: cPro.select.value,
       cause:      cau.valeur,
       tempete:    cTem.lire(cau.valeur).valeur,
+      parc:       cParc.lire(cPro.select.value).valeur,
       etat:       cEtat.lire(),
       debitExterne: debitExterne,
       abattage:   iDate.value,
@@ -1614,9 +1624,11 @@ function ouvrirCorrectionGrume(g) {
         p_longueur: n.longueur, p_diametre: n.diametre,
         p_etat: n.etat, p_debit_externe: n.debitExterne,
         p_nom_intemperie: n.tempete || null,
-        p_diametre_max: n.diametreMax
+        p_diametre_max: n.diametreMax,
+        p_nom_parc: n.parc || null
       });
       if (n.tempete) await memoriserTempete(n.tempete);
+      if (n.parc) await memoriserParc(n.parc);
       if (ess.nouveau) await memoriserNom('essence', n.essence);
       if (cau.nouveau) await memoriserNom('cause', n.cause);
       fermer();
@@ -2698,7 +2710,7 @@ function fermerMentions() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 var nouvGrumes    = [];
-var choixEssenceSaisie = null, choixCauseSaisie = null, choixEtatSaisie = null, champTempeteSaisie = null;
+var choixEssenceSaisie = null, choixCauseSaisie = null, choixEtatSaisie = null, champTempeteSaisie = null, champParcSaisie = null;
 var nouvGPS       = { lat: null, lon: null, precision: null };
 var nouvDate      = new Date();
 var nouvAnnee     = String(new Date().getFullYear());
@@ -3198,6 +3210,7 @@ async function nouvConfirmer(options) {
   var cause      = cau.valeur;
   var etat       = choixEtatSaisie ? choixEtatSaisie.lire() : 'standard';
   var tempete    = champTempeteSaisie ? champTempeteSaisie.lire(cause) : { valeur: '', nouveau: false };
+  var parc       = champParcSaisie ? champParcSaisie.lire(provenance) : { valeur: '', nouveau: false };
   var repEl      = document.getElementById('modal-repere-input');
   var repere     = repEl ? repEl.value.trim() : '';
   var nom        = null;
@@ -3251,6 +3264,7 @@ async function nouvConfirmer(options) {
     grumes:       grumesFlat,
     etat:         etat,
     nom_intemperie: tempete.valeur || null,
+    nom_parc:     parc.valeur || null,
     diametre_max_cm: (nouvGrumes[0] && nouvGrumes[0].diametreMax) || null,
     debit_externe: nouvGrumes.some(function (g) { return !!g.debitExterne; }),
     latitude:     nouvGPS.lat,
@@ -3274,6 +3288,7 @@ async function nouvConfirmer(options) {
     if (ess.nouveau) await memoriserNom('essence', essence, !envoye);
     if (cau.nouveau) await memoriserNom('cause', cause, !envoye);
     if (tempete.nouveau) await memoriserTempete(tempete.valeur, !envoye);
+    if (parc.nouveau) await memoriserParc(parc.valeur, !envoye);
     if (envoye) await chargerDonnees();
     nouvFermerModal();
     effacerBrouillonSaisie();
@@ -3326,6 +3341,7 @@ function nouvSauverBrouillon() {
     cause:        choixCauseSaisie ? choixCauseSaisie.select.value : '',
     causeAutre:   choixCauseSaisie ? choixCauseSaisie.input.value : '',
     tempete:      champTempeteSaisie ? champTempeteSaisie.input.value : '',
+    parc:         champParcSaisie ? champParcSaisie.input.value : '',
     etat:         choixEtatSaisie ? choixEtatSaisie.lire() : 'standard',
     annee:      nouvAnnee,
     abattage:   nouvAbattage,
@@ -3358,6 +3374,10 @@ function nouvRestaurerBrouillon() {
     if (champTempeteSaisie) {
       champTempeteSaisie.input.value = d.tempete || '';
       champTempeteSaisie.maj(choixCauseSaisie.lire().valeur);
+    }
+    if (champParcSaisie) {
+      champParcSaisie.input.value = d.parc || '';
+      champParcSaisie.maj(proEl ? proEl.value : '');
     }
     if (choixEtatSaisie && d.etat) choixEtatSaisie.ecrire(d.etat);
     if (d.abattage) {
@@ -3399,12 +3419,15 @@ var nomsPerso    = [];   // [{ type: 'cause' | 'essence', nom }]
 var reglages     = {};   // réglages lus dans la base (table reglages)
 var VALEUR_AUTRE = '__autre__';
 var tempetesConnues = [];   // noms de tempête, partagés entre toutes les communes
+var parcsConnus     = [];   // noms de parc de la commune (provenance « Parc »)
 
 function chargerNomsEtReglagesCache() {
   var c = lireJSONLocal('duramen_noms_cache');
   nomsPerso = (c && communeConnectee && c.commune === communeConnectee.nom && Array.isArray(c.noms)) ? c.noms : [];
   reglages  = lireJSONLocal('duramen_reglages_cache') || {};
   tempetesConnues = lireJSONLocal('duramen_tempetes_cache') || [];
+  var cp = lireJSONLocal('duramen_parcs_cache');
+  parcsConnus = (cp && communeConnectee && cp.commune === communeConnectee.nom && Array.isArray(cp.noms)) ? cp.noms : [];
 }
 
 // Diamètre (Ø médian, cm) à partir duquel le débit est externalisé :
@@ -3538,6 +3561,7 @@ function majListesSaisie() {
   if (choixEssenceSaisie) choixEssenceSaisie.majOptions([['', '— Choisir —']].concat(optionsEssences()));
   if (choixCauseSaisie)   choixCauseSaisie.majOptions([['', '— Choisir —']].concat(optionsCauses()));
   if (champTempeteSaisie) champTempeteSaisie.majListe();
+  if (champParcSaisie)    champParcSaisie.majListe();
 }
 
 // ─── Nom de la tempête (cause « Intempérie ») ────────────────────────────
@@ -3614,6 +3638,103 @@ async function memoriserTempete(nom, sansReseau) {
     await sbInsert('tempetes', ligne, { sansRetour: true });
   } catch (err) {
     if (err.reseau) ajouterFileEnvoi('tempetes', ligne, { sansRetour: true });
+  }
+}
+
+// ─── Nom du parc (provenance « Parc ») ─────────────────────────────────────
+// Champ facultatif. Les parcs déjà nommés par la commune sont proposés,
+// celui de la grume déjà saisie la plus proche en premier (quand le GPS
+// est connu) : l'agent n'a le plus souvent qu'à le toucher.
+function parcsProposes(lat, lon) {
+  var enAttente = fileEnvoiCommune()
+    .filter(function (it) { return it.table === 'parcs'; })
+    .map(function (it) { return it.data.nom; });
+  var vus = {}, liste = [];
+  enAttente.concat(parcsConnus).forEach(function (n) {
+    var k = DuramenCore.cleNom(n);
+    if (!k || vus[k]) return;
+    vus[k] = true;
+    liste.push(n);
+  });
+  if (lat === null || lat === undefined || lon === null || lon === undefined) return liste;
+  // Distance (m) de la grume nommée la plus proche, pour chaque parc
+  var proche = {};
+  lots.forEach(function (l) {
+    if (!l.nom_parc || l.latitude === null || l.latitude === undefined) return;
+    var dy = (l.latitude - lat) * 111320;
+    var dx = (l.longitude - lon) * 111320 * Math.cos(lat * Math.PI / 180);
+    var d  = Math.sqrt(dx * dx + dy * dy);
+    var k  = DuramenCore.cleNom(l.nom_parc);
+    if (proche[k] === undefined || d < proche[k]) proche[k] = d;
+  });
+  return liste.sort(function (a, b) {
+    var da = proche[DuramenCore.cleNom(a)], db = proche[DuramenCore.cleNom(b)];
+    if (da === undefined && db === undefined) return a.localeCompare(b, 'fr');
+    if (da === undefined) return 1;
+    if (db === undefined) return -1;
+    return da - db;
+  });
+}
+
+function creerChampParc(id, valeur, onChange, position) {
+  var f = cel('div', 'field hidden');
+  var l = cel('label', '', 'Nom du parc (facultatif)');
+  l.htmlFor = id;
+  var inp = document.createElement('input');
+  inp.type = 'text';
+  inp.id   = id;
+  inp.maxLength    = 80;
+  inp.autocomplete = 'off';
+  inp.placeholder  = 'Ex. Parc de Procé';
+  inp.value = valeur || '';
+  var dl = document.createElement('datalist');
+  dl.id = id + '-liste';
+  function remplirListe() {
+    var pos = position ? position() : {};
+    while (dl.firstChild) dl.removeChild(dl.firstChild);
+    parcsProposes(pos.lat, pos.lon).forEach(function (n) {
+      var o = document.createElement('option');
+      o.value = n;
+      dl.appendChild(o);
+    });
+  }
+  remplirListe();
+  inp.setAttribute('list', dl.id);
+  inp.addEventListener('focus', remplirListe);   // position GPS la plus récente
+  if (onChange) inp.addEventListener('input', onChange);
+  f.appendChild(l);
+  f.appendChild(inp);
+  f.appendChild(dl);
+  return {
+    field: f, input: inp,
+    majListe: remplirListe,
+    // Le champ ne s'affiche que pour la provenance « Parc »
+    maj: function (provenance) { f.classList.toggle('hidden', provenance !== 'Parc'); },
+    lire: function (provenance) {
+      if (provenance !== 'Parc') return { valeur: '', nouveau: false };
+      var t = inp.value.replace(/\s+/g, ' ').trim().slice(0, 80);
+      if (!t) return { valeur: '', nouveau: false };
+      var k = DuramenCore.cleNom(t);
+      var connu = parcsProposes().filter(function (n) { return DuramenCore.cleNom(n) === k; })[0];
+      if (connu) return { valeur: connu, nouveau: false };
+      return { valeur: t.charAt(0).toUpperCase() + t.slice(1), nouveau: true };
+    }
+  };
+}
+
+// Garde un nouveau nom de parc pour la commune
+async function memoriserParc(nom, sansReseau) {
+  if (!nom || !communeConnectee) return;
+  var k = DuramenCore.cleNom(nom);
+  if (parcsProposes().some(function (n) { return DuramenCore.cleNom(n) === k; })) return;
+  var ligne = { id: crypto.randomUUID(), nom: nom, commune_code: communeConnectee.code };
+  parcsConnus.push(nom);
+  localStorage.setItem('duramen_parcs_cache', JSON.stringify({ commune: communeConnectee.nom, noms: parcsConnus }));
+  if (sansReseau) { ajouterFileEnvoi('parcs', ligne, { sansRetour: true }); return; }
+  try {
+    await sbInsert('parcs', ligne, { sansRetour: true });
+  } catch (err) {
+    if (err.reseau) ajouterFileEnvoi('parcs', ligne, { sansRetour: true });
   }
 }
 
@@ -3771,8 +3892,12 @@ function initialiserPanelSaisie() {
   choixEssenceSaisie = creerChoixAvecAutre('saisie-essence', 'Essence *',
     [['', '— Choisir —']].concat(optionsEssences()), '', nouvSauverBrouillon);
   selGrid.appendChild(choixEssenceSaisie.field);
-  selGrid.appendChild(creerSelectSaisie('saisie-provenance', 'Provenance *',
-    [['', '— Choisir —']].concat(OPTIONS_PROVENANCE)));
+  var selPro = creerSelectSaisie('saisie-provenance', 'Provenance *',
+    [['', '— Choisir —']].concat(OPTIONS_PROVENANCE));
+  selPro.querySelector('select').addEventListener('change', function () {
+    if (champParcSaisie) champParcSaisie.maj(this.value);
+  });
+  selGrid.appendChild(selPro);
   choixCauseSaisie = creerChoixAvecAutre('saisie-cause', "Cause d'abattage *",
     [['', '— Choisir —']].concat(optionsCauses()), '', function () {
       if (champTempeteSaisie) champTempeteSaisie.maj(choixCauseSaisie.lire().valeur);
@@ -3783,6 +3908,10 @@ function initialiserPanelSaisie() {
   // Intempérie : nommer la tempête (facultatif)
   champTempeteSaisie = creerChampTempete('saisie-tempete', '', nouvSauverBrouillon);
   panel.appendChild(champTempeteSaisie.field);
+  // Parc : nommer le parc (facultatif)
+  champParcSaisie = creerChampParc('saisie-parc', '', nouvSauverBrouillon,
+    function () { return { lat: nouvGPS.lat, lon: nouvGPS.lon }; });
+  panel.appendChild(champParcSaisie.field);
 
   // ── État : une grume exceptionnelle ou en mauvais état se range à part
   choixEtatSaisie = creerChoixBoutons('État de la grume', DuramenCore.ETATS_GRUME, 'standard',
