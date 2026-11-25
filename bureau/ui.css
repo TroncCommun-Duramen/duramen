@@ -1419,7 +1419,7 @@ body { font-variant-numeric: tabular-nums; }
 .b-badge-etat-standard::before, .b-badge-etat-exceptionnelle::before, .b-badge-etat-mauvais::before {
   content: ''; width: 11px; height: 11px; border: 1px solid var(--encre); border-radius: 3px 2px 3px 2px;
 }
-.b-badge-etat-standard::before       { background: var(--pierre); }
+.b-badge-etat-standard::before       { background: var(--hachures-standard); }
 .b-badge-etat-exceptionnelle::before { background-image: var(--hachures-or); }
 .b-badge-etat-mauvais::before        { background-image: var(--hachures-ardoise); }
 /* Un trait très fin entre chaque grume (ou chaque ligne) des tableaux */

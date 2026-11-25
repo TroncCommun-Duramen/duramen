@@ -119,6 +119,7 @@
   --hachures-rouille:  repeating-linear-gradient(-55deg, rgba(168, 87, 58, 0.30) 0 0.6px, transparent 0.6px 3px);   /* carré du Ticket retour */
   --hachures-indigo-dense: repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.22) 0 0.6px, transparent 0.6px 3px);   /* blanc sur indigo : commune, Métropole, choix actif */
   --hachures-or:       repeating-linear-gradient(0deg, var(--or) 0 1.5px, var(--washi) 1.5px 3px);
+  --hachures-standard: repeating-linear-gradient(-45deg, var(--pierre) 0 1px, var(--brume) 1px 3.5px);   /* qualité standard : rayures gris clair */
   --hachures-ardoise:  repeating-linear-gradient(45deg, var(--ardoise) 0 1.5px, var(--pierre) 1.5px 3px);
 
   /* ─── Impression (feuille de débit) ─── */
