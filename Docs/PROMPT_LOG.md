@@ -189,6 +189,13 @@ HH:MM — [commit: abc1234] résultat final
 07:53 — Maquette de la synthèse fusionnée dans `main`, avec le logo Duramen Cartographie sur chaque carte
 08:01 — Mise à jour de l'état de développement
 
+## Session 2026-11-25 (8 h) — Accès Tronc Commun à toutes les communes
+
+08:07 — Demande : créer l'accès de Tronc Commun à toutes les communes (session 2 du plan)
+08:10 — Trois formes proposées : code de lecture à part (A), code « Tronc Commun » existant (B), terminer A12 d'abord (C)
+08:11 — Forme A retenue. Le porteur gère Tronc Commun et distribue lui-même les codes
+08:15 — Accès créé dans Supabase (table `acces_lecture`, fonctions `tc_…`), essais faits dans la base. Aucun fichier de l'app modifié
+
 ---
 
 ## Voir aussi

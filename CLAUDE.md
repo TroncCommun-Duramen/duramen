@@ -36,6 +36,7 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 - `extractions` — sorties de stock par essence
 - `campagnes` — campagnes de sciage (feuille de débit) : ajout et suppression seulement. Une grume est dans une seule campagne ouverte (verrou dans la base)
 - `codes_acces` — authentification par code commune
+- `acces_lecture` — codes de lecture seule de Tronc Commun sur toutes les communes (en-tête `x-code-lecture`, fonctions `tc_…`). Refusés par l'app mobile et le bureau
 
 ---
 

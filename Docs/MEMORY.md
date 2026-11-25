@@ -17,6 +17,25 @@ Règles du porteur (25 nov. 2026) :
 
 ---
 
+## Session 25 novembre 2026 (8 h) — Accès Tronc Commun à toutes les communes
+
+Aucun fichier de l'app n'a changé : tout se passe dans la base Supabase (migration `acces_lecture_tronc_commun`). Rien ne bouge sur les téléphones.
+
+Décision du porteur : **un code de lecture réservé à Tronc Commun**, à part des codes des communes (option A). Le porteur gère Tronc Commun et distribue lui-même les codes. Le code n'est écrit dans aucun document du dépôt (dépôt public).
+
+Ce qui a été créé :
+- **Table `acces_lecture`** (code, nom, actif) : les codes de lecture. Elle n'est lisible par personne depuis l'extérieur. Pour couper un accès : passer `actif` à faux.
+- **En-tête `x-code-lecture`** : le code de lecture voyage dans son propre en-tête, jamais dans `x-commune-code`. Les règles d'écriture des communes ne le reconnaissent donc pas : il ne peut rien écrire.
+- **`verifier_code()` ne lit que `codes_acces`** : l'app mobile et le bureau refusent ce code. Personne ne peut s'en servir dans l'app (il y afficherait le stock de toute la métropole comme le sien).
+- **Fonctions de lecture** (pour la carte et la synthèse) : `tc_verifier()` (renvoie « Tronc Commun » si le code est bon), `tc_grumes()`, `tc_sorties()`, `tc_campagnes()`. Chaque ligne est un objet complet : les colonnes ajoutées plus tard (ex. « lieu ») y apparaîtront d'elles-mêmes. Le code de la commune est retiré, remplacé par son nom officiel (`commune`, tiré de `codes_acces`). Communes de test exclues. Sans code valide : aucune ligne.
+- Appel depuis une page web : `POST /rest/v1/rpc/tc_grumes` avec les en-têtes habituels (`apikey`, `Authorization`) plus `x-code-lecture: <code>`.
+
+Essais faits dans la base, à la place de l'app (rôle `anon`) : sans code ou avec un faux code → 0 grume ; avec le code → 7 grumes (Saint-Sébastien-sur-Loire), sans `commune_code`, colonnes récentes présentes ; le code tapé dans l'app → refusé ; écriture avec le code → refusée ; table des codes de lecture → illisible ; une commune lit toujours ses grumes et le stock métropole est inchangé. Essai par Internet impossible depuis l'espace de travail de Claude (réseau filtré) : il se fera avec la carte.
+
+Lien avec A12 (séparer identifiant public et code secret) : indépendant. L'accès de lecture continuera de fonctionner quand A12 sera faite.
+
+---
+
 ## Session 25 novembre 2026 (matin) — Couleurs de l'app mobile
 
 Constat : sur mobile, les couleurs d'essence (tons de bois : miel, blond, brun) se confondaient avec les couleurs d'état de la grume (or, ardoise).
