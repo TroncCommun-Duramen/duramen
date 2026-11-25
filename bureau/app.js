@@ -502,7 +502,7 @@ function bAfficherOnglet() {
 }
 
 // ═══════════ 1 · GRUMES ═══════════
-var NB_TEINTES = 8;   // dégradé d'indigo défini dans ui.css (.b-teinte-0 … 7)
+var NB_TEINTES = 8;   // dégradé d'indigo défini dans ui.css (.b-teinte-0 … 7), pour les communes
 var SVG_NS = 'http://www.w3.org/2000/svg';
 
 function bPiePath(cx, cy, r, a0, a1) {
@@ -514,6 +514,14 @@ function bPiePath(cx, cy, r, a0, a1) {
     ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2.toFixed(2) + ' ' + y2.toFixed(2) + ' Z';
 }
 
+// Couleur d'une essence : celle du noyau (core.js), la même que sur mobile et sur la carte.
+// Rend le nom de la variable de theme.css sans « ec- » (ex. 'platane').
+function bTonEssence(ess) {
+  var info = DuramenCore.ESSENCES_INFO[ess];
+  return (info ? info.color : 'ec-autre').replace(/^ec-/, '');
+}
+
+// Camembert des grumes de la commune : une part par essence, à sa couleur
 function bDessinerEssences(grumes) {
   var svg     = document.getElementById('b-grumes-donut-svg');
   var legende = document.getElementById('b-grumes-donut-legende');
@@ -530,7 +538,7 @@ function bDessinerEssences(grumes) {
     var a1  = a0 + pct * 2 * Math.PI;
     var path = document.createElementNS(SVG_NS, 'path');
     path.setAttribute('d', bPiePath(cx, cy, r, a0, a1));
-    path.setAttribute('class', 'b-teinte-' + (i % NB_TEINTES));
+    path.setAttribute('class', 'b-part-essence b-ess-' + bTonEssence(ess));
     svg.appendChild(path);
     if (pct > 0.05) {
       var mid = a0 + (a1 - a0) / 2;
@@ -543,7 +551,7 @@ function bDessinerEssences(grumes) {
     }
     a0 = a1;
     var item = el('div', 'b-commune-donut-item');
-    item.appendChild(el('div', 'b-commune-donut-dot b-teinte-' + (i % NB_TEINTES)));
+    item.appendChild(el('div', 'b-commune-donut-dot b-ess-' + bTonEssence(ess)));
     item.appendChild(el('strong', '', ess));
     item.appendChild(el('span', 'b-donut-pct', m3(parEss[ess]) + ' · ' + Math.round(pct * 100) + '%'));
     legende.appendChild(item);
