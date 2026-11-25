@@ -2367,3 +2367,82 @@ a.btn-home {
   .bottom-nav-inner,
   #grume-sheet { width: 100%; max-width: 680px; margin-left: auto; margin-right: auto; }
 }
+
+/* ═══ Trait à main levée (25 nov. 2026) ═══
+   Les cadres prennent un trait d'encre aux coins un peu inégaux, comme le
+   document de synthèse. Les carrés des pictogrammes gardent un aplat de
+   couleur, symbole blanc, forme un peu irrégulière. Tout est ici, à la fin :
+   pour revenir en arrière, il suffit de retirer ce bloc. */
+
+/* Cadres : accueil, fiches, cartes */
+.btn-home,
+.accueil-stock,
+.histo-total-block,
+.grume-summary-card,
+.feedback-card,
+.saisie-synthese,
+.extract-modal,
+.modal-nommer,
+.modal-extraction-dest { border-radius: var(--rayon-main); }
+.btn-home-secondary,
+.grume-summary-card,
+.feedback-card { border: var(--trait-main); box-shadow: none; }
+.btn-home-feedback { border: 1.4px solid var(--orange); }
+.histo-lot-card {
+  border-radius: var(--rayon-main);
+  border-top: var(--trait-main);
+  border-right: var(--trait-main);
+  border-bottom: var(--trait-main);
+  box-shadow: none;
+}
+.histo-lot-card:not(.fiche-grume) { border-left: var(--trait-main); }
+
+/* Total du stock (accueil) : cadre indigo, hachures légères, chiffre sur fond clair */
+.accueil-stock {
+  border: 1.4px solid var(--indigo);
+  background-color: var(--washi);
+  background-image: var(--hachures-indigo);
+  box-shadow: none;
+}
+.accueil-stock-val {
+  display: inline-block;
+  padding: 0 14px;
+  background: var(--washi);
+  border-radius: var(--rayon-main-doux);
+}
+
+/* Bande « exceptionnelle » de la fiche : or haché */
+.fiche-etat-exceptionnelle {
+  border-left-color: transparent;
+  background-image: var(--hachures-or);
+  background-size: 8px 100%;
+  background-repeat: no-repeat;
+  background-origin: border-box;
+}
+
+/* Champs et boutons : coins doucement inégaux */
+.field input:not([type="checkbox"]):not([type="radio"]),
+.field select,
+.field textarea,
+.saisie-annee-row,
+.btn,
+.btn-primary,
+.btn-outline,
+.saisie-add-btn,
+.saisie-btn,
+.ext-valider-btn,
+.ext-sel-btn,
+.feedback-type-btn,
+.feedback-btn-envoyer,
+.feedback-btn-effacer,
+.grume-sheet-btn-ann,
+.grume-sheet-btn-save { border-radius: var(--rayon-main-doux); }
+.btn-primary { box-shadow: none; }
+
+/* Carrés des pictogrammes : aplat de couleur, symbole blanc */
+.btn-home-icon-box { border-radius: var(--rayon-picto); }
+.btn-home-secondary .btn-home-icon-box:not(.btn-home-icon-voir):not(.btn-home-icon-carte) {
+  background: var(--cendre);
+  color: var(--washi);
+}
+.btn-home .picto-point { fill: currentColor; }

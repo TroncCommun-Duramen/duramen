@@ -96,6 +96,18 @@
   --ec-tilleul:      #506715;   /* vert olive */
   --ec-autre:        #9A9A90;   /* gris neutre, essence non listée */
 
+  /* ─── Trait à main levée (25 nov. 2026) ───
+     Dans l'esprit du document de synthèse : un trait d'encre, des coins
+     un peu inégaux, comme dessinés à la main. Sans excès : tout reste
+     lisible en plein soleil. */
+  --encre:             #2a2a26;   /* trait des cadres */
+  --trait-main:        1.4px solid var(--encre);
+  --rayon-main:        15px 10px 14px 9px / 9px 14px 10px 15px;   /* cartes, boutons de l'accueil */
+  --rayon-main-doux:   10px 7px 9px 6px / 6px 9px 7px 10px;       /* champs, boutons */
+  --rayon-picto:       12px 9px 13px 8px / 9px 13px 8px 12px;     /* carré des pictogrammes */
+  --hachures-indigo:   repeating-linear-gradient(-55deg, rgba(43, 63, 140, 0.09) 0 1px, transparent 1px 8px);
+  --hachures-or:       repeating-linear-gradient(0deg, var(--or) 0 2.5px, var(--washi) 2.5px 3.5px);
+
   /* ─── Impression (feuille de débit) ─── */
   --print-encre:   #000000;     /* texte et bordures imprimés */
   --print-papier:  #FFFFFF;     /* fond papier */
