@@ -147,7 +147,7 @@
       </div>
       <div class="b-panel-pad">
         <div class="b-barre-titre">
-          <div class="b-section-lbl">RÉPARTITION DU STOCK DE GRUMES PAR ESSENCE</div>
+          <div class="b-section-lbl">Répartition du stock de grumes par essence</div>
         </div>
         <div class="b-commune-donut-section">
           <div class="b-donut-wrap b-commune-donut-wrap">
@@ -157,7 +157,7 @@
         </div>
 
         <div class="b-barre-titre">
-          <div class="b-section-lbl">GRUMES EN STOCK</div>
+          <div class="b-section-lbl">Grumes en stock</div>
           <button class="b-btn b-btn-ghost" onclick="bOuvrirSortieGrume()">Sortir une grume entière (exception)</button>
         </div>
         <div class="b-table-wrap">
@@ -180,13 +180,13 @@
       </div>
       <div class="b-panel-pad">
         <div class="b-barre-titre">
-          <div class="b-section-lbl">CAMPAGNES EN PRÉPARATION</div>
+          <div class="b-section-lbl">Campagnes en préparation</div>
           <button class="b-btn b-btn-primary" onclick="bOuvrirPreparation()">+ Préparer une campagne de sciage</button>
         </div>
         <div id="b-camp-ouvertes"></div>
 
         <div class="b-barre-titre b-mt">
-          <div class="b-section-lbl">CAMPAGNES CLÔTURÉES</div>
+          <div class="b-section-lbl">Campagnes clôturées</div>
         </div>
         <div class="b-table-wrap">
           <table class="b-table">
@@ -207,7 +207,7 @@
       </div>
       <div class="b-panel-pad">
         <div class="b-barre-titre">
-          <div class="b-section-lbl">PRODUITS BOIS EN STOCK</div>
+          <div class="b-section-lbl">Produits bois en stock</div>
           <button class="b-btn b-btn-primary" onclick="bOuvrirSortieProduits()">Sortir des produits pour un projet</button>
         </div>
         <div class="b-table-wrap">
@@ -230,7 +230,7 @@
       </div>
       <div class="b-panel-pad">
         <div class="b-barre-titre">
-          <div class="b-section-lbl">SUIVI DES PROJETS</div>
+          <div class="b-section-lbl">Suivi des projets</div>
           <select class="b-select-sm" id="b-projets-filtre" onchange="bAfficherProjets()">
             <option value="">Toutes les étapes</option>
             <option value="sorti">À réaliser</option>
@@ -260,7 +260,7 @@
       </div>
       <div class="b-metro-layout">
         <div class="b-metro-gauche">
-          <div class="b-section-lbl">GRUMES PAR COMMUNE</div>
+          <div class="b-section-lbl">Grumes par commune</div>
           <div class="b-donut-section b-metro-donut-section">
             <div class="b-donut-wrap">
               <svg class="b-donut-svg" viewBox="0 0 200 200" id="b-donut-svg"></svg>
@@ -270,7 +270,7 @@
           </div>
         </div>
         <div class="b-metro-droite">
-          <div class="b-section-lbl">BOIS DISPONIBLE</div>
+          <div class="b-section-lbl">Bois disponible</div>
           <div class="b-table-wrap">
             <table class="b-table">
               <thead>
@@ -291,9 +291,9 @@
       </div>
       <div class="b-export-filtres">
         <div class="b-filtre-card">
-          <div class="b-filtre-card-titre">DONNÉES</div>
+          <div class="b-filtre-card-titre">Données</div>
           <div class="b-field">
-            <label class="b-field-lbl" for="b-exp-donnees">TABLEAU À EXPORTER</label>
+            <label class="b-field-lbl" for="b-exp-donnees">Tableau à exporter</label>
             <select class="b-select-filtre" id="b-exp-donnees" onchange="bMajExport()">
               <option value="grumes_stock">Grumes en stock</option>
               <option value="grumes_toutes">Toutes les grumes saisies, avec leur état</option>
@@ -303,7 +303,7 @@
             </select>
           </div>
           <div class="b-field">
-            <label class="b-field-lbl" for="b-exp-source">PÉRIMÈTRE</label>
+            <label class="b-field-lbl" for="b-exp-source">Périmètre</label>
             <select class="b-select-filtre" id="b-exp-source" onchange="bMajExport()">
               <option value="commune">Ma commune</option>
               <option value="metropole">Métropole (toutes les communes)</option>
@@ -311,9 +311,9 @@
           </div>
         </div>
         <div class="b-filtre-card">
-          <div class="b-filtre-card-titre">FILTRES</div>
+          <div class="b-filtre-card-titre">Filtres</div>
           <div class="b-field">
-            <label class="b-field-lbl" for="b-exp-essence">ESSENCE</label>
+            <label class="b-field-lbl" for="b-exp-essence">Essence</label>
             <select class="b-select-filtre" id="b-exp-essence" onchange="bMajExport()">
               <option value="">Toutes essences</option>
             </select>
@@ -340,14 +340,14 @@
         <p class="b-page-accroche">Une remarque, une idée, un bug : écrivez-nous pendant la phase de test.</p>
       </div>
       <div class="b-feedback-card">
-        <div class="b-section-lbl">TYPE DE RETOUR</div>
+        <div class="b-section-lbl">Type de retour</div>
         <div class="b-feedback-types">
           <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'usage-design')">Usage / Design</button>
           <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'amelioration')">Amélioration</button>
           <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'bug')">Bug</button>
           <button class="b-feedback-type-btn" onclick="bSelFeedbackType(this,'message-libre')">Message libre</button>
         </div>
-        <div class="b-section-lbl">VOTRE MESSAGE</div>
+        <div class="b-section-lbl">Votre message</div>
         <textarea class="b-feedback-textarea" id="b-feedback-message" placeholder="Décrivez votre retour en détail..."></textarea>
         <div class="b-feedback-actions">
           <button class="b-feedback-btn-envoyer" onclick="bEnvoyerTicket()">Envoyer le ticket</button>

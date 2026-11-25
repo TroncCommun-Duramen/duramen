@@ -1143,7 +1143,7 @@ function bOuvrirSortieGrume() {
   var md  = bOuvrirModale('Sortir une grume entière',
     'Exception : la grume sort sans sciage (rondins, pas japonais…). Les grumes prévues dans une campagne de sciage ne sont pas proposées.');
 
-  md.corps.appendChild(el('div', 'b-section-lbl', 'GRUMES DISPONIBLES'));
+  md.corps.appendChild(el('div', 'b-section-lbl', 'Grumes disponibles'));
   var liste = el('div', 'b-liste-cochable');
   var synth = el('div', 'b-synthese', 'Aucune grume choisie.');
   function majSynth() {
@@ -1373,7 +1373,7 @@ function bOuvrirPreparation() {
   iDate.oninput = function () { campDraft.date_prevue = iDate.value; sauverCampDraft(); };
   md.corps.appendChild(bChamp('Date prévue du sciage', iDate, 'b-champ-court'));
 
-  md.corps.appendChild(el('div', 'b-section-lbl b-mt', 'GRUMES EN STOCK'));
+  md.corps.appendChild(el('div', 'b-section-lbl b-mt', 'Grumes en stock'));
   var dispo = grumesParUrgence(grumesLibres());
   // Le brouillon ne garde que les grumes encore disponibles
   Object.keys(campDraft.choix).forEach(function (id) {
@@ -2408,7 +2408,7 @@ function bMajExport() {
   var x    = bExportCourant();
   var selE = document.getElementById('b-exp-essence');
   var selA = document.getElementById('b-exp-annee');
-  document.getElementById('b-exp-annee-lbl').textContent = x.type.indexOf('grumes') === 0 ? 'ANNÉE DE COUPE' : 'ANNÉE';
+  document.getElementById('b-exp-annee-lbl').textContent = x.type.indexOf('grumes') === 0 ? 'Année de coupe' : 'Année';
   bRemplirSelect(selE, uniques(x.tableau.rows.map(function (r) { return r.essence; })), 'Toutes essences');
   bRemplirSelect(selA, uniques(x.tableau.rows.map(function (r) { return r.annee; })).reverse(), 'Toutes années');
   var n = bLignesFiltrees(x.tableau).length;
