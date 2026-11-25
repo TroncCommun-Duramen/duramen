@@ -1156,7 +1156,7 @@ function rendreHistoriqueContenu(container, lotsData, options) {
 
   // ── Fiches de grume ─────────────────────────────────────────────────
   // Fiche allégée (24 nov. 2026) : numéro, essence, cubage, date de débit.
-  // L'état se lit à la bande de couleur ; le reste est dans « Corriger ».
+  // L'état se lit à la bande de couleur et à un mot ; le reste est dans « Corriger ».
   container.appendChild(cel('div', 'histo-section-title mt-16',
     options.urgence ? 'Grumes en stock — date de débit du + au − urgent' : 'Grumes récentes'));
 
@@ -1166,7 +1166,16 @@ function rendreHistoriqueContenu(container, lotsData, options) {
     var etat   = DuramenCore.grumeAPart(lot) ? lot.etat : 'standard';
     var card   = cel('div', 'histo-lot-card fiche-grume fiche-etat-' + etat);
     var header = cel('div', 'histo-lot-header');
-    header.appendChild(cel('div', 'histo-lot-nom', nomAfficheGrume(lot) + (lot.essence ? ' · ' + lot.essence : '')));
+    var nomFiche = cel('div', 'histo-lot-nom', nomAfficheGrume(lot) + (lot.essence ? ' · ' + lot.essence : ''));
+    // Grume à part : un mot écrit à côté de la bande (25 nov. 2026),
+    // lisible même par qui voit mal les couleurs
+    if (etat === 'exceptionnelle' || etat === 'mauvais_etat') {
+      nomFiche.appendChild(document.createTextNode(' '));
+      nomFiche.appendChild(etat === 'exceptionnelle'
+        ? cel('span', 'histo-badge badge-etat-exceptionnelle', 'Exceptionnelle')
+        : cel('span', 'histo-badge badge-etat-mauvais', 'Mauvais état'));
+    }
+    header.appendChild(nomFiche);
     header.appendChild(cel('div', 'histo-lot-vol', (lot.vol_utile || 0).toFixed(3) + ' m³'));
     card.appendChild(header);
     // Sans numéro : de quoi retrouver la grume sur place
