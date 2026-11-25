@@ -24,6 +24,14 @@
   --vert:         #788d5d;   /* validation, enregistrement */
   --mousse:       #56705A;   /* fond du pictogramme « Voir la carte » (25 nov. 2026) */
 
+  /* ─── Pictogrammes de l'accueil : harmonie « Terre et sépia » (25 nov. 2026) ───
+     Cinq tons de même intensité, symbole blanc. */
+  --picto-ajouter:  #2E2B26;   /* sépia noir */
+  --picto-voir:     #34458A;   /* indigo */
+  --picto-sortir:   #8A6F4E;   /* ocre brun */
+  --picto-carte:    #5F7A5B;   /* mousse */
+  --picto-ticket:   #A8573A;   /* rouille */
+
   /* ─── État de la grume (24 nov. 2026) ─── */
   --or:           #E8B93A;   /* grume exceptionnelle — texte --sumi (contraste 10:1) */
   --ardoise:      #4A4A44;   /* grume en mauvais état — texte --washi (contraste 8:1) */

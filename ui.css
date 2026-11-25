@@ -2454,3 +2454,11 @@ a.btn-home {
    autre police, plus grosse et plus basse. */
 .btn-home-carte .btn-home-arrow { font-size: 0; }
 .btn-home-carte .btn-home-arrow::after { content: '›'; font-size: 22px; }
+
+/* Couleurs des pictogrammes de l'accueil : harmonie « Terre et sépia » */
+.btn-home-primary .btn-home-icon-box { background: var(--picto-ajouter); }
+.btn-home-icon-box.btn-home-icon-voir { background: var(--picto-voir); }
+.btn-home-secondary .btn-home-icon-box:not(.btn-home-icon-voir):not(.btn-home-icon-carte) { background: var(--picto-sortir); }
+.btn-home-icon-box.btn-home-icon-carte { background: var(--picto-carte); }
+.btn-home-feedback .btn-home-icon-box { background: var(--picto-ticket); }
+.btn-home-feedback { border-color: var(--picto-ticket); }
