@@ -1323,3 +1323,35 @@ a.b-btn { display: inline-flex; align-items: center; text-decoration: none; box-
 .b-feedback-btn-envoyer,
 .b-feedback-btn-effacer,
 .b-mentions-btn { border-radius: var(--rayon-main-doux); }
+
+/* ═══ Camembert des grumes : couleurs des essences (25 nov. 2026) ═══
+   Les mêmes que le mobile et la carte (variables --ec-… de theme.css).
+   Le dégradé d'indigo reste pour le camembert des communes (données d'ensemble). */
+.b-part-essence { stroke: var(--washi); stroke-width: 1.5; }
+/* Pourcentage lisible sur une couleur claire comme foncée : liseré sombre */
+.b-donut-txt { paint-order: stroke; stroke: rgba(15, 15, 14, 0.55); stroke-width: 2.5px; stroke-linejoin: round; }
+.b-ess-aulne { fill: var(--ec-aulne); background: var(--ec-aulne); }
+.b-ess-autre { fill: var(--ec-autre); background: var(--ec-autre); }
+.b-ess-cedre { fill: var(--ec-cedre); background: var(--ec-cedre); }
+.b-ess-chataignier { fill: var(--ec-chataignier); background: var(--ec-chataignier); }
+.b-ess-chene { fill: var(--ec-chene); background: var(--ec-chene); }
+.b-ess-chene-marais { fill: var(--ec-chene-marais); background: var(--ec-chene-marais); }
+.b-ess-chene-rouge { fill: var(--ec-chene-rouge); background: var(--ec-chene-rouge); }
+.b-ess-cypres { fill: var(--ec-cypres); background: var(--ec-cypres); }
+.b-ess-douglas { fill: var(--ec-douglas); background: var(--ec-douglas); }
+.b-ess-epicea { fill: var(--ec-epicea); background: var(--ec-epicea); }
+.b-ess-frene { fill: var(--ec-frene); background: var(--ec-frene); }
+.b-ess-hetre { fill: var(--ec-hetre); background: var(--ec-hetre); }
+.b-ess-meleze { fill: var(--ec-meleze); background: var(--ec-meleze); }
+.b-ess-merisier { fill: var(--ec-merisier); background: var(--ec-merisier); }
+.b-ess-noyer { fill: var(--ec-noyer); background: var(--ec-noyer); }
+.b-ess-peuplier { fill: var(--ec-peuplier); background: var(--ec-peuplier); }
+.b-ess-pin-m { fill: var(--ec-pin-m); background: var(--ec-pin-m); }
+.b-ess-platane { fill: var(--ec-platane); background: var(--ec-platane); }
+.b-ess-robinier { fill: var(--ec-robinier); background: var(--ec-robinier); }
+.b-ess-sequoia { fill: var(--ec-sequoia); background: var(--ec-sequoia); }
+.b-ess-tilleul { fill: var(--ec-tilleul); background: var(--ec-tilleul); }
+
+/* ═══ Pictogrammes du menu : famille « cernes », trait à main levée (25 nov. 2026) ═══ */
+.b-nav-ico .b-picto-point { fill: var(--indigo); stroke: none; }
+.b-nav-ico .b-picto-fin   { stroke-width: 1.15; }
