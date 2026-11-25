@@ -577,7 +577,8 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 
 .btn-home-primary .btn-home-icon-box {
-  background: var(--blanc-alpha);
+  background: var(--sumi);
+  color: var(--washi);
 }
 
 .btn-home-secondary .btn-home-icon-box {
@@ -647,17 +648,17 @@ a.btn-home {
 }
 
 .btn-home-primary {
-  background: var(--sumi);
-  color: var(--washi);
+  background: transparent;
+  color: var(--sumi);
   border: none;
 }
 .btn-home-primary:hover,
-.btn-home-primary:active { background: var(--sumi); }
+.btn-home-primary:active { background: var(--neige); }
 
 .btn-home-secondary {
-  background: var(--washi);
+  background: transparent;
   color: var(--sumi);
-  border: var(--border-thin);
+  border: none;
 }
 .btn-home-secondary:hover,
 .btn-home-secondary:active { background: var(--neige); }
@@ -669,9 +670,9 @@ a.btn-home {
 }
 
 .btn-home-feedback {
-  background: var(--washi);
+  background: transparent;
   color: var(--sumi);
-  border: 1px solid rgba(211, 84, 0, 0.35);
+  border: none;
 }
 .btn-home-feedback:hover,
 .btn-home-feedback:active { background: var(--neige); }
@@ -2338,7 +2339,7 @@ a.btn-home {
 .fiche-etat-exceptionnelle { border-left-color: var(--or); }
 .fiche-etat-mauvais_etat {
   border-left-color: transparent;
-  background-image: repeating-linear-gradient(45deg, var(--ardoise) 0 3px, var(--pierre) 3px 6px);
+  background-image: var(--hachures-ardoise);
   background-size: 8px 100%;
   background-repeat: no-repeat;
   background-origin: border-box;
@@ -2384,10 +2385,8 @@ a.btn-home {
 .extract-modal,
 .modal-nommer,
 .modal-extraction-dest { border-radius: var(--rayon-main); }
-.btn-home-secondary,
 .grume-summary-card,
 .feedback-card { border: var(--trait-main); box-shadow: none; }
-.btn-home-feedback { border: 1.4px solid var(--orange); }
 .histo-lot-card {
   border-radius: var(--rayon-main);
   border-top: var(--trait-main);
@@ -2399,7 +2398,7 @@ a.btn-home {
 
 /* Total du stock (accueil) : cadre indigo, hachures légères, chiffre sur fond clair */
 .accueil-stock {
-  border: 1.4px solid var(--indigo);
+  border: 1px solid var(--indigo);
   background-color: var(--washi);
   background-image: var(--hachures-indigo);
   box-shadow: none;
@@ -2446,3 +2445,38 @@ a.btn-home {
   color: var(--washi);
 }
 .btn-home .picto-point { fill: currentColor; }
+
+
+/* Couleurs des pictogrammes de l'accueil : harmonie « Terre et sépia » */
+.btn-home-primary .btn-home-icon-box { background: var(--picto-ajouter); }
+.btn-home-icon-box.btn-home-icon-voir { background: var(--picto-voir); }
+.btn-home-secondary .btn-home-icon-box:not(.btn-home-icon-voir):not(.btn-home-icon-carte) { background: var(--picto-sortir); }
+.btn-home-icon-box.btn-home-icon-carte { background: var(--picto-carte); }
+.btn-home-feedback .btn-home-icon-box { background: var(--picto-ticket); }
+
+/* ═══ Accueil en liste reliée (25 nov. 2026) ═══
+   À la manière de l'app Apnée : pas de cadres ni de flèches, un fil d'encre
+   fin relie les carrés des pictogrammes. Le Ticket retour reste à part,
+   sous le séparateur. Toute la ligne reste un bouton (64 px de haut). */
+.accueil-actions { gap: 4px; }
+.btn-home {
+  position: relative;
+  min-height: 64px;
+  padding: 8px 12px;
+  box-shadow: none;
+}
+.btn-home-icon-box { position: relative; z-index: 1; }
+.btn-home-arrow { display: none; }
+/* Le fil : du bas d'un carré au haut du carré suivant */
+.btn-home-primary::after,
+.btn-home-secondary:not(.btn-home-carte)::after {
+  content: '';
+  position: absolute;
+  left: 34px;                          /* 12 px de marge + moitié du carré (22 px) */
+  top: calc(50% + 22px);
+  height: calc(100% - 40px);           /* hauteur de ligne − carré + écart entre lignes */
+  width: 1px;
+  background: var(--encre);
+  opacity: 0.35;
+}
+.accueil-actions-sep { margin: 8px 28px 4px; }

@@ -24,6 +24,14 @@
   --vert:         #788d5d;   /* validation, enregistrement */
   --mousse:       #56705A;   /* fond du pictogramme « Voir la carte » (25 nov. 2026) */
 
+  /* ─── Pictogrammes de l'accueil : harmonie « Terre et sépia » (25 nov. 2026) ───
+     Cinq tons de même intensité, symbole blanc. */
+  --picto-ajouter:  #2E2B26;   /* sépia noir */
+  --picto-voir:     #34458A;   /* indigo */
+  --picto-sortir:   #8A6F4E;   /* ocre brun */
+  --picto-carte:    #5F7A5B;   /* mousse */
+  --picto-ticket:   #A8573A;   /* rouille */
+
   /* ─── État de la grume (24 nov. 2026) ─── */
   --or:           #E8B93A;   /* grume exceptionnelle — texte --sumi (contraste 10:1) */
   --ardoise:      #4A4A44;   /* grume en mauvais état — texte --washi (contraste 8:1) */
@@ -101,12 +109,13 @@
      un peu inégaux, comme dessinés à la main. Sans excès : tout reste
      lisible en plein soleil. */
   --encre:             #2a2a26;   /* trait des cadres */
-  --trait-main:        1.4px solid var(--encre);
+  --trait-main:        1px solid var(--encre);      /* trait fin (25 nov. 2026, option B) */
   --rayon-main:        15px 10px 14px 9px / 9px 14px 10px 15px;   /* cartes, boutons de l'accueil */
   --rayon-main-doux:   10px 7px 9px 6px / 6px 9px 7px 10px;       /* champs, boutons */
   --rayon-picto:       12px 9px 13px 8px / 9px 13px 8px 12px;     /* carré des pictogrammes */
-  --hachures-indigo:   repeating-linear-gradient(-55deg, rgba(43, 63, 140, 0.09) 0 1px, transparent 1px 8px);
-  --hachures-or:       repeating-linear-gradient(0deg, var(--or) 0 2.5px, var(--washi) 2.5px 3.5px);
+  --hachures-indigo:   repeating-linear-gradient(-55deg, rgba(43, 63, 140, 0.10) 0 0.6px, transparent 0.6px 5px);
+  --hachures-or:       repeating-linear-gradient(0deg, var(--or) 0 1.5px, var(--washi) 1.5px 3px);
+  --hachures-ardoise:  repeating-linear-gradient(45deg, var(--ardoise) 0 1.5px, var(--pierre) 1.5px 3px);
 
   /* ─── Impression (feuille de débit) ─── */
   --print-encre:   #000000;     /* texte et bordures imprimés */
