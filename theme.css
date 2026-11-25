@@ -68,30 +68,31 @@
   --ombre-posee:  0 2px 4px rgba(15, 15, 14, 0.06), 0 8px 24px rgba(15, 15, 14, 0.10);
   --ombre-nav:    0 -1px 14px rgba(15, 15, 14, 0.07);
 
-  /* ─── Couleurs d'essences ───
-     Un ton par essence, pris sur la couleur du bois fraîchement scié.
-     Teintes sourdes : elles accompagnent le nom de l'essence, elles ne
-     crient pas. L'indigo reste l'accent de ce qu'on touche. */
-  --ec-aulne:        #AE7F63;   /* orangé du bois fraîchement coupé */
-  --ec-cedre:        #6B8287;   /* bleu-vert du cèdre */
-  --ec-chataignier:  #9C7B42;   /* miel sombre */
-  --ec-chene:        #8A6A3F;   /* ocre moyen */
-  --ec-chene-marais: #7A7046;   /* olive-ocre */
-  --ec-chene-rouge:  #93584B;   /* brique sourde */
-  --ec-cypres:       #8A977F;   /* vert gris */
-  --ec-douglas:      #A5654A;   /* rosé-brun du douglas */
-  --ec-epicea:       #96A68A;   /* blanc verdâtre */
-  --ec-frene:        #BCA47A;   /* blond */
-  --ec-hetre:        #BE9468;   /* beige rosé */
-  --ec-meleze:       #B87F3F;   /* brun orangé */
-  --ec-merisier:     #A85C45;   /* brun rosé */
-  --ec-noyer:        #5E4632;   /* brun foncé */
-  --ec-peuplier:     #A8AA92;   /* blanc grisé */
-  --ec-pin-m:        #B59260;   /* blond doré */
-  --ec-platane:      #9A8964;   /* beige moucheté */
-  --ec-robinier:     #97883D;   /* jaune-vert */
-  --ec-sequoia:      #8E4F3C;   /* rouge brique */
-  --ec-tilleul:      #BFAD7C;   /* crème */
+  /* ─── Couleurs d'essences : palette « Atelier » (25 nov. 2026) ───
+     Tons doux de design textile, les mêmes que la carte des grumes.
+     Une essence garde toujours sa couleur. Aucun jaune ni or : l'or
+     marque les grumes exceptionnelles. L'indigo reste l'accent de ce
+     qu'on touche. */
+  --ec-aulne:        #DF9081;   /* saumon */
+  --ec-cedre:        #147590;   /* bleu canard */
+  --ec-chataignier:  #86623C;   /* brun noisette */
+  --ec-chene:        #6E3A69;   /* prune */
+  --ec-chene-marais: #56827C;   /* vert de gris */
+  --ec-chene-rouge:  #EA753E;   /* orange brûlé */
+  --ec-cypres:       #045F3B;   /* vert sapin */
+  --ec-douglas:      #A9605E;   /* vieux rose */
+  --ec-epicea:       #A8CFC0;   /* vert d'eau */
+  --ec-frene:        #709567;   /* vert sauge */
+  --ec-hetre:        #E2B19C;   /* rose poudré */
+  --ec-meleze:       #B97942;   /* cuivre */
+  --ec-merisier:     #A03454;   /* framboise */
+  --ec-noyer:        #462C1F;   /* brun chocolat */
+  --ec-peuplier:     #8A78A5;   /* lavande */
+  --ec-pin-m:        #88AAE6;   /* bleu ciel */
+  --ec-platane:      #C3432A;   /* rouge brique */
+  --ec-robinier:     #D67EA8;   /* rose orchidée */
+  --ec-sequoia:      #771F04;   /* brun rouge */
+  --ec-tilleul:      #506715;   /* vert olive */
   --ec-autre:        #9A9A90;   /* gris neutre, essence non listée */
 
   /* ─── Impression (feuille de débit) ─── */

@@ -1755,9 +1755,9 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 
 /* ─── Pastille de l'essence ───
-   Un rond de la couleur du bois devant le nom, et la barre de stock au
+   Un rond de la couleur de l'essence devant le nom, et la barre de stock au
    même ton. Ces règles viennent après .histo-bar-fill : à poids égal,
-   la dernière écrite gagne, donc le ton d'essence remplace l'indigo. */
+   la dernière écrite gagne, donc la couleur d'essence remplace l'indigo. */
 .pastille-essence {
   display: inline-block;
   width: 11px;
@@ -2460,15 +2460,23 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .saisie-chip.saisie-chip-alerte { background: var(--orange); color: var(--sumi); }
 
 /* ═══ Fiche de grume allégée (24 nov. 2026) ═══ */
-/* L'état se lit à la bande de couleur, sans texte :
-   gris clair = standard, or = exceptionnelle, ardoise = mauvais état */
+/* L'état se lit à la bande de la fiche (25 nov. 2026) :
+   standard = bande presque invisible, l'œil s'arrête sur les grumes à part ;
+   or = exceptionnelle ; ardoise hachurée = mauvais état. Les hachures
+   séparent l'ardoise des essences foncées (Noyer, Cyprès). */
 .histo-lot-card.fiche-grume { border-left-width: 8px; border-left-style: solid; }
-.fiche-etat-standard       { border-left-color: var(--pierre); }
+.fiche-etat-standard       { border-left-color: var(--brume); }
 .fiche-etat-exceptionnelle { border-left-color: var(--or); }
-.fiche-etat-mauvais_etat   { border-left-color: var(--ardoise); }
-/* Toucher la fiche ouvre « Corriger » */
+.fiche-etat-mauvais_etat {
+  border-left-color: transparent;
+  background-image: repeating-linear-gradient(45deg, var(--ardoise) 0 3px, var(--pierre) 3px 6px);
+  background-size: 8px 100%;
+  background-repeat: no-repeat;
+  background-origin: border-box;
+}
+/* Toucher la fiche ouvre « Corriger » (fond seul : les hachures restent) */
 .fiche-touchable { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.fiche-touchable:active { background: var(--neige); }
+.fiche-touchable:active { background-color: var(--neige); }
 .fiche-touchable:focus-visible { outline: 2px solid var(--sumi); outline-offset: 2px; }
 /* Débit externalisé : cadre orange autour de la date de débit */
 .badge-urgence.badge-debit-externalise { border: 2px solid var(--orange); }
