@@ -27,6 +27,7 @@ Mis en ligne vers 17 h 45 : `main` de `duramen` (cache **v93**), bloc « Épuré
 - Police : Outfit gardée (même police que la synthèse et la carte) ; chiffres alignés en colonne (`tabular-nums`) ; grands chiffres en graisse fine.
 - Plus aucun aplat noir : `.btn-primary` (Attribuer un numéro, Enregistrer, Clôturer, Imprimer, Confirmer…) et le bouton de connexion en cadre indigo hachuré ; messages de confirmation et d'erreur sur fond clair au trait fin ; zone de texte du ticket et « m³ extrait » sans fond noir. Boutons en minuscules.
 - Étude « sobre et raffiné » (tendances 2026) : l'espace plutôt que les cadres, la géométrie (marges constantes) fait le calme, la typographie porte la hiérarchie, une seule couleur d'accent, une seule touche « main » bien dosée.
+- Mis en ligne vers 17 h 57 (cache v95) : qualité standard en rayures gris clair (`--hachures-standard`, mobile et bureau) ; plus de pastille blanche derrière les chiffres du total du stock. Les campagnes de sciage sont toujours sur la page Stock (Vertou + Grumes brutes), juste sous le total.
 - **Bureau, mis en ligne vers 17 h 50** (cache v94) : même logique ; repères (pastilles) en petit cadre aux hachures légères — encre = validé, rouge = problème (`--hachures-encre`, `--hachures-rouge`) ; intitulés corrigés en minuscules dans le texte (`bureau/index.html`, `bureau/app.js`) ; trait très fin (0,5 px) entre chaque grume des tableaux.
 
 ---

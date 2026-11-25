@@ -236,6 +236,8 @@ HH:MM — [commit: abc1234] résultat final
 17:35 — Retirer la pastille blanche derrière le cubage
 17:42 — Bureau : repères en hachures légères, noir validé, rouge problème ; texte en minuscules ; [commit: 5594863] mobile en ligne (cache v93)
 17:47 — Trait très fin entre les grumes du bureau ; [commit: f62c81f] bureau en ligne (cache v94)
+17:52 — Rayures pour la qualité standard ; retirer les pastilles blanches derrière les chiffres du stock ; campagnes de sciage introuvables sur le téléphone (toujours présentes, page Stock)
+17:56 — Validé ; [commit: 4d26006] en ligne (cache v95)
 
 ---
 
