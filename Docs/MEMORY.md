@@ -17,6 +17,21 @@ Règles du porteur (25 nov. 2026) :
 
 ---
 
+## Session 25 novembre 2026 (15 h – 15 h 35) — Pages Nouveau, Stock, Extraction épurées
+
+Mis en ligne vers 15 h 35 : `main` de `duramen` (cache **v91**). Session Design : un bloc « Pages épurées » ajouté à la fin de `ui.css` (le retirer suffit pour revenir en arrière), variables dans `theme.css`.
+
+- **Sans cadres ni bandeaux gris** (esprit Bouroullec) : champs et listes avec un seul trait d'encre dessous ; « Abattue le », l'état, les molettes de mesure, l'encadré d'explication de l'extraction n'ont plus de fond gris. Date et GPS en texte simple (point indigo, orange si refusé).
+- **Intitulés en minuscules noires, propositions et valeurs en gris**, comme l'accueil (« Ajouter au stock » / « Saisir une nouvelle grume »). Boutons en minuscules aussi.
+- **Une seule action pleine par écran** (Nommer la grume, Enregistrer, Confirmer, Valider l'extraction) : cadre indigo fin et hachures, comme le cubage de l'accueil. Actions secondaires au trait fin (Saisir les mesures, Préparer une campagne, Sélectionner les grumes, Numéroter plus tard) ; Annuler et Retour en texte.
+- **Hachures** : régulières, plus denses (`--hachures-indigo` 0,6 px tous les 3 px). Le porteur a écarté les hachures irrégulières « à la main » (trop marquées, trop brouillon).
+- **Commune et Métropole**, bascules actives, essence choisie à l'extraction : hachures blanches sur fond indigo (`--hachures-indigo-dense`), texte blanc.
+- **Qualité de la grume** (fiche du stock) : bande rayée de 14 px à gauche (or = exceptionnelle, ardoise = mauvais état), le mot n'est plus écrit dans la fiche. Fiches sans cadre, un trait dessous. Date de débit en texte indigo. Page Nouveau : l'état se choisit par trois mots précédés de leur petit carré rayé.
+- Titre « Mesures de la grume » retiré (jugé inutile).
+- **Accueil** : plus d'espace entre les entrées et avant Ticket retour.
+
+---
+
 ## Session 25 novembre 2026 (14 h 30 – 14 h 50) — Design de l'accueil et des cadres
 
 Mis en ligne le 25 nov. 2026 vers 14 h 50 : `main` de `duramen` (cache **v90**). Session Design : `theme.css`, `ui.css` (et `sw.js`).

@@ -222,6 +222,14 @@ HH:MM — [commit: abc1234] résultat final
 14:41 — Retenu l'harmonie « Terre et sépia » ; demandé une présentation à la manière de l'app Apnée, carrés des icônes gardés
 14:45 — Retenu l'option 1 (liste reliée, sans cadres, total du stock encadré) ; [commit: 09be697] fusion dans `main` (cache v90), sauvegarde dans le coffre
 
+14:54 — Proposer une page Nouveau épurée (Bouroullec) : supprimer cadres et bandeaux gris, états en rayures
+15:03 — Actions pleines en cadre hachuré comme le cubage ; intitulés en minuscules noires, propositions en gris
+15:06 — Retirer « Mesures de la grume » ; hachures plus denses
+15:12 — Même traitement pour Stock et Extraction ; commune et Métropole hachurées denses, texte blanc ; accueil équilibré ; montrer avant d'appliquer
+15:22 — Essai d'hachures irrégulières (logo carto) et bandes d'état élargies sans le mot
+15:27 — Hachures irrégulières écartées (trop marquées, brouillon) ; bandes d'état régulières, un peu plus larges
+15:30 — Validé : qualité de la grume ; hachures comme le cubage de l'accueil ; blanc sur indigo pour commune et Métropole ; [commit: 1463feb] fusion dans `main` (cache v91)
+
 ---
 
 ## Voir aussi
