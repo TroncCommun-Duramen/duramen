@@ -298,10 +298,12 @@ async function bChargerDonnees(options) {
       var nr = await Promise.all([
         bSbSelect('noms_personnalises', 'commune_code=eq.' + code + '&select=type,nom&order=nom.asc'),
         bSbSelect('reglages', 'select=cle,valeur'),
-        bSbSelect('tempetes', 'select=nom&order=created_at.desc')
+        bSbSelect('tempetes', 'select=nom&order=created_at.desc'),
+        bSbSelect('parcs', 'select=nom&order=nom.asc')
       ]);
       bNomsPerso = nr[0] || [];
       bTempetes  = (nr[2] || []).map(function (t) { return t.nom; });
+      bParcs     = (nr[3] || []).map(function (t) { return t.nom; });
       bReglages  = {};
       (nr[1] || []).forEach(function (x) { bReglages[x.cle] = parseFloat(x.valeur); });
     } catch (e3) { /* on garde les listes déjà chargées */ }
@@ -724,6 +726,7 @@ var B_VALEUR_AUTRE = '__autre__';
 var bNomsPerso = [];
 var bReglages  = {};
 var bTempetes  = [];   // noms de tempête, partagés entre toutes les communes
+var bParcs     = [];   // noms de parc de la commune (provenance « Parc »)
 
 // Diamètre (Ø médian, cm) à partir duquel le débit est externalisé
 function bLimiteScierie() {
@@ -825,6 +828,35 @@ async function bMemoriserTempete(nom) {
   catch (e) { /* déjà enregistrée par une autre commune, ou pas de réseau */ }
 }
 
+// Nom du parc (provenance « Parc »), facultatif : les parcs de la commune sont proposés
+function bChampParc(valeur) {
+  var inp = bInput('text', valeur || '', { maxlength: '80', placeholder: 'Ex. Parc de Procé', list: 'b-parcs-liste' });
+  var dl = document.createElement('datalist');
+  dl.id = 'b-parcs-liste';
+  bParcs.forEach(function (n) { var o = document.createElement('option'); o.value = n; dl.appendChild(o); });
+  var bloc = el('div', 'b-choix-autre');
+  bloc.appendChild(inp);
+  bloc.appendChild(dl);
+  return {
+    el: bloc,
+    lire: function (provenance) {
+      if (provenance !== 'Parc') return { valeur: '', nouveau: false };
+      var t = inp.value.replace(/\s+/g, ' ').trim().slice(0, 80);
+      if (!t) return { valeur: '', nouveau: false };
+      var k = DuramenCore.cleNom(t);
+      var connu = bParcs.filter(function (n) { return DuramenCore.cleNom(n) === k; })[0];
+      if (connu) return { valeur: connu, nouveau: false };
+      return { valeur: t.charAt(0).toUpperCase() + t.slice(1), nouveau: true };
+    }
+  };
+}
+async function bMemoriserParc(nom) {
+  if (!nom || !bCommune) return;
+  bParcs.push(nom);
+  try { await bSbInsert('parcs', { nom: nom, commune_code: bCommune.code }); }
+  catch (e) { /* déjà enregistré, ou pas de réseau */ }
+}
+
 // Badges d'une grume : à stocker à part, débit externe
 // Trois couleurs : standard (gris clair), exceptionnelle (or), mauvais état (ardoise)
 function bBadgesEtatGrume(g) {
@@ -859,7 +891,7 @@ function bSelectCorrection(options, valeur) {
 function bEtatGrume(g) {
   var m = DuramenCore.mesuresGrume(g);
   return [g.essence, g.provenance, g.cause, g.date_abattage || '', g.repere || '', m.longueur, m.diametre,
-          g.etat || 'standard', !!g.debit_externe, g.nom_intemperie || '', g.diametre_max_cm || ''].join('|');
+          g.etat || 'standard', !!g.debit_externe, g.nom_intemperie || '', g.diametre_max_cm || '', g.nom_parc || ''].join('|');
 }
 
 function bTexteDateCorrection(iso) { return iso ? fmtDate(iso) : 'inconnue'; }
@@ -879,6 +911,7 @@ function bOuvrirCorrectionGrume(id) {
   var sCau = bChoixAvecAutre(bOptionsAvecNoms(B_OPTIONS_CAUSE, 'cause'), g.cause);
   var sEtat = bSelectCorrection(DuramenCore.ETATS_GRUME, g.etat || 'standard');
   var sTem  = bChampTempete(g.nom_intemperie);
+  var sParc = bChampParc(g.nom_parc);
   // Débit externalisé : décidé par le diamètre seul (règle du 24 nov. 2026)
   var limExt = bLimiteScierie();
   var iDate = bInput('date', g.date_abattage || '', { max: jourISO() });
@@ -888,6 +921,12 @@ function bOuvrirCorrectionGrume(id) {
 
   md.corps.appendChild(bChamp('Essence', sEss.el));
   md.corps.appendChild(bChamp('Provenance', sPro));
+  // Parc : nom du parc (facultatif)
+  var champParc = bChamp('Nom du parc (facultatif)', sParc.el);
+  md.corps.appendChild(champParc);
+  function majParc() { champParc.classList.toggle('hidden', sPro.value !== 'Parc'); }
+  sPro.addEventListener('change', majParc);
+  majParc();
   md.corps.appendChild(bChamp('Cause d\'abattage', sCau.el));
   // Intempérie : nom de la tempête (facultatif)
   var champTem = bChamp('Nom de la tempête (facultatif)', sTem.el);
@@ -966,6 +1005,7 @@ function bOuvrirCorrectionGrume(id) {
       essenceNouvelle: ess.nouveau, causeNouvelle: cau.nouveau,
       etat: sEtat.value, debitExterne: debitExterne,
       tempete: sTem.lire(cau.valeur).valeur, tempeteNouvelle: sTem.lire(cau.valeur).nouveau,
+      parc: sParc.lire(sPro.value).valeur, parcNouveau: sParc.lire(sPro.value).nouveau,
       abattage: iDate.value, repere: iRep.value.trim(),
       longueur: m.longueur, diametre: m.diametre
     });
@@ -991,6 +1031,7 @@ async function bEnregistrerCorrection(g, vu, n) {
   comparer('Provenance', g.provenance || '—', n.provenance);
   comparer('Cause', g.cause || '—', n.cause);
   comparer('Tempête', g.nom_intemperie || '—', n.tempete || '—');
+  comparer('Parc', g.nom_parc || '—', n.parc || '—');
   comparer('État', DuramenCore.libelleEtatGrume(g.etat), DuramenCore.libelleEtatGrume(n.etat));
   comparer('Ø au plus large', g.diametre_max_cm ? g.diametre_max_cm + ' cm' : '—', n.diametreMax ? n.diametreMax + ' cm' : '—');
   comparer('Débit externalisé', g.debit_externe ? 'oui' : 'non', n.debitExterne ? 'oui' : 'non');
@@ -1022,9 +1063,11 @@ async function bEnregistrerCorrection(g, vu, n) {
       p_longueur: n.longueur, p_diametre: n.diametre,
       p_etat: n.etat, p_debit_externe: n.debitExterne,
       p_nom_intemperie: n.tempete || null,
-      p_diametre_max: n.diametreMax
+      p_diametre_max: n.diametreMax,
+      p_nom_parc: n.parc || null
     });
     if (n.tempeteNouvelle) await bMemoriserTempete(n.tempete);
+    if (n.parcNouveau)     await bMemoriserParc(n.parc);
     if (n.essenceNouvelle) await bMemoriserNom('essence', n.essence);
     if (n.causeNouvelle)   await bMemoriserNom('cause', n.cause);
     vider(document.getElementById('b-modales'));
@@ -2255,7 +2298,7 @@ function bTableauExport(type, source) {
   if (type === 'grumes_stock' || type === 'grumes_toutes') {
     entetes = ['Commune', 'N° grume', 'Essence', 'Longueur m', 'Diamètre cm', 'Volume m3', 'Date d\'abattage',
                'Année de coupe', 'Provenance', 'Cause', 'Repère', 'Date de saisie', 'État', 'À débiter avant le', 'Campagne',
-               'Rangement', 'Débit externalisé', 'Tempête', 'Ø au plus large (cm)'];
+               'Rangement', 'Débit externalisé', 'Tempête', 'Ø au plus large (cm)', 'Parc', 'Lieu'];
     colVol = 5;
     var reservees = grumesADebiter(), sorties = clesGrumesSorties();
     var base = type === 'grumes_toutes' ? lots : (metro ? bMetroGrumes : DuramenCore.getGrumesEnStock());
@@ -2281,7 +2324,9 @@ function bTableauExport(type, source) {
         csvTexte(DuramenCore.grumeAPart(g) ? 'À part — ' + DuramenCore.libelleEtatGrume(g.etat) : 'Standard'),
         csvTexte(g.debit_externe ? 'Oui' : 'Non'),
         csvTexte(g.nom_intemperie || ''),
-        g.diametre_max_cm || '""'
+        g.diametre_max_cm || '""',
+        csvTexte(g.nom_parc || ''),
+        csvTexte(g.lieu || '')
       ] });
     });
   }
@@ -2472,3 +2517,14 @@ async function bReprendreSession(session) {
   var session = lireLocal('duramen_bureau_session');
   if (session && session.code && session.nom) bReprendreSession(session);
 })();
+
+// ─── Lien « Voir la carte » (Export tableur) ─────────────────────────────
+// La carte des grumes est une application à part : on lui transmet le code
+// derrière un « # », jamais envoyé sur Internet, effacé par la carte à l'ouverture.
+document.addEventListener('click', function (e) {
+  var lien = e.target.closest && e.target.closest('a.b-lien-carte');
+  if (!lien) return;
+  lien.href = bCommune && bCommune.code
+    ? '../../cartographie/#code=' + encodeURIComponent(bCommune.code)
+    : '../../cartographie/';
+});
