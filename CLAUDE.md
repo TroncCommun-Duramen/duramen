@@ -37,6 +37,10 @@ Toute feature, tout module, toute évolution est une couche au-dessus de ce prin
 - `campagnes` — campagnes de sciage (feuille de débit) : ajout et suppression seulement. Une grume est dans une seule campagne ouverte (verrou dans la base)
 - `codes_acces` — authentification par code commune
 - `acces_lecture` — codes de lecture seule de Tronc Commun sur toutes les communes (en-tête `x-code-lecture`, fonctions `tc_…`). Refusés par l'app mobile et le bureau
+- `parcs` — noms de parc de chaque commune (provenance « Parc »), une commune ne voit que les siens
+- `lieux_suivi` — suivi interne du remplissage de `grumes.lieu` (rue · quartier, OpenStreetMap), invisible de l'extérieur
+
+**Application liée** : la carte des grumes, dépôt `TroncCommun-Duramen/cartographie`, lecture seule. Elle charge `theme.css` et `core.js` de l'app (même site) : toute couleur ou essence changée ici se reporte sur la carte.
 
 ---
 

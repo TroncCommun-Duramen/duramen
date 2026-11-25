@@ -58,6 +58,18 @@ Envoyer ce message à Claude Code avant de terminer une session :
 
 ---
 
+### App installée sur iPhone et iPad *(25 nov. 2026)*
+- **Règle** : une information gardée par l'app installée sur l'écran d'accueil (`localStorage`) n'est pas visible d'une autre page ouverte dans Safari, même sur le même site. Pour passer une information à la carte, la transmettre dans l'adresse, derrière un `#` (jamais envoyé sur Internet), et l'effacer aussitôt (`history.replaceState`).
+- **Pourquoi** : sur iOS, chaque app installée a sa propre mémoire. Sur Android et sur ordinateur, la mémoire est partagée par le site.
+
+### Essais avec une base imitée *(25 nov. 2026)*
+- **Règle** : dans les essais Playwright de l'app, bloquer le Service Worker (`service_workers='block'`).
+- **Pourquoi** : les requêtes faites par le Service Worker échappent à l'imitation de la base ; les essais lisent alors un vide ou la vraie base.
+
+### Noms de lieux *(25 nov. 2026)*
+- **Règle** : ne pas compter sur un service public (OpenStreetMap, IGN) pour retrouver le nom d'un parc à partir d'un point. Il donne la rue et le quartier ; le parc se nomme à la saisie, ou se cherche par son contour.
+- **Pourquoi** : essais du 25 nov. 2026 au milieu du Jardin des Plantes : le service rend le nom d'une allée, jamais celui du parc.
+
 ## Règles à compléter au fil du projet
 
 | Date | Contexte | Règle apprise |

@@ -17,6 +17,37 @@ Règles du porteur (25 nov. 2026) :
 
 ---
 
+## Session 25 novembre 2026 (10 h 45 – 13 h 45) — Carte des grumes, nom du parc, pictogrammes, graphisme, nettoyage
+
+Mis en ligne le 25 nov. 2026 vers 13 h 40 : `main` de `duramen` (cache **v86**) et `main` du dépôt **`cartographie`** (publié par GitHub Pages depuis `main`).
+
+**Carte des grumes** — dépôt public `TroncCommun-Duramen/cartographie` (le porteur l'a nommé ainsi au lieu de `carte`), adresse https://tronccommun-duramen.github.io/cartographie/
+- Application à part, en lecture seule. Elle lit `grumes` + `extractions` avec `x-commune-code`, ou `tc_grumes()` + `tc_sorties()` avec `x-code-lecture` (Tronc Commun). Premier essai réel par Internet : réussi.
+- Couleurs et liste des essences lues directement dans l'app (`../duramen/theme.css`, `../duramen/core.js`, même site) : un changement de couleur dans l'app se reporte seul sur la carte.
+- Point = rond à la couleur de l'essence ; cercles autour : or = exceptionnelle, ardoise = mauvais état, blanc = débitée ; taille fixe. Vue aérienne IGN par défaut, plan épuré au choix. Filtres : essence, cause (+ tempête), état, dates, commune (Tronc Commun). Grumes sans GPS comptées sous la carte.
+- Recherche : numéro, essence, rue, quartier, parc. Un nom absent des données → bouton « Chercher sur la carte » : contour du lieu demandé à OpenStreetMap (une demande au clic), grumes à l'intérieur (150 m autour d'un simple point).
+- **Code** : repris de l'app ouverte sur le même appareil (`duramen_session`, `duramen_bureau_session`), ou transmis par le bouton « Voir la carte » derrière un `#` (iPhone, iPad : l'app installée a sa mémoire à part de Safari), effacé aussitôt de l'adresse. Toujours revérifié par la base. « Se déconnecter » coupe la reprise jusqu'à la prochaine connexion à la main.
+- **Démonstration** sans code : `…/cartographie/?demo`, 51 grumes fictives dans de vrais parcs de Nantes (`demo.js`), rien n'est lu dans la base.
+- © Tronc Commun en pied de page. Numéro de version `?v=` sur les fichiers (à augmenter à chaque mise à jour, sinon cache de 10 min).
+
+**Lieu de chaque grume (base)** — colonne `grumes.lieu` = « rue · quartier », retrouvée par OpenStreetMap (Nominatim) à partir du point GPS, une fois, environ une minute après l'arrivée. Réveil `pg_cron` `completer-lieux` toutes les 20 s, une demande à la fois (règle d'OpenStreetMap), suivi dans `lieux_suivi` (invisible de l'extérieur), 3 essais au plus espacés d'une heure. Position replacée au bureau → lieu recherché à nouveau (déclencheur `grumes_lieu_a_retrouver`). Le nom d'un parc n'est jamais retrouvé par ce service (ni par l'IGN) : d'où le nommage par l'agent.
+
+**Nom du parc** — provenance « Parc » → champ facultatif « Nom du parc » (mobile, correction mobile et bureau). Table `parcs` (par commune, une commune ne voit que ses parcs, unicité sans tenir compte des majuscules), colonne `grumes.nom_parc`, `corriger_grume` à 13 paramètres (les versions 8, 10, 11, 12 restent). Parcs proposés : celui de la grume nommée la plus proche en premier (GPS). Nom tapé en minuscules rattaché au parc connu. Provenance changée → nom retiré.
+
+**Pictogrammes « cernes »** — famille A retenue, point indigo (exception à la règle de l'indigo : signature du logo). Accueil, barre du bas, onglets ordinateur, menu du bureau. Carrés de l'accueil : aplat de couleur, forme un peu irrégulière, symbole blanc ; Ajouter noir, Voir indigo, Sortir gris (`--cendre`), Carte **vert mousse `#56705A`** (`--mousse`), Ticket orange. Bouton « Voir la carte » (lien, ↗) entre Sortir et Ticket retour ; au bureau, dans Export tableur.
+
+**Graphisme « trait à main levée »** (mobile, tablette, bureau) — compromis entre « léger » et « affirmé » : cadres au trait d'encre (`--trait-main`, 1,4 px `--encre`), coins un peu inégaux (`--rayon-main`, `--rayon-main-doux`, `--rayon-picto`), total du stock de l'accueil en cadre indigo avec hachures légères, bande « exceptionnelle » or hachée. Tout est regroupé en fin de `ui.css` et de `bureau/ui.css` : pour revenir en arrière, retirer ce bloc. Écarté : hachures dans les carrés des pictogrammes, pictogrammes au trait noir.
+
+**Bureau** — camembert des grumes aux couleurs des essences (le camembert des communes garde le dégradé d'indigo) ; export : colonnes Parc et Lieu ajoutées à la fin.
+
+**Nettoyage** — 208 lignes en moins (11 020 → 10 812) : 144 déclarations CSS écrasées plus loin, 3 classes jamais utilisées, `calculerVolumes` (jamais appelée), un repli pour la colonne `grumes_keys`, l'ancien nom du réglage `diametre_gros_bout_max_cm`. Styles calculés identiques sur 20 091 éléments (45 écrans). Gardé : fonctions figées de `core.js`, passerelle Supabase, anciennes versions de `corriger_grume`, effacement des anciens brouillons.
+
+Essais : carte 101 vérifications, pictogrammes 14, parc 11, bureau 8 (Playwright, base imitée ; outils dans `cartographie/tests`).
+
+Hors code : mail aux communes (évolutions + carte), document « Références des calculs » mis à jour (5 lignes : GPS, lieu, parc, recherche de parc, fonds de carte).
+
+---
+
 ## Session 25 novembre 2026 (8 h) — Accès Tronc Commun à toutes les communes
 
 Aucun fichier de l'app n'a changé : tout se passe dans la base Supabase (migration `acces_lecture_tronc_commun`). Rien ne bouge sur les téléphones.

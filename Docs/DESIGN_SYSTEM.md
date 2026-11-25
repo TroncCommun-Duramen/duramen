@@ -110,6 +110,23 @@ Variables `--ec-…` dans `theme.css`, classes `.ec-…` dans `ui.css`. Tons dou
 | `--border-radius-card` | `12px` | Cartes, boutons mobiles *(ajouté 25 avril 2026)* |
 | `--border-radius-lg` | `18px` | Cadre téléphone uniquement |
 
+### Trait à main levée *(25 nov. 2026)*
+
+| Variable CSS | Valeur | Usage |
+|---|---|---|
+| `--encre` | `#2a2a26` | Trait des cadres |
+| `--trait-main` | `1.4px solid var(--encre)` | Bord des cadres (accueil, fiches, cartes) |
+| `--rayon-main` | `15px 10px 14px 9px / 9px 14px 10px 15px` | Coins des cadres, un peu inégaux |
+| `--rayon-main-doux` | `10px 7px 9px 6px / 6px 9px 7px 10px` | Champs et boutons |
+| `--rayon-picto` | `12px 9px 13px 8px / 9px 13px 8px 12px` | Carré des pictogrammes de l'accueil |
+| `--hachures-indigo` | hachures indigo à 9 % | Total du stock de l'accueil |
+| `--hachures-or` | or haché | Bande « exceptionnelle » de la fiche |
+| `--mousse` | `#56705A` | Carré du pictogramme « Voir la carte » |
+
+Les règles sont regroupées à la fin de `ui.css` et de `bureau/ui.css` (bloc « Trait à main levée »).
+
+**Pictogrammes « cernes »** : un cerne au trait (`.picto-trait`, `.picto-fin`, `.picto-hach`), un point indigo (`.picto-point`, exception à la règle de l'indigo : signature du logo), un signe par action en haut à droite. Sur un carré de couleur, symbole et point sont blancs.
+
 ---
 
 ## Couleurs composées

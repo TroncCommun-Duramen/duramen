@@ -196,6 +196,24 @@ HH:MM — [commit: abc1234] résultat final
 08:11 — Forme A retenue. Le porteur gère Tronc Commun et distribue lui-même les codes
 08:15 — Accès créé dans Supabase (table `acces_lecture`, fonctions `tc_…`), essais faits dans la base. Aucun fichier de l'app modifié
 
+## Session 2026-11-25 (10 h 45) — Carte des grumes, parc, pictogrammes, graphisme
+
+10:44 — Nouvelle session : construction de la carte. Accès vérifiés ; dépôt `cartographie` créé par le porteur, accès de l'app Claude ajouté dans les réglages du compte
+11:05 — Test des services de noms de lieux : la rue et le quartier se retrouvent, jamais le parc. Proposition : « rue · quartier » dans la base, parc cherché par son contour sur la carte. Validée
+11:07 — Idée du porteur : nommer le parc à la saisie (comme la tempête). Validée pour une session suivante
+11:11 — Colonne `lieu` et réveil automatique créés dans la base
+11:23 — Règle : l'accès à l'ordinateur du porteur est donné une fois pour toutes, s'en servir sans redemander
+11:33 — Carte en ligne (branche d'essai). Demandes : © Tronc Commun, démonstration à grumes fictives
+11:43 — Le code n'est pas redemandé : la carte reprend celui de l'app. Carte gardée à part, bouton « Voir la carte » sur l'accueil
+11:59 — Pictogrammes : famille A « cernes », point indigo ; anciens fonds gardés, vert mousse pour la carte
+12:16 — Transmission du code au clic (iPhone, iPad)
+12:22 — Mail aux communes rédigé
+12:27 — Nom du parc fait dans la même session (mobile, bureau, base, carte)
+12:33 — Nettoyage : 208 lignes en moins, sans changement visible
+12:48 — Graphisme « trait à main levée » : compromis léger / affirmé, carrés en aplat, symbole blanc ; bureau compris
+13:09 — Camembert du bureau aux couleurs des essences, pictogrammes du menu du bureau, mail factuel, document « Références des calculs » mis à jour (PDF exporté)
+13:36 — Fusion : `duramen` main (cache v86), `cartographie` main, publication de la carte basculée sur `main`
+
 ---
 
 ## Voir aussi
