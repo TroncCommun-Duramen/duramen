@@ -1,6 +1,6 @@
 # GIT_WORKFLOW — DURAMEN
 *Référence opérationnelle Git et déploiement*
-*Dernière mise à jour : avril 2026*
+*Dernière mise à jour : 25 novembre 2026*
 
 ---
 
@@ -91,23 +91,6 @@ Configuré sur **nano**. Si Git ouvre un éditeur lors d'un merge :
 
 ---
 
-## Prochaines tâches design
-
-- [ ] **Responsive** — session Design dans Claude.ai d'abord, puis session CSS dans Claude Code.
-      Mobile : poids minimum 400, texte plus grand, boutons plus hauts (min 44px).
-
-- [ ] **Icône PWA** — envisager fond `--indigo` (#2B3F8C) avec icône blanche pour meilleur
-      contraste au lancement. Coordonner avec le graphiste avant de modifier `manifest.json`.
-
----
-
-## Prochaine tâche technique
-
-- [ ] **Service Worker** (`sw.js`) — pas encore créé. Nécessaire pour le mode offline
-      et l'installation PWA sur mobile. Session Feature dédiée dans Claude Code.
-
----
-
 ## Rappel sessions Claude Code
 
 **Prompt de démarrage à copier-coller :**
@@ -130,23 +113,32 @@ Configuré sur **nano**. Si Git ouvre un éditeur lors d'un merge :
 
 ```
 /
-├── index.html          ← structure HTML (anciennement duramen.html)
+├── CLAUDE.md           ← règles du projet pour Claude
+├── index.html          ← structure HTML (version mobile)
 ├── theme.css           ← palette, typographie, tokens
 ├── ui.css              ← composants visuels
 ├── core.js             ← noyau métier (entrée/stock/sortie)
 ├── app.js              ← interface + Supabase
 ├── manifest.json       ← config PWA
-├── sw.js               ← Service Worker (à créer)
+├── sw.js               ← Service Worker (hors ligne + cache)
 ├── icon-192.png
 ├── icon-512.png
+├── illustration-mobile.jpg
+├── bureau/             ← version bureau (index.html, app.js, ui.css, illustration)
 └── Docs/
-    ├── CLAUDE.md
     ├── MEMORY.md
     ├── TASKS.md
     ├── LESSONS.md
+    ├── CHANGELOG.md
+    ├── EVOLUTIONS.md
     ├── DESIGN_SYSTEM.md
+    ├── REDACTION.md
     ├── PROMPT_LOG.md
-    └── GIT_WORKFLOW.md  ← ce fichier
+    ├── CLAUDE_QUICK.md
+    ├── BENCHMARK.md
+    ├── DURAMEN_Synthese_et_CDC_technique.md
+    ├── GIT_WORKFLOW.md  ← ce fichier
+    └── Journal/         ← récit des sessions 1 à 6
 ```
 
 ---
