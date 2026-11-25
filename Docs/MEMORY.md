@@ -17,6 +17,20 @@ Règles du porteur (25 nov. 2026) :
 
 ---
 
+## Session 25 novembre 2026 (17 h 10 – 17 h 45) — Épuré, suite (mobile en ligne, bureau en attente)
+
+Mis en ligne vers 17 h 45 : `main` de `duramen` (cache **v93**), bloc « Épuré, suite » à la fin de `ui.css`.
+
+- Fiches de grume : léger arrondi en bas à gauche (10 px).
+- Accueil : pictogrammes au trait (carré d'encre fin, symbole noir, point indigo comme le logo) — les 5 couleurs des carrés sont abandonnées ; Ticket retour en hachures légères rouge brique (`--hachures-rouille`) ; plus de pastille blanche derrière le cubage ; la liste descend sous le cubage.
+- Une seule marge de 24 px sur toutes les pages (avant : 12, 28 ou 40 px selon l'écran).
+- Police : Outfit gardée (même police que la synthèse et la carte) ; chiffres alignés en colonne (`tabular-nums`) ; grands chiffres en graisse fine.
+- Plus aucun aplat noir : `.btn-primary` (Attribuer un numéro, Enregistrer, Clôturer, Imprimer, Confirmer…) et le bouton de connexion en cadre indigo hachuré ; messages de confirmation et d'erreur sur fond clair au trait fin ; zone de texte du ticket et « m³ extrait » sans fond noir. Boutons en minuscules.
+- Étude « sobre et raffiné » (tendances 2026) : l'espace plutôt que les cadres, la géométrie (marges constantes) fait le calme, la typographie porte la hiérarchie, une seule couleur d'accent, une seule touche « main » bien dosée.
+- **Bureau, en attente de validation** (branche `style/bureau-epure`) : même logique ; repères (pastilles) en petit cadre aux hachures légères — encre = validé, rouge = problème (`--hachures-encre`, `--hachures-rouge`) ; intitulés corrigés en minuscules dans le texte (`bureau/index.html`, `bureau/app.js`).
+
+---
+
 ## Session 25 novembre 2026 (15 h – 15 h 35) — Pages Nouveau, Stock, Extraction épurées
 
 Mis en ligne vers 15 h 35 : `main` de `duramen` (cache **v91**). Session Design : un bloc « Pages épurées » ajouté à la fin de `ui.css` (le retirer suffit pour revenir en arrière), variables dans `theme.css`.

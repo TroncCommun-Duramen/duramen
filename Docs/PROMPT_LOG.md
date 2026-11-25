@@ -230,6 +230,12 @@ HH:MM — [commit: abc1234] résultat final
 15:27 — Hachures irrégulières écartées (trop marquées, brouillon) ; bandes d'état régulières, un peu plus larges
 15:30 — Validé : qualité de la grume ; hachures comme le cubage de l'accueil ; blanc sur indigo pour commune et Métropole ; [commit: 1463feb] fusion dans `main` (cache v91)
 
+17:13 — Léger arrondi en bas à gauche des fiches de grume ; étudier ce qui se fait de plus sobre et raffiné
+17:23 — Couleurs des icônes de l'accueil de trop ? Regarder police et alignements
+17:33 — Icônes au trait, point indigo ; liste plus bas sous le cubage ; Ticket retour en hachures rouge brique ; plus d'aplat noir (Attribuer un numéro…) ; et le bureau ?
+17:35 — Retirer la pastille blanche derrière le cubage
+17:42 — Bureau : repères en hachures légères, noir validé, rouge problème ; texte en minuscules ; [commit: 5594863] mobile en ligne (cache v93)
+
 ---
 
 ## Voir aussi

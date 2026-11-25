@@ -9,6 +9,7 @@
 
 | Tâche | Session | Date |
 |-------|---------|------|
+| Mobile : icônes au trait, marge unique 24 px, chiffres en colonne, plus d'aplat noir, arrondi des fiches (cache v93) | Design | 25 nov. 2026 |
 | Pages Nouveau, Stock, Extraction épurées, bande de qualité 14 px, hachures denses (cache v91) | Design | 25 nov. 2026 |
 | Accueil en liste reliée, trait fin, couleurs « Terre et sépia » (cache v90) | Design | 25 nov. 2026 |
 | Architecture 5 fichiers (index.html, theme.css, ui.css, core.js, app.js) | Structure | Avant avril 2026 |
