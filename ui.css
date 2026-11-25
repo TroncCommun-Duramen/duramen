@@ -577,7 +577,8 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 
 .btn-home-primary .btn-home-icon-box {
-  background: var(--blanc-alpha);
+  background: var(--sumi);
+  color: var(--washi);
 }
 
 .btn-home-secondary .btn-home-icon-box {
@@ -647,12 +648,12 @@ a.btn-home {
 }
 
 .btn-home-primary {
-  background: var(--sumi);
-  color: var(--washi);
-  border: none;
+  background: var(--washi);
+  color: var(--sumi);
+  border: var(--border-thin);
 }
 .btn-home-primary:hover,
-.btn-home-primary:active { background: var(--sumi); }
+.btn-home-primary:active { background: var(--neige); }
 
 .btn-home-secondary {
   background: var(--washi);
@@ -2384,6 +2385,7 @@ a.btn-home {
 .extract-modal,
 .modal-nommer,
 .modal-extraction-dest { border-radius: var(--rayon-main); }
+.btn-home-primary,
 .btn-home-secondary,
 .grume-summary-card,
 .feedback-card { border: var(--trait-main); box-shadow: none; }
