@@ -178,6 +178,19 @@ HH:MM — [commit: abc1234] résultat final
 
 ---
 
+## Session 2026-11-25 (matin) — Couleurs de l'app mobile
+
+07:14 — Demande : séparer les couleurs des grumes et celles de leur qualité sur mobile. Deux pistes proposées : essences en indigo (A), palette Atelier et état marqué autrement (B)
+07:22 — Piste B validée
+07:26 — Question : existe-t-il des codes couleur propres aux bûcherons (France, Canada) ? Codes de martelage présentés ; chamois proposé pour les exceptionnelles
+07:36 — Or gardé pour les exceptionnelles ; changements demandés
+07:45 — Validation et fusion (cache v80). Règle : écrire d'office sur GitHub et dans le coffre, sauf demande contraire
+07:48 — Règle : tout ce qui entoure l'app suit les mêmes mises à jour. Couleurs reportées dans la synthèse
+07:53 — Maquette de la synthèse fusionnée dans `main`, avec le logo Duramen Cartographie sur chaque carte
+08:01 — Mise à jour de l'état de développement
+
+---
+
 ## Voir aussi
 
 - [[MEMORY]] — synthèse des décisions issues des sessions

@@ -51,6 +51,18 @@ Toutes les valeurs sont dans `theme.css` — seule source de vérité.
 | `--orange` | `#d35400` | Alerte, volume déchet |
 | `--vert` | `#788d5d` | Validation, enregistrement, succès *(ajouté 25 avril 2026)* |
 
+### État de la grume *(25 nov. 2026)*
+| Variable CSS | Valeur | Usage |
+|---|---|---|
+| `--brume` | `#EEEEE9` | Bande d'une grume standard (presque invisible) |
+| `--or` | `#E8B93A` | Grume exceptionnelle : bande, badge, bouton de choix |
+| `--ardoise` | `#4A4A44` | Grume en mauvais état : bande hachurée (ardoise et `--pierre`), badge, bouton de choix |
+
+L'état se lit à la bande de la fiche et à un mot écrit, jamais à la couleur seule.
+
+### Couleurs d'essence — palette « Atelier » *(25 nov. 2026)*
+Variables `--ec-…` dans `theme.css`, classes `.ec-…` dans `ui.css`. Tons doux de design textile, les mêmes pour le mobile, le bureau, la synthèse et la carte. Aucun jaune ni or (l'or marque les exceptionnelles). Une essence garde toujours sa couleur ; « Autre » en gris neutre `--ec-autre`. L'essence se lit en pastille ronde et en barre, jamais en bande de fiche.
+
 ---
 
 ## Typographie

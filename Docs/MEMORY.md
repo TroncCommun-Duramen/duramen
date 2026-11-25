@@ -11,6 +11,25 @@
 La sauvegarde interne du porteur est le coffre Obsidian, sur son Mac : `Documents/Coffre Obsidian/Tronc Commun` (l'application est dans `01-Projet/Appli Duramen`).
 En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une copie du dépôt : un `git pull` dans le dossier suffit à le mettre à jour.
 
+Règles du porteur (25 nov. 2026) :
+- Claude écrit d'office sur GitHub et dans le coffre, sauf demande contraire explicite du porteur.
+- Tout ce qui entoure l'app (synthèse, carte…) suit les mêmes mises à jour que l'app. Exemple : un changement de couleurs se reporte le même jour dans le dépôt `synthese`.
+
+---
+
+## Session 25 novembre 2026 (matin) — Couleurs de l'app mobile
+
+Constat : sur mobile, les couleurs d'essence (tons de bois : miel, blond, brun) se confondaient avec les couleurs d'état de la grume (or, ardoise).
+
+Décisions du porteur :
+- **Essences en palette « Atelier »**, la même que la carte. Les 9 essences qui n'avaient pas de couleur en ont reçu une : Aulne saumon `#DF9081`, Châtaignier brun noisette `#86623C`, Chêne des marais vert de gris `#56827C`, Cyprès vert sapin `#045F3B`, Douglas vieux rose `#A9605E`, Épicéa vert d'eau `#A8CFC0`, Mélèze cuivre `#B97942`, Merisier framboise `#A03454`, Noyer brun chocolat `#462C1F`. Aucun jaune ni or. Les 21 valeurs sont dans `theme.css`.
+- **État de la grume** : chaque information a sa forme. L'essence = pastille ronde et barre. L'état = bande à gauche de la fiche et un mot écrit. Standard : bande presque invisible (`--brume`). Exceptionnelle : or. Mauvais état : ardoise hachurée (pour la séparer du Noyer et du Cyprès).
+- **L'or reste** pour les exceptionnelles. Piste étudiée : les codes de martelage (ONF : chamois pour l'arbre d'avenir ; Ontario : jaune ou orange à abattre, bleu à conserver). Le chamois foncé a été montré, l'or a été gardé.
+- Le dégradé d'indigo pour les essences a été écarté : on ne distingue pas 20 essences en nuances d'un seul bleu, et l'indigo reste l'accent unique.
+- Le bureau prend aussi ces couleurs (il lit le même `theme.css`). La synthèse les a reçues le même jour.
+
+Livré : `feat/couleurs-atelier` (v79) et `feat/badge-etat-fiche` (v80), fusionnées dans `main`. Synthèse : maquette fusionnée dans `main` du dépôt `synthese`, palette Atelier, logo Duramen Cartographie (E2b) en pied de chaque carte.
+
 ---
 
 ## Session 24-25 novembre 2026 (nuit) — Cartographie des grumes (simulations, aucun code de Duramen)
