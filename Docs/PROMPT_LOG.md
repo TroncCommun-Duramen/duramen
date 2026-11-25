@@ -214,6 +214,14 @@ HH:MM — [commit: abc1234] résultat final
 13:09 — Camembert du bureau aux couleurs des essences, pictogrammes du menu du bureau, mail factuel, document « Références des calculs » mis à jour (PDF exporté)
 13:36 — Fusion : `duramen` main (cache v86), `cartographie` main, publication de la carte basculée sur `main`
 
+
+## Session 2026-11-25 (après-midi) — Design de l'accueil
+
+14:28 — Session Design : cadre « Ajouter au stock » sans aplat noir ; proposition d'encadrés plus fins
+14:37 — Retenu « fin » (1 px) pour l'accueil et le stock ; flèche de « Voir la carte » à harmoniser ; retravailler les couleurs des 5 entrées
+14:41 — Retenu l'harmonie « Terre et sépia » ; demandé une présentation à la manière de l'app Apnée, carrés des icônes gardés
+14:45 — Retenu l'option 1 (liste reliée, sans cadres, total du stock encadré) ; [commit: 09be697] fusion dans `main` (cache v90), sauvegarde dans le coffre
+
 ---
 
 ## Voir aussi

@@ -9,6 +9,7 @@
 
 | Tâche | Session | Date |
 |-------|---------|------|
+| Accueil en liste reliée, trait fin, couleurs « Terre et sépia » (cache v90) | Design | 25 nov. 2026 |
 | Architecture 5 fichiers (index.html, theme.css, ui.css, core.js, app.js) | Structure | Avant avril 2026 |
 | Migration UUID (lots + extractions) | Feature | 19 avril 2026 |
 | Service Worker sw.js (offline + cache) | Feature | Avant 24 avril 2026 |

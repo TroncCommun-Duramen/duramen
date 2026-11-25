@@ -17,6 +17,19 @@ Règles du porteur (25 nov. 2026) :
 
 ---
 
+## Session 25 novembre 2026 (14 h 30 – 14 h 50) — Design de l'accueil et des cadres
+
+Mis en ligne le 25 nov. 2026 vers 14 h 50 : `main` de `duramen` (cache **v90**). Session Design : `theme.css`, `ui.css` (et `sw.js`).
+
+- **Accueil en liste reliée**, à la manière de l'app Apnée du porteur : les 5 entrées n'ont plus de cadres ni de flèches ; un fil d'encre fin relie les carrés des pictogrammes ; Ticket retour à part sous le séparateur. Le total du stock garde son cadre indigo hachuré. Carrés des pictogrammes gardés.
+- « Ajouter au stock » n'a plus d'aplat noir : comme les autres entrées.
+- **Trait fin** partout (option B) : `--trait-main` 1 px (au lieu de 1,4), hachures indigo, or et ardoise plus fines (`--hachures-ardoise` ajoutée). Vaut aussi pour le bureau (même `theme.css`).
+- **Couleurs des pictogrammes** : harmonie « Terre et sépia », variables `--picto-…` de `theme.css` : Ajouter sépia noir `#2E2B26`, Voir indigo `#34458A`, Sortir ocre brun `#8A6F4E`, Carte mousse `#5F7A5B`, Ticket rouille `#A8573A`.
+- La flèche ↗ de « Voir la carte » venait d'une autre police (absente d'Outfit) : les flèches sont retirées de l'accueil.
+- Synthèse : rien à reporter (elle n'utilise ni ces cadres ni ces pictogrammes).
+
+---
+
 ## Session 25 novembre 2026 (10 h 45 – 13 h 45) — Carte des grumes, nom du parc, pictogrammes, graphisme, nettoyage
 
 Mis en ligne le 25 nov. 2026 vers 13 h 40 : `main` de `duramen` (cache **v86**) et `main` du dépôt **`cartographie`** (publié par GitHub Pages depuis `main`).
