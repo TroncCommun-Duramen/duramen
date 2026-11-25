@@ -2339,7 +2339,7 @@ a.btn-home {
 .fiche-etat-exceptionnelle { border-left-color: var(--or); }
 .fiche-etat-mauvais_etat {
   border-left-color: transparent;
-  background-image: repeating-linear-gradient(45deg, var(--ardoise) 0 3px, var(--pierre) 3px 6px);
+  background-image: var(--hachures-ardoise);
   background-size: 8px 100%;
   background-repeat: no-repeat;
   background-origin: border-box;
@@ -2389,7 +2389,7 @@ a.btn-home {
 .btn-home-secondary,
 .grume-summary-card,
 .feedback-card { border: var(--trait-main); box-shadow: none; }
-.btn-home-feedback { border: 1.4px solid var(--orange); }
+.btn-home-feedback { border: 1px solid var(--orange); }
 .histo-lot-card {
   border-radius: var(--rayon-main);
   border-top: var(--trait-main);
@@ -2401,7 +2401,7 @@ a.btn-home {
 
 /* Total du stock (accueil) : cadre indigo, hachures légères, chiffre sur fond clair */
 .accueil-stock {
-  border: 1.4px solid var(--indigo);
+  border: 1px solid var(--indigo);
   background-color: var(--washi);
   background-image: var(--hachures-indigo);
   box-shadow: none;
@@ -2448,3 +2448,9 @@ a.btn-home {
   color: var(--washi);
 }
 .btn-home .picto-point { fill: currentColor; }
+
+/* Flèche de « Voir la carte » : le même chevron que les autres entrées.
+   Le signe ↗ n'existe pas dans Outfit : le navigateur le prenait dans une
+   autre police, plus grosse et plus basse. */
+.btn-home-carte .btn-home-arrow { font-size: 0; }
+.btn-home-carte .btn-home-arrow::after { content: '›'; font-size: 22px; }
