@@ -2480,3 +2480,190 @@ a.btn-home {
   opacity: 0.35;
 }
 .accueil-actions-sep { margin: 8px 28px 4px; }
+
+/* ═══ Pages épurées (25 nov. 2026) ═══
+   Validé par le porteur : Nouveau, Stock, Extraction et accueil sans cadres
+   ni bandeaux gris, dans l'esprit Bouroullec. Un trait d'encre fin sous les
+   champs, intitulés en minuscules noires et propositions en gris (comme
+   l'accueil), une seule action pleine par écran : cadre indigo hachuré,
+   comme le cubage de l'accueil. Tout est dans ce bloc : pour revenir en
+   arrière, il suffit de le retirer. */
+
+/* Date et GPS : du texte simple, un point pour le GPS */
+.saisie-meta { gap: 16px; margin-bottom: 18px; }
+.saisie-chip { background: none; color: var(--cendre); padding: 0; border-radius: 0; font-weight: 400; letter-spacing: .04em; }
+#saisie-gps-chip::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--indigo); margin-right: 3px; }
+.saisie-chip.saisie-chip-alerte { color: var(--orange); }
+.saisie-chip.saisie-chip-alerte::before { background: var(--orange); }
+
+/* Abattue le : plus de bandeau gris, un trait dessous */
+.saisie-annee-row { background: none; border: none; border-bottom: 1px solid var(--encre); border-radius: 0; padding: 2px 0 10px; margin-bottom: 26px; }
+.saisie-annee-val { font-weight: 400; }
+
+/* Listes et champs : un seul trait d'encre dessous */
+.field label { font-size: 11px; letter-spacing: .14em; }
+.field select,
+.field input:not([type="checkbox"]):not([type="radio"]) {
+  border: none; border-bottom: 1px solid var(--encre); border-radius: 0;
+  background-color: transparent; box-shadow: none; padding-left: 0;
+}
+.field input:not([type="checkbox"]):not([type="radio"]):focus,
+.field select:focus { border: none; border-bottom: 1px solid var(--indigo); }
+.field input:not([type="checkbox"]):not([type="radio"]):not(:placeholder-shown):not(:focus) { border: none; border-bottom: 1px solid var(--encre); }
+.saisie-selects { gap: 22px; margin-bottom: 30px; }
+
+/* État : trois mots, chacun précédé de sa rayure */
+.grume-methode-toggle.grume-choix-3 { background: none; border: none; padding: 0; gap: 22px; justify-content: flex-start; }
+.grume-choix-3 .grume-methode-btn {
+  flex: 0 0 auto; background: none; border: none; border-radius: 0;
+  color: var(--cendre); font-weight: 400; padding: 12px 0; min-height: 44px;
+  display: inline-flex; align-items: center; gap: 8px; box-shadow: none;
+}
+.grume-choix-3 .grume-methode-btn::before { content: ''; flex: none; width: 14px; height: 14px; border: 1px solid var(--encre); border-radius: 3px 2px 3px 2px / 2px 3px 2px 3px; }
+.grume-choix-3 .grume-methode-btn[data-valeur="standard"]::before       { background: var(--pierre); }
+.grume-choix-3 .grume-methode-btn[data-valeur="exceptionnelle"]::before { background-image: var(--hachures-or); }
+.grume-choix-3 .grume-methode-btn[data-valeur="mauvais_etat"]::before   { background-image: var(--hachures-ardoise); }
+.grume-choix-3 .grume-methode-btn.active[data-valeur] { background: none; border-color: transparent; color: var(--sumi); }
+.grume-choix-3 .grume-methode-btn.active { color: var(--sumi); font-weight: 500; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 7px; }
+
+/* Mesures */
+.saisie-grumes-header { border-bottom: none; margin-top: 8px; }
+.saisie-add-btn { background: none; color: var(--sumi); border: 1px solid var(--encre); min-height: 44px; border-radius: var(--rayon-main-doux); }
+.grume-summary-card { border: none; border-bottom: 1px solid var(--encre); border-radius: 0; background: none; box-shadow: none; padding-left: 0; padding-right: 0; }
+.saisie-synthese { background: none; border: none; box-shadow: none; justify-content: flex-start; padding-left: 0; }
+.saisie-synth-item { align-items: flex-start; text-align: left; }
+.saisie-synth-val { font-weight: 300; font-size: 40px; }
+
+/* Actions : Annuler en texte, une seule action pleine */
+.saisie-btn-annuler { background: none; border: none; color: var(--cendre); }
+.saisie-btn-nommer { background: var(--picto-ajouter); border-radius: var(--rayon-main-doux); }
+
+/* Fenêtre des mesures : molettes sans fond gris, deux traits d'encre */
+.drum-wrap { background: transparent; }
+.drum-wrap::before { background: linear-gradient(to bottom, var(--washi) 20%, transparent); }
+.drum-wrap::after  { background: linear-gradient(to top, var(--washi) 20%, transparent); }
+.drum-center { border-color: var(--encre); left: 18%; right: 18%; }
+.drum-item { font-weight: 400; }
+.grume-sheet-vol { font-weight: 300; }
+.grume-sheet-btn-ann { background: none; border: none; color: var(--cendre); }
+.grume-sheet-btn-save { background: var(--picto-ajouter); border-radius: var(--rayon-main-doux); }
+
+/* Fenêtre « Nommer la grume » */
+.modal-nommer { border: 1px solid var(--encre); box-shadow: none; }
+.modal-nommer .btn-outline:first-child { border: none; background: none; color: var(--cendre); }
+.modal-nommer .btn-outline { border: 1px solid var(--encre); }
+.modal-nommer .btn-primary { background: var(--picto-ajouter); border-color: var(--picto-ajouter); }
+
+/* ── Retours du 25 nov. 15 h ── */
+/* Intitulés en minuscules noires, propositions en gris : comme l'accueil
+   (« Ajouter au stock » en noir, « Saisir une nouvelle grume » en gris) */
+.field label,
+.saisie-annee-lbl,
+.saisie-grumes-title,
+.grume-sheet-label {
+  text-transform: none; letter-spacing: .02em;
+  font-size: 17px; font-weight: 500; color: var(--sumi);
+}
+.field select,
+.field input:not([type="checkbox"]):not([type="radio"]),
+.saisie-annee-val,
+.drum-item { color: var(--cendre); font-size: 15px; font-weight: 400; }
+.field input::placeholder { color: var(--pierre); }
+.saisie-annee-row .saisie-annee-lbl { flex: 1; }
+
+/* Actions pleines : cadre indigo et hachures, comme le cubage de l'accueil */
+.saisie-btn-nommer,
+.grume-sheet-btn-save,
+.modal-nommer .btn-primary {
+  background: var(--washi);
+  background-image: var(--hachures-indigo);
+  border: 1px solid var(--indigo);
+  color: var(--sumi);
+  border-radius: var(--rayon-main);
+  font-weight: 500;
+}
+/* Boutons aussi en minuscules, comme l'accueil */
+.saisie-btn, .saisie-add-btn, .modal-nommer .btn, .saisie-synth-lbl, .grume-sheet-btn-ann, .grume-sheet-btn-save {
+  text-transform: none; letter-spacing: .02em; font-size: 16px;
+}
+.field { gap: 2px; }
+.grume-sheet-label { font-size: 15px; }
+/* Retours 15 h 06 : titre « Mesures de la grume » retiré ; hachures plus denses */
+.saisie-grumes-title { display: none; }
+.saisie-grumes-header { justify-content: stretch; }
+.saisie-add-btn { flex: 1; }
+/* ═══ Proposition pages Stock et Extraction + accueil équilibré (15 h 12) ═══ */
+/* Nom de la commune et Métropole (et toute bascule active) */
+.commune-chip,
+.histo-toggle-btn.active {
+  background-color: var(--indigo);
+  background-image: var(--hachures-indigo-dense);
+  color: var(--washi);
+  border-radius: var(--rayon-main-doux);
+}
+.histo-toggle-bar { background: none; border: none; box-shadow: none; gap: 8px; padding: 0; }
+.histo-toggle-btn:not(.active) { color: var(--cendre); }
+.histo-toggle-btn { text-transform: none; letter-spacing: .02em; font-size: 16px; }
+
+/* Titres de section : minuscules noires, comme l'accueil */
+.histo-section-title, .ext-section-title {
+  text-transform: none; letter-spacing: .02em;
+  font-size: 17px; font-weight: 500; color: var(--sumi);
+  border-bottom: none;
+}
+
+/* Total du stock : comme le cubage de l'accueil */
+.histo-total-block {
+  background-color: var(--washi); background-image: var(--hachures-indigo);
+  border: 1px solid var(--indigo); border-radius: var(--rayon-main); color: var(--sumi);
+}
+.histo-total-vol, .histo-total-lots { font-weight: 300; background: var(--washi); padding: 0 6px; border-radius: var(--rayon-main-doux); }
+.histo-total-unit { color: var(--cendre); text-transform: none; letter-spacing: .02em; font-size: 14px; padding-left: 6px; }
+.histo-total-divider { background: var(--indigo); opacity: .4; }
+
+/* Actions secondaires : un trait fin */
+.sciage-btn-nouvelle, .ext-sel-btn {
+  background: none; color: var(--sumi); border: 1px solid var(--encre);
+  border-radius: var(--rayon-main-doux); text-transform: none; letter-spacing: .02em; font-size: 16px; box-shadow: none;
+}
+/* Action principale : cadre indigo hachuré */
+.ext-valider-btn {
+  background: var(--washi); background-image: var(--hachures-indigo);
+  border: 1px solid var(--indigo); color: var(--sumi); border-radius: var(--rayon-main);
+}
+
+/* Fiches de grume : plus de cadre, un trait dessous ; la bande d'état reste à gauche */
+.histo-lot-card {
+  border-top: none; border-right: none; border-bottom: 1px solid var(--encre);
+  border-radius: 0; box-shadow: none; background-color: transparent; margin-bottom: 0;
+}
+.histo-lot-card:not(.fiche-grume) { border-left: none; }
+/* État écrit comme sur la page Nouveau : petit carré rayé + mot */
+.badge-etat-exceptionnelle, .badge-etat-mauvais {
+  background: none; color: var(--sumi); text-transform: none; letter-spacing: .02em;
+  font-weight: 400; padding: 0; display: inline-flex; align-items: center; gap: 6px; border: none;
+}
+.badge-etat-exceptionnelle::before, .badge-etat-mauvais::before { content: ''; width: 12px; height: 12px; border: 1px solid var(--encre); border-radius: 3px 2px 3px 2px; }
+.badge-etat-exceptionnelle::before { background-image: var(--hachures-or); }
+.badge-etat-mauvais::before { background-image: var(--hachures-ardoise); }
+/* Date de débit : texte indigo, sans pastille */
+.badge-urgence { background: none; border: none; padding: 0; text-transform: none; letter-spacing: .02em; font-size: 14px; }
+
+/* Extraction */
+.info-box { background: none; border: none; color: var(--cendre); padding: 0; font-size: 14px; }
+.ext-chip { background: none; border: 1px solid var(--encre); color: var(--sumi); border-radius: var(--rayon-main-doux); }
+.ext-chip.active { background-color: var(--indigo); background-image: var(--hachures-indigo-dense); color: var(--washi); border-color: var(--indigo); }
+
+/* Accueil équilibré : plus d'air entre les entrées, plus d'espace avant Ticket retour */
+.accueil-actions { gap: 14px; }
+.btn-home-primary::after,
+.btn-home-secondary:not(.btn-home-carte)::after { height: calc(100% - 30px); }
+.accueil-actions-sep { margin: 22px 28px 14px; }
+
+/* Qualité de la grume : bande rayée de 14 px à gauche de la fiche, sans le mot */
+.histo-lot-card.fiche-grume { position: relative; border-left: none; padding-left: 28px; background-image: none; }
+.histo-lot-card.fiche-grume::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: var(--brume); }
+.histo-lot-card.fiche-etat-exceptionnelle::before { background: var(--hachures-or); }
+.histo-lot-card.fiche-etat-mauvais_etat::before { background: var(--hachures-ardoise); }
+.fiche-grume .badge-etat-exceptionnelle,
+.fiche-grume .badge-etat-mauvais { display: none; }
