@@ -102,3 +102,7 @@ Envoyer ce message à Claude Code avant de terminer une session :
 - [[MEMORY]] — état du projet, décisions récentes
 - [[CHANGELOG]] — source des bugs qui ont généré ces règles
 - [[CLAUDE_QUICK]] — règles absolues condensées pour le démarrage de session
+
+## Après une mise à jour, un téléphone peut garder l'ancienne version (25 nov. 2026)
+
+Le porteur ne pouvait plus ouvrir la correction d'une grume ni la fiche d'une grume sur la carte ; tout est revenu après avoir fermé puis rouvert l'app. Avant de chercher un bug signalé juste après une mise en ligne : faire fermer complètement l'app (et la carte) puis la rouvrir.

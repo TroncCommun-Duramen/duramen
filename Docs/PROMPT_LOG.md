@@ -238,6 +238,9 @@ HH:MM — [commit: abc1234] résultat final
 17:47 — Trait très fin entre les grumes du bureau ; [commit: f62c81f] bureau en ligne (cache v94)
 17:52 — Rayures pour la qualité standard ; retirer les pastilles blanches derrière les chiffres du stock ; campagnes de sciage introuvables sur le téléphone (toujours présentes, page Stock)
 17:56 — Validé ; [commit: 4d26006] en ligne (cache v95)
+17:59 — Correction et fiche de la carte ne s'ouvraient plus sur le téléphone ; non reproduit ; 18:04 « ça refonctionne » (ancienne version gardée par le téléphone)
+18:08 — Camemberts du bureau à hachurer
+18:18 — Validé ; [commit: 95bac98] en ligne
 
 ---
 
