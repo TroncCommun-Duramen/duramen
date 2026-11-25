@@ -630,8 +630,8 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 }
 
 .btn-home-icon-svg {
-  width: 22px;
-  height: 22px;
+  width: 26px;   /* pictogrammes cernes : un peu plus grands que les anciens (marges du dessin) */
+  height: 26px;
 }
 
 /* ── Pictogrammes « cernes » (25 nov. 2026) ──
