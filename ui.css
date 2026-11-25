@@ -2667,3 +2667,76 @@ a.btn-home {
 .histo-lot-card.fiche-etat-mauvais_etat::before { background: var(--hachures-ardoise); }
 .fiche-grume .badge-etat-exceptionnelle,
 .fiche-grume .badge-etat-mauvais { display: none; }
+
+/* Fiche de grume : léger arrondi en bas à gauche, la bande de qualité et le trait du dessous le suivent */
+.histo-lot-card.fiche-grume { border-bottom-left-radius: 10px; }
+.histo-lot-card.fiche-grume::before { border-bottom-left-radius: 10px; }
+
+/* ═══ Épuré, suite (25 nov. 2026, 17 h 30) ═══
+   Une seule marge, icônes au trait, chiffres en colonne, plus d'aplat noir. */
+
+/* Une seule marge de 24 px : tout part du même bord */
+main { padding-left: 24px; padding-right: 24px; }
+.accueil-commune-row { padding: 8px 0 16px; }
+.accueil-stock { margin: 0 0 40px; }                 /* la liste respire sous le cubage */
+.btn-home { width: 100%; margin: 0; padding-left: 0; padding-right: 0; }
+.btn-home-primary::after,
+.btn-home-secondary:not(.btn-home-carte)::after { left: 22px; }
+.accueil-actions-sep { margin: 22px 0 14px; }
+.ext-section { padding-left: 0; padding-right: 0; }
+.ext-valider-btn { width: 100%; margin: 20px 0 32px; }
+
+/* Chiffres alignés en colonne ; grands chiffres en graisse fine */
+body, input, select, button { font-variant-numeric: tabular-nums; }
+.accueil-stock-val, .histo-total-vol, .histo-total-lots, .saisie-synth-val, .grume-sheet-vol { font-weight: 300; }
+
+/* Pictogrammes de l'accueil : carré au trait, symbole noir, point indigo (comme le logo) */
+.btn-home .btn-home-icon-box,
+.btn-home-primary .btn-home-icon-box,
+.btn-home-icon-box.btn-home-icon-voir,
+.btn-home-icon-box.btn-home-icon-carte,
+.btn-home-secondary .btn-home-icon-box:not(.btn-home-icon-voir):not(.btn-home-icon-carte) {
+  background: var(--washi);
+  color: var(--sumi);
+  border: 1px solid var(--encre);
+}
+.btn-home .picto-point { fill: var(--indigo); }
+/* Ticket retour : hachures légères rouge brique */
+.btn-home-feedback .btn-home-icon-box {
+  background-color: var(--washi);
+  background-image: var(--hachures-rouille);
+  color: var(--sumi);
+  border: 1px solid var(--picto-ticket);
+}
+
+/* Plus d'aplat noir : toutes les actions pleines (Attribuer un numéro, Enregistrer,
+   Clôturer, Imprimer, connexion…) prennent le cadre indigo hachuré */
+.btn-primary,
+.login-btn {
+  background-color: var(--washi);
+  background-image: var(--hachures-indigo);
+  border: 1px solid var(--indigo);
+  color: var(--sumi);
+  border-radius: var(--rayon-main);
+  box-shadow: none;
+}
+.btn-primary:hover, .btn-primary:active,
+.login-btn:hover, .login-btn:active { background-color: var(--neige); }
+.btn-primary.sciage-btn-nouvelle { background: none; border: 1px solid var(--encre); border-radius: var(--rayon-main-doux); }
+
+/* Messages : sur fond clair, au trait fin */
+.toast-succes { background: var(--washi); color: var(--sumi); border: 1px solid var(--encre); border-radius: var(--rayon-main-doux); box-shadow: none; }
+.toast-erreur { background: var(--washi); color: var(--rouge); border: 1px solid var(--rouge); border-radius: var(--rayon-main-doux); box-shadow: none; }
+
+/* Ticket retour : zone de texte claire, un trait dessous */
+.feedback-textarea { background: transparent; color: var(--sumi); border: none; border-bottom: 1px solid var(--encre); border-radius: 0; }
+
+/* Extraction : m³ extrait en chiffre fin, sans aplat */
+#ext-synthese .ext-syn-item:nth-child(1) { background: none; text-align: left; padding-left: 0; }
+.ext-syn-val { color: var(--indigo); font-weight: 300; font-size: 2rem; }
+.ext-syn-lbl { color: var(--cendre); text-transform: none; }
+
+/* Boutons en minuscules partout, comme l'accueil */
+.btn { text-transform: none; letter-spacing: .02em; }
+/* Accueil : plus de pastille blanche derrière le cubage, le chiffre est posé sur les hachures */
+.accueil-stock-val { background: none; padding: 0; }
