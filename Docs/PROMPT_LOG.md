@@ -235,6 +235,7 @@ HH:MM — [commit: abc1234] résultat final
 17:33 — Icônes au trait, point indigo ; liste plus bas sous le cubage ; Ticket retour en hachures rouge brique ; plus d'aplat noir (Attribuer un numéro…) ; et le bureau ?
 17:35 — Retirer la pastille blanche derrière le cubage
 17:42 — Bureau : repères en hachures légères, noir validé, rouge problème ; texte en minuscules ; [commit: 5594863] mobile en ligne (cache v93)
+17:47 — Trait très fin entre les grumes du bureau ; [commit: f62c81f] bureau en ligne (cache v94)
 
 ---
 
