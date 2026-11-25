@@ -2613,6 +2613,20 @@ async function tentativeConnexion() {
   }
 }
 
+// ─── Bouton « Voir la carte » (accueil) ───────────────────────────────────
+// La carte des grumes est une application à part. Sur iPhone et iPad, l'app
+// installée sur l'écran d'accueil garde sa mémoire à part de Safari : la carte
+// ne peut pas y lire le code. On lui transmet donc le code au moment du clic,
+// derrière un « # » : cette partie de l'adresse n'est jamais envoyée sur
+// Internet, et la carte l'efface de l'adresse dès l'ouverture.
+document.addEventListener('click', function (e) {
+  var lien = e.target.closest && e.target.closest('a.btn-home-carte');
+  if (!lien) return;
+  lien.href = communeConnectee && communeConnectee.code
+    ? '../cartographie/#code=' + encodeURIComponent(communeConnectee.code)
+    : '../cartographie/';
+});
+
 function ouvrirApp() {
   document.getElementById('ecran-connexion').classList.remove('visible');
   var chip = document.createElement('div');
