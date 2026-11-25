@@ -2740,3 +2740,13 @@ body, input, select, button { font-variant-numeric: tabular-nums; }
 .btn { text-transform: none; letter-spacing: .02em; }
 /* Accueil : plus de pastille blanche derrière le cubage, le chiffre est posé sur les hachures */
 .accueil-stock-val { background: none; padding: 0; }
+
+/* Qualité standard : rayures gris clair (bande de la fiche et carré de la page Nouveau) */
+.histo-lot-card.fiche-grume::before { background: var(--hachures-standard); }
+.histo-lot-card.fiche-etat-exceptionnelle::before { background: var(--hachures-or); }
+.histo-lot-card.fiche-etat-mauvais_etat::before { background: var(--hachures-ardoise); }
+.grume-choix-3 .grume-methode-btn[data-valeur="standard"]::before { background: var(--hachures-standard); }
+
+/* Total du stock : plus de pastille blanche derrière les chiffres */
+.histo-total-vol, .histo-total-lots { background: none; padding: 0; }
+
