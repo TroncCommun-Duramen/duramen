@@ -2667,3 +2667,7 @@ a.btn-home {
 .histo-lot-card.fiche-etat-mauvais_etat::before { background: var(--hachures-ardoise); }
 .fiche-grume .badge-etat-exceptionnelle,
 .fiche-grume .badge-etat-mauvais { display: none; }
+
+/* Fiche de grume : léger arrondi en bas à gauche, la bande de qualité et le trait du dessous le suivent */
+.histo-lot-card.fiche-grume { border-bottom-left-radius: 10px; }
+.histo-lot-card.fiche-grume::before { border-bottom-left-radius: 10px; }
