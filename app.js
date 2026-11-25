@@ -783,18 +783,7 @@ async function confirmerExtractionDest() {
       };
     });
     // Envoi groupé : soit toutes les essences passent, soit aucune
-    try {
-      await sbInsert('extractions', nouvelles);
-    } catch (e1) {
-      // Colonne grumes_keys pas encore créée dans Supabase :
-      // on enregistre quand même l'extraction, sans le marquage des grumes.
-      if (/grumes_keys/.test(e1.message)) {
-        nouvelles.forEach(function (n) { delete n.grumes_keys; });
-        await sbInsert('extractions', nouvelles);
-      } else {
-        throw e1;
-      }
-    }
+    await sbInsert('extractions', nouvelles);
     await chargerDonnees();
     extDraft     = { destination: '', communeInstall: '', lieu: '' };
     extGrumesSel = [];
@@ -3433,8 +3422,7 @@ function chargerNomsEtReglagesCache() {
 // Diamètre (Ø médian, cm) à partir duquel le débit est externalisé :
 // trop gros pour la scierie mobile. Réglage modifiable dans la base.
 function limiteScierie() {
-  return reglages.diametre_max_scierie_cm || reglages.diametre_gros_bout_max_cm
-    || DuramenCore.DIAMETRE_GROS_BOUT_MAX_DEFAUT;
+  return reglages.diametre_max_scierie_cm || DuramenCore.DIAMETRE_GROS_BOUT_MAX_DEFAUT;
 }
 
 // Noms d'un type : ceux de la base et ceux qui attendent le réseau

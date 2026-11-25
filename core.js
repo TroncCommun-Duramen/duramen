@@ -67,40 +67,6 @@ var DuramenCore = (function () {
       .slice(0, 3).toUpperCase();
   }
 
-  // ─── Calcul des volumes ──────────────────────────────────────────────────
-  // Formule DURAMEN : V_débité = V_brut × 0.55 × (e / (e + trait_scie))
-  // Retourne { volBrut, volUtile, volDechets, nbPlanches, lineaire, rendement, details }
-  function calculerVolumes(grumes, epaisseur) {
-    var K    = TRAIT_SCIE_MM;
-    var tVB  = 0, tVD = 0, tP = 0, tL = 0;
-    var details = grumes.map(function (g) {
-      var r   = g.diametre / 200;
-      var vb  = Math.PI * r * r * g.longueur;
-      var vd  = vb * 0.55 * (epaisseur / (epaisseur + K));
-      var nb  = Math.floor(g.diametre / ((epaisseur + K) / 10));
-      var li  = nb * g.longueur;
-      var lm  = nb > 0 ? g.diametre / nb : 0;
-      tVB += vb; tVD += vd; tP += nb; tL += li;
-      return {
-        longueur:   g.longueur,
-        diametre:   g.diametre,
-        volBrut:    vb,
-        nbPlanches: nb,
-        lineaire:   li,
-        largeurMoy: lm
-      };
-    });
-    return {
-      volBrut:    tVB,
-      volUtile:   tVD,
-      volDechets: tVB - tVD,
-      nbPlanches: tP,
-      lineaire:   tL,
-      rendement:  tVB > 0 ? tVD / tVB : 0,
-      details:    details
-    };
-  }
-
   // ─── Stock disponible par essence ────────────────────────────────────────
   // Lit les tableaux globaux `lots` et `extractions` (gérés par app.js)
   // Signature figée — ne jamais modifier
@@ -594,7 +560,6 @@ var DuramenCore = (function () {
     getGrumesEnStock:   getGrumesEnStock,
     getStockProduits:   getStockProduits,
     validerSortieProduits: validerSortieProduits,
-    calculerVolumes: calculerVolumes,
     getStock:        getStock,
     getHistorique:   getHistorique,
     entree:          entree,

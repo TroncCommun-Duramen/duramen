@@ -730,8 +730,7 @@ var bParcs     = [];   // noms de parc de la commune (provenance « Parc »)
 
 // Diamètre (Ø médian, cm) à partir duquel le débit est externalisé
 function bLimiteScierie() {
-  return bReglages.diametre_max_scierie_cm || bReglages.diametre_gros_bout_max_cm
-    || DuramenCore.DIAMETRE_GROS_BOUT_MAX_DEFAUT;
+  return bReglages.diametre_max_scierie_cm || DuramenCore.DIAMETRE_GROS_BOUT_MAX_DEFAUT;
 }
 function bNomsDuType(type) {
   var vus = {}, liste = [];
