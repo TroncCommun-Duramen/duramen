@@ -634,6 +634,29 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   height: 22px;
 }
 
+/* ── Pictogrammes « cernes » (25 nov. 2026) ──
+   Un cerne au trait d'encre, un point indigo au centre, un signe par action.
+   Exception à la règle de l'indigo : le point est la signature du logo Duramen.
+   Sur un fond coloré (noir, indigo, mousse, orange), le point prend la couleur du trait. */
+.picto-trait { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.picto-fin   { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; }
+.picto-hach  { fill: none; stroke: currentColor; stroke-width: 0.85; stroke-linecap: round; opacity: 0.7; }
+.picto-point { fill: var(--indigo); }
+.btn-home-primary .picto-point,
+.btn-home-icon-voir .picto-point,
+.btn-home-icon-carte .picto-point,
+.btn-home-feedback .picto-point { fill: currentColor; }
+
+/* Bouton « Voir la carte » : un lien qui ouvre la carte des grumes */
+.btn-home-icon-box.btn-home-icon-carte {
+  background: var(--mousse);
+  color: var(--washi);
+}
+a.btn-home {
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
 .btn-home-text {
   flex: 1;
   display: flex;
