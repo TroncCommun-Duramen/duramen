@@ -281,7 +281,6 @@ body {
 }
 .b-tab:hover { background: var(--neige); }
 .b-tab.active { background: var(--indigo-clair); color: var(--indigo); }
-.b-tab:focus-visible { outline: 2px solid var(--indigo); outline-offset: 2px; }
 
 /* Le parcours du bois : 4 étapes reliées par un fil */
 .b-nav-parcours { list-style: none; position: relative; }
@@ -494,7 +493,6 @@ body {
 .b-essence-nom { font-weight: var(--font-weight-medium); }
 .b-provenance { color: var(--cendre); }
 
-
 .b-field { display: flex; flex-direction: column; gap: 6px; }
 
 .b-field-lbl {
@@ -513,7 +511,6 @@ body {
   background: var(--washi);
   border-bottom: var(--border-thin);
 }
-
 
 .b-metro-filtres { display: flex; gap: 10px; }
 
@@ -951,8 +948,6 @@ a.b-btn { display: inline-flex; align-items: center; text-decoration: none; box-
 /* ── Cartes (campagne, projet) ──────────────────────────────────────────── */
 .b-carte {
   background: var(--washi);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-card);
   padding: 18px 20px;
   margin-bottom: 16px;
 }
@@ -1178,7 +1173,6 @@ a.b-btn { display: inline-flex; align-items: center; text-decoration: none; box-
   .b-export-filtres { grid-template-columns: 1fr; }
   .b-etapes { grid-template-columns: 1fr; }
 }
-
 
 /* ── Mentions légales ──────────────────────────────────────────────────────
    Une feuille centrée, posée sur le reste de l'écran. Texte long : colonne

@@ -158,14 +158,10 @@ header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 10px 4px 8px;
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--pierre);
   font-family: var(--font-body);
-  font-size: 0.58rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   transition: color 0.15s;
@@ -205,18 +201,10 @@ main {
   footer { display: none; }
   main { padding: 14px 12px 84px; }
 
-  /* Connexion — règle 16px mobile */
-  .login-card { padding: 36px 24px 28px; }
   .login-title { font-size: 1.8rem; }
-  .login-sub { font-size: 1rem; font-weight: var(--font-weight-regular); }
-  .login-field-label { font-size: 1rem; font-weight: var(--font-weight-regular); }
-  .login-input { font-size: 1.125rem; font-weight: var(--font-weight-regular); }
-  .login-btn { font-size: 1rem; font-weight: var(--font-weight-regular); }
-  .login-error { font-size: 1rem; }
-  .login-footer-links { font-size: 0.875rem; }
-
-  /* Champs — anti-zoom iOS (font-size < 16px déclenche le zoom Safari) */
-  .field input, .field select, .field textarea { font-size: 1rem; }
+  .login-sub { font-weight: var(--font-weight-regular); }
+  .login-input { font-weight: var(--font-weight-regular); }
+  .login-btn { font-weight: var(--font-weight-regular); }
 
 }
 
@@ -224,11 +212,8 @@ main {
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label {
   font-family: var(--font-body);
-  font-size: 0.54rem;
-  font-weight: var(--font-weight-medium);
   color: var(--cendre);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
 }
 .field input, .field select, .field textarea {
   padding: 9px 0;
@@ -265,7 +250,7 @@ main {
 }
 .field textarea {
   resize: vertical; min-height: 70px; line-height: 1.5;
-  border: var(--border-field); border-radius: var(--border-radius-sm); padding: 9px 12px;
+  border: var(--border-field); padding: 9px 12px;
 }
 .field textarea:focus { border-color: var(--indigo); }
 select {
@@ -280,11 +265,8 @@ select {
 .btn {
   padding: 10px 20px;
   border: var(--border-thin);
-  border-radius: var(--border-radius-sm);
   font-family: var(--font-body);
-  font-size: 0.62rem;
   font-weight: var(--font-weight-medium);
-  letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.15s;
@@ -298,7 +280,6 @@ select {
   background: var(--sumi);
   color: var(--washi);
   border: none;
-  border-radius: var(--border-radius-md);
 }
 .btn-primary:hover { background: var(--sumi); }
 
@@ -309,7 +290,7 @@ select {
 }
 .btn-outline:hover { color: var(--sumi); }
 
-.btn-sm { padding: 5px 12px; font-size: 0.62rem; }
+.btn-sm { padding: 5px 12px; }
 
 .btn-deconnexion {
   color: var(--cendre);
@@ -331,12 +312,10 @@ select {
 .extract-modal-bg.open { display: flex; }
 .extract-modal {
   background: var(--washi);
-  border-radius: var(--border-radius-md);
   padding: 28px 30px;
   max-width: 580px; width: 100%;
   max-height: 90vh; overflow-y: auto;
   border: var(--border-thin);
-  border-top: 2px solid var(--sumi);
 }
 .extract-modal h2 {
   font-family: var(--font-display);
@@ -363,9 +342,6 @@ select {
 /* ─── INFO BOX ─── */
 .info-box {
   background: var(--neige);
-  border-left: 2px solid var(--sumi);
-  border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
-  padding: 9px 13px;
   font-family: var(--font-body);
   font-size: 0.88rem;
   color: var(--sumi);
@@ -394,25 +370,18 @@ select {
 }
 #ecran-connexion.visible { display: flex; }
 .login-card {
-  background: var(--neige);
-  border-radius: var(--border-radius-md);
   padding: 44px 40px 36px;
   max-width: 400px; width: 100%;
-  border: var(--border-thin);
-  text-align: center;
 }
-.login-logo { margin-bottom: 22px; display: flex; justify-content: center; }
-.login-logo svg { width: 88px; height: 88px; color: var(--sumi); display: block; }
+.login-logo { display: flex; }
+.login-logo svg { color: var(--sumi); display: block; }
 .login-title {
   font-family: var(--font-display);
-  font-size: 1.6rem; font-weight: var(--font-weight-thin);
-  color: var(--sumi); letter-spacing: 0.2em; line-height: 1;
+  color: var(--sumi); line-height: 1;
   text-transform: uppercase;
 }
 .login-sub {
-  font-family: var(--font-body);
-  color: var(--cendre); font-size: 0.82rem;
-  margin: 8px 0 28px; line-height: 1.6;
+  font-family: var(--font-body); font-size: 0.82rem; line-height: 1.6;
 }
 .login-field-label {
   font-size: 0.54rem; font-weight: var(--font-weight-medium); color: var(--cendre);
@@ -421,12 +390,10 @@ select {
 }
 .login-input {
   width: 100%; padding: 14px 16px;
-  border: 1px solid var(--indigo);
-  border-radius: var(--border-radius-sm);
   font-size: 1rem; font-family: var(--font-display);
   font-weight: var(--font-weight-medium); letter-spacing: 0.08em;
-  text-transform: uppercase; text-align: center;
-  color: var(--sumi); background: var(--indigo-clair);
+  text-transform: uppercase;
+  color: var(--sumi);
   outline: none; margin-bottom: 20px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -436,7 +403,7 @@ select {
   width: 100%; padding: 13px;
   min-height: 56px;
   background: var(--sumi); color: var(--washi);
-  border: none; border-radius: var(--border-radius-md);
+  border: none;
   font-family: var(--font-body); font-size: 0.69rem;
   font-weight: var(--font-weight-medium); letter-spacing: 0.14em; text-transform: uppercase;
   cursor: pointer; transition: background 0.15s;
@@ -513,7 +480,6 @@ footer {
 footer span { color: var(--sumi); font-family: var(--font-display); font-weight: var(--font-weight-light); letter-spacing: 0.04em; }
 .footer-link { color: var(--cendre); text-decoration: none; letter-spacing: 0.08em; }
 
-
 /* ─── TOAST ERREUR ─── */
 .toast-erreur {
   position: fixed;
@@ -523,7 +489,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   background: var(--rouge);
   color: var(--washi);
   padding: 10px 22px;
-  border-radius: var(--border-radius-sm);
   font-size: 0.78rem;
   z-index: 3000;
   max-width: 90vw;
@@ -540,7 +505,6 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
 .loading-box {
   background: var(--washi);
   border: var(--border-thin);
-  border-radius: var(--border-radius-sm);
   padding: 24px 40px;
   font-size: 0.85rem;
   color: var(--sumi);
@@ -556,20 +520,16 @@ footer span { color: var(--sumi); font-family: var(--font-display); font-weight:
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0 20px;
 }
 
 .accueil-stock {
   text-align: center;
-  padding: 28px 0 32px;
-  border-bottom: var(--border-thin);
   margin-bottom: 28px;
 }
 
 .accueil-stock-val {
   font-family: var(--font-display);
   font-size: 3.5rem;
-  font-weight: var(--font-weight-light);
   color: var(--sumi);
   line-height: 1;
   letter-spacing: -0.03em;
@@ -745,16 +705,12 @@ a.btn-home {
 .feedback-card {
   margin: 8px 16px 32px;
   background: var(--neige);
-  border-radius: var(--border-radius-card);
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 .feedback-section-label {
-  font-size: 11px;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.1em;
   color: var(--cendre);
   text-transform: uppercase;
 }
@@ -766,7 +722,6 @@ a.btn-home {
 .feedback-type-btn {
   background: var(--washi);
   border: 1px solid var(--pierre);
-  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: var(--font-weight-regular);
@@ -805,7 +760,6 @@ a.btn-home {
   background: var(--orange);
   color: var(--washi);
   border: none;
-  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 15px;
   font-weight: var(--font-weight-medium);
@@ -815,7 +769,6 @@ a.btn-home {
 .feedback-btn-effacer {
   background: none;
   border: 1px solid var(--pierre);
-  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 15px;
   color: var(--sumi);
@@ -841,8 +794,6 @@ a.btn-home {
   background: var(--indigo);
   color: var(--washi);
   border-radius: var(--border-radius-lg);
-  padding: 4px 10px;
-  font-size: 0.62rem;
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.06em;
   pointer-events: none;
@@ -859,17 +810,12 @@ a.btn-home {
   align-items: center;
   gap: 10px;
   margin-bottom: 20px;
-  padding: 10px 14px;
   background: var(--neige);
-  border-radius: var(--border-radius-sm);
   border: var(--border-thin);
 }
 .saisie-annee-lbl {
-  font-size: 0.62rem;
-  font-weight: var(--font-weight-medium);
   color: var(--cendre);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
   flex: 1;
 }
 .saisie-annee-val {
@@ -878,7 +824,6 @@ a.btn-home {
   color: var(--sumi);
 }
 .saisie-annee-btn {
-  font-size: 0.62rem;
   font-weight: var(--font-weight-medium);
   color: var(--indigo);
   background: none;
@@ -925,22 +870,16 @@ a.btn-home {
 }
 .saisie-grumes-title {
   font-family: var(--font-body);
-  font-size: 0.62rem;
-  font-weight: var(--font-weight-medium);
   color: var(--sumi);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
 }
 .saisie-add-btn {
   background: var(--indigo);
   color: var(--washi);
   border: none;
-  border-radius: var(--border-radius-card);
   padding: 10px 18px;
   font-family: var(--font-body);
-  font-size: 0.62rem;
   font-weight: var(--font-weight-medium);
-  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
   min-height: 56px;
@@ -1018,7 +957,6 @@ a.btn-home {
   display: flex;
   background: var(--indigo-clair);
   border: 1px solid var(--indigo);
-  border-radius: var(--border-radius-card);
   padding: 14px 8px;
   margin-top: 14px;
   margin-bottom: 14px;
@@ -1038,11 +976,9 @@ a.btn-home {
   letter-spacing: -0.02em;
 }
 .saisie-synth-lbl {
-  font-size: 9px;
   font-weight: var(--font-weight-medium);
   color: var(--indigo);
   text-transform: uppercase;
-  letter-spacing: 0.15em;
   margin-top: 5px;
   opacity: 0.7;
 }
@@ -1056,11 +992,8 @@ a.btn-home {
 .saisie-btn {
   padding: 16px;
   min-height: 56px;
-  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
-  font-size: 0.69rem;
   font-weight: var(--font-weight-medium);
-  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.15s;
@@ -1081,12 +1014,6 @@ a.btn-home {
 }
 .saisie-btn-nommer:hover { filter: brightness(0.85); }
 
-/* ─── Modal "Nommer le lot" ─── */
-.modal-nommer,
-.modal-extraction-dest {
-  border-top: 2px solid var(--indigo);
-}
-
 /* ═══════════════════════════════════════
    HISTORIQUE — Toggle Ma commune / Communauté
 ═══════════════════════════════════════ */
@@ -1094,39 +1021,21 @@ a.btn-home {
 /* ─── Toggle ─── */
 .histo-toggle-bar {
   display: flex;
-  gap: 0;
-  background: var(--neige);
-  border: var(--border-thin);
-  border-radius: var(--border-radius-card);
-  padding: 4px;
   margin-bottom: 24px;
-  width: fit-content;
 }
 .histo-toggle-btn {
-  padding: 9px 22px;
-  border: none;
-  border-radius: var(--border-radius-md);
   font-family: var(--font-body);
-  font-size: 0.72rem;
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.08em;
   cursor: pointer;
   transition: all 0.15s;
-  color: var(--cendre);
-  background: transparent;
   -webkit-tap-highlight-color: transparent;
-}
-.histo-toggle-btn.active {
-  background: var(--indigo);
-  color: var(--washi);
-  border-radius: var(--border-radius-md);
 }
 
 /* ─── Bloc total ─── */
 .histo-total-block {
   background: var(--sumi);
   color: var(--washi);
-  border-radius: var(--border-radius-card);
   padding: 24px 28px;
   margin-bottom: 24px;
   display: flex;
@@ -1137,21 +1046,17 @@ a.btn-home {
 .histo-total-vol {
   font-family: var(--font-display);
   font-size: 2.8rem;
-  font-weight: var(--font-weight-light);
   letter-spacing: -0.03em;
   line-height: 1;
 }
 .histo-total-lots {
   font-family: var(--font-display);
   font-size: 1.6rem;
-  font-weight: var(--font-weight-light);
   letter-spacing: -0.02em;
   line-height: 1;
 }
 .histo-total-unit {
-  font-size: 0.62rem;
   font-weight: var(--font-weight-medium);
-  opacity: 0.5;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   margin-top: 5px;
@@ -1166,11 +1071,8 @@ a.btn-home {
 
 /* ─── Titre de section ─── */
 .histo-section-title {
-  font-size: 0.54rem;
-  font-weight: var(--font-weight-medium);
   color: var(--cendre);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
   margin-bottom: 10px;
   padding-bottom: 8px;
   border-bottom: var(--border-thin);
@@ -1178,13 +1080,11 @@ a.btn-home {
 
 /* ─── Liste par essence ─── */
 .histo-essence-item {
-  padding: 12px 0;
   border-bottom: var(--border-thin);
 }
 .histo-essence-item:last-child { border-bottom: none; }
 .histo-essence-top {
   display: flex;
-  align-items: baseline;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 4px;
@@ -1208,25 +1108,17 @@ a.btn-home {
   margin-bottom: 8px;
 }
 .histo-bar-track {
-  height: 6px;
   background: var(--brume);
-  border-radius: var(--border-radius-bar);
   overflow: hidden;
 }
 .histo-bar-fill {
-  height: 100%;
   width: var(--barre-pct, 0%);
   background: var(--indigo);
-  border-radius: var(--border-radius-bar);
   transition: width 0.4s ease;
 }
 
 /* ─── Cartes lots récents ─── */
 .histo-lot-card {
-  background: var(--neige);
-  border: 1px solid var(--brume);
-  border-radius: var(--border-radius-card);
-  padding: 13px 16px;
   margin-bottom: 8px;
 }
 .histo-lot-header {
@@ -1259,8 +1151,6 @@ a.btn-home {
 }
 .histo-badge {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: var(--border-radius-sm);
   font-size: 12px;
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.08em;
@@ -1270,16 +1160,6 @@ a.btn-home {
   background: var(--indigo-clair);
   color: var(--indigo);
   border: 1px solid var(--indigo);
-}
-.histo-badge-essence {
-  background: var(--washi);
-  color: var(--cendre);
-  border: var(--border-thin);
-}
-.histo-badge-cause {
-  background: var(--washi);
-  color: var(--cendre);
-  border: var(--border-thin);
 }
 
 /* ─── Extractions dans la vue commune ─── */
@@ -1331,7 +1211,6 @@ a.btn-home {
   background: var(--sumi);
   color: var(--washi);
   padding: 12px 24px;
-  border-radius: var(--border-radius-sm);
   font-size: 0.82rem;
   z-index: 3000;
   max-width: 90vw;
@@ -1363,7 +1242,6 @@ a.btn-home {
   position: relative;
   z-index: 1;
   background: var(--washi);
-  border-radius: var(--border-radius-card) var(--border-radius-card) 0 0;
   padding-bottom: 80px;
 }
 .grume-sheet-handle {
@@ -1378,23 +1256,16 @@ a.btn-home {
 .grume-methode-toggle {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
   margin-bottom: 16px;
 }
 .grume-methode-btn {
   padding: 10px 0;
-  border-radius: 8px;
   font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: var(--font-weight-medium);
-  color: var(--cendre);
-  background: var(--neige);
-  border: 1px solid var(--pierre);
   cursor: pointer;
 }
 .grume-methode-btn.active {
-  background: var(--indigo);
-  color: #fff;
   font-weight: 600;
   border-color: var(--indigo);
 }
@@ -1433,7 +1304,6 @@ a.btn-home {
   background: transparent;
   color: var(--sumi);
   border: var(--border-field);
-  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 0.88rem;
   font-weight: var(--font-weight-medium);
@@ -1446,7 +1316,6 @@ a.btn-home {
   background: var(--indigo);
   color: var(--washi);
   border: none;
-  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 0.88rem;
   font-weight: var(--font-weight-medium);
@@ -1458,10 +1327,6 @@ a.btn-home {
 .grume-summary-card {
   display: flex;
   align-items: center;
-  background: var(--neige);
-  border: 1px solid var(--brume);
-  border-radius: var(--border-radius-inner);
-  padding: 12px 14px;
   margin-bottom: 8px;
   gap: 10px;
 }
@@ -1517,11 +1382,8 @@ a.btn-home {
 }
 .ext-section-title {
   font-family: var(--font-body);
-  font-size: 0.62rem;
-  font-weight: var(--font-weight-medium);
   color: var(--cendre);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
   margin-bottom: 14px;
 }
 
@@ -1557,7 +1419,6 @@ a.btn-home {
   background: var(--indigo-clair);
   color: var(--indigo);
   border: var(--border-active);
-  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 0.88rem;
   font-weight: var(--font-weight-medium);
@@ -1617,11 +1478,9 @@ a.btn-home {
 }
 .ext-syn-lbl {
   font-family: var(--font-body);
-  font-size: 0.55rem;
   font-weight: var(--font-weight-regular);
   color: var(--blanc-semi);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
 /* Bouton valider */
@@ -1633,7 +1492,6 @@ a.btn-home {
   background: var(--indigo);
   color: var(--washi);
   border: none;
-  border-radius: var(--border-radius-card);
   font-family: var(--font-body);
   font-size: 1rem;
   font-weight: var(--font-weight-medium);
@@ -1669,7 +1527,6 @@ a.btn-home {
   position: relative;
   z-index: 1;
   background: var(--washi);
-  border-radius: var(--border-radius-sheet) var(--border-radius-sheet) 0 0;
   max-height: 85vh;
   overflow-y: auto;
   padding-bottom: 80px;
@@ -1820,8 +1677,7 @@ a.btn-home {
 
 /* ─── Badges d'urgence de débit ─── */
 .badge-urgence,
-.badge-a-debiter,
-.badge-sechage { line-height: 1.4; padding: 3px 8px; }
+.badge-sechage { line-height: 1.4; }
 .badge-urgence-ok {                 /* date calculée par l'app */
   background: var(--indigo-clair);
   color: var(--indigo);
@@ -1841,11 +1697,6 @@ a.btn-home {
 }
 
 /* ─── Badges de statut ─── */
-.badge-a-debiter {
-  background: var(--sumi);
-  color: var(--washi);
-  border: 1px solid var(--sumi);
-}
 .badge-sechage-en-cours {
   background: var(--washi);
   color: var(--sumi);
@@ -1861,7 +1712,6 @@ a.btn-home {
 /* ─── Bascules Grumes brutes / Produits bois · Produits / Grume brute ─── */
 .stock-etat-bar,
 .ext-mode-bar {
-  width: 100%;
   margin-bottom: 18px;
 }
 .stock-etat-bar .histo-toggle-btn,
@@ -1955,7 +1805,6 @@ a.btn-home {
   border-top: var(--border-thin);
 }
 .sciage-type-bar {
-  width: 100%;
   margin-bottom: 0;
 }
 .sciage-type-bar .histo-toggle-btn {
@@ -2205,7 +2054,6 @@ a.btn-home {
   .sciage-modal { padding: 22px 16px; max-height: 92vh; }
 }
 
-
 /* ═══════════════════════════════════════
    Présentation du 14 nov. 2026 — version mobile
    La photo reste à la connexion. Partout ailleurs :
@@ -2407,7 +2255,6 @@ a.btn-home {
 /* ── Badges, fenêtres, messages ── */
 .histo-badge,
 .badge-urgence,
-.badge-a-debiter,
 .badge-sechage { border-radius: var(--border-radius-pill); padding: 4px 11px; }
 .extract-modal,
 .modal-nommer,
@@ -2443,7 +2290,6 @@ a.btn-home {
   /* Une épaisseur de débit par ligne : « Avivé » tenait mal à côté du menu */
   .sciage-produit-ligne { grid-template-columns: minmax(0, 1fr); }
 }
-
 
 /* ── Taille minimale des champs sur téléphone ──────────────────────────────
    Safari sur iPhone zoome l'écran dès qu'on touche un champ dont le texte
