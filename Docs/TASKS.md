@@ -92,6 +92,20 @@
 
 ---
 
+## Prochaines sessions (décidé le 25 nov. 2026)
+
+Chaque session se lance dans une nouvelle conversation, dans cet ordre.
+
+| # | Session | À faire | Déjà décidé | À trancher en début de session |
+|---|---------|---------|-------------|--------------------------------|
+| 1 | **Couleurs de l'app mobile** (Design : `theme.css`, `ui.css`) | Sur mobile, la couleur des essences (pastille, barre) et la couleur d'état de la grume (bande gris clair, or, ardoise) se confondent. Les penser ensemble. | Palette D retenue pour la cartographie. États : standard gris clair, exceptionnelle or, mauvais état ardoise. | Garder les couleurs du bois sur mobile ou passer à la palette D ; comment séparer visuellement essence et état. Faire une proposition avant tout changement (tablettes de Nantes). |
+| 2 | **Accès Tronc Commun** à toutes les communes (Supabase) | Créer un accès propre à Tronc Commun, en lecture seule sur toutes les communes, distinct des codes des communes. Tester les règles de la base. | Accord donné (projet expérimental, données non sensibles). Session à part, pour réfléchir sereinement. | Forme de l'accès (code dédié, rôle) ; lien avec la tâche 3d (A12 : séparer identifiant public et code secret). |
+| 3 | **Construction de la carte** (nouvelle application) | Partir de la simulation (`carte-simulation.zip` du coffre), brancher les vraies données et la connexion par code commune. Ajouter la colonne « lieu » et son remplissage à l'arrivée de la grume. Lien « Voir la carte » dans l'export du bureau. | Application à part, en lecture seule. Nom du lieu enregistré dans la base. Fonds : vue aérienne adoucie + noms de rues, plan épuré. Palette D. Critères en boutons. Cercles par critère. | Dépôt `carte` public publié par GitHub Pages (à créer par le porteur dans l'organisation) ; décliner la palette D pour toutes les essences. |
+
+Plus tard : plan IGN dessiné sur mesure (tuiles vectorielles) ; signaler les points tombés dans l'eau ; palette D sur la carte papier ; calques suivants de la synthèse (stockage, produits, ouvrage).
+
+---
+
 ## Tâches en cours
 
 Suites de la fusion du 3 nov. 2026 :

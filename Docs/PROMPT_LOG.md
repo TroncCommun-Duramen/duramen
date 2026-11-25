@@ -159,6 +159,23 @@ HH:MM — [commit: abc1234] résultat final
 21:04 — Option 2 retenue : diamètre au plus large. Branche `feat/diametre-plus-large` (v77), tests 87/87. En attente de validation
 21:14 — Validation : fusion de `feat/tablette` et `feat/diametre-plus-large` dans `main`, cache v78. Tests rejoués sur téléphone, tablette portrait et paysage, bureau : 163/163
 
+## Session 2026-11-24/25 — Cartographie des grumes (simulations)
+
+21:35 — Demande : travailler la cartographie des données GPS. Option retenue : noms de lieux retrouvés sans les agents (service IGN)
+21:40 — Décision : traiter la carte à part de Duramen, comme la synthèse
+21:47 — Décision : chaque commune voit sa carte (version simple) ; Tronc Commun voit tout, graphisme soigné réservé à la synthèse. Fonds GPS gratuits, légendes, filtres multicritères
+22:02 — Accord pour l'accès Tronc Commun à toutes les communes. Simulation écran demandée (grumes fictives)
+22:22 — Retours : page plus sobre, vue satellite par défaut, couleurs trop proches, exceptionnelles bien repérées
+22:34 — Code couleur : rond plein sans contour, un cercle par critère, taille constante
+22:40 — Simulation papier au graphisme de la synthèse (Tronc Commun)
+23:22 — Test du plan IGN grisé et intégration du logo cartographie E2b
+00:15 — Quatre palettes proposées ; 00:22 — palette D « Atelier » retenue pour la cartographie
+00:31 — Test écran : vue aérienne adoucie et plan IGN épuré
+00:36 — Question : grumes dans l'Erdre (simulation) ; constat : possible avec de vraies données
+01:02 — Décision : accès Tronc Commun dans une session à part
+01:04 — Décision : nom du lieu enregistré dans la base
+01:06 — Préparation des prochaines sessions (TASKS.md, MEMORY.md, sauvegarde)
+
 ---
 
 ## Voir aussi

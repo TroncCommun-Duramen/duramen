@@ -13,6 +13,29 @@ En fin de session, on met à jour GitHub **et** ce coffre. Le coffre est une cop
 
 ---
 
+## Session 24-25 novembre 2026 (nuit) — Cartographie des grumes (simulations, aucun code de Duramen)
+
+Aucun fichier de Duramen n'a changé. Travail fait à part, sur des grumes fictives.
+Sources des simulations : `01-Projet/Claude outputs/carte-simulation.zip` dans le coffre Obsidian (le dépôt `synthese` n'était pas accessible en écriture).
+
+Décisions du porteur :
+- **La carte est une application à part**, comme la synthèse, pour ne pas alourdir Duramen. Elle lit la base sans y écrire. Plus tard, un lien « Voir la carte » dans la partie export du bureau.
+- **Deux publics** : chaque commune voit sa propre carte (version simple). Tronc Commun voit toutes les communes et garde l'exclusivité du graphisme soigné, réservé aux rendus de la synthèse (cartes fournies à la demande). L'accord pour l'accès de Tronc Commun à toutes les communes est donné (projet expérimental, données non sensibles).
+- **Noms de lieux sans les agents** : le parc, la rue ou le quartier se retrouvent à partir du point GPS (service gratuit de l'IGN, et OpenStreetMap pour les parcs). Le nom est **enregistré dans la base** une fois, à l'arrivée de la grume (nouvelle colonne « lieu »), pas recherché à chaque affichage.
+- **Carte écran** : fonds IGN gratuits. Vue aérienne adoucie avec les noms de rues (style « toponymes »), ou plan « épuré ». Un plan IGN dessiné sur mesure (tuiles vectorielles) viendra ensuite.
+- **Critères sobres** : une ligne de boutons (Essence, Cause avec tempête, État, Dates), une recherche de lieu, la liste repliée sous la carte.
+- **Code des points** : un rond plein à la couleur de l'essence, sans contour. Chaque critère ajoute un cercle autour sans changer la taille du rond : or = exceptionnelle, ardoise = mauvais état, blanc = débitée.
+- **Palette D « Atelier »** pour la cartographie (tons doux de textile) : Platane #C3432A, Chêne #6E3A69, Chêne rouge #EA753E, Frêne #709567, Tilleul #506715, Peuplier #8A78A5, Hêtre #E2B19C, Robinier #D67EA8, Cèdre #147590, Pin #88AAE6, Séquoia #771F04. À décliner pour les autres essences ; essences rares et noms « Autre » en gris neutre ; une essence garde toujours la même couleur. Pas de jaune ni d'or pour une essence (l'or marque les exceptionnelles).
+- **Carte papier** (Tronc Commun) : gabarit de la synthèse, grumes groupées en grappe autour de leur lieu, logo cartographie E2b dans le bandeau. Deux fonds testés : au trait (hachures, Loire) et plan IGN grisé.
+
+Constats :
+- Le cercle ardoise se perd sur la photo aérienne sombre.
+- Les grumes d'un même arbre ont la même position GPS : à l'écran, leurs ronds se superposent (la grappe du papier règle ce point).
+- Un point peut tomber dans l'eau (Erdre, Loire) : marge d'erreur, ou saisie faite depuis l'autre rive ou au dépôt. Idée : signaler au bureau les points tombés dans l'eau.
+- Sur mobile, la couleur des essences et les couleurs d'état de la grume se confondent : session couleur à prévoir.
+
+---
+
 ## Session 24 novembre 2026 (21 h) — Diamètre au plus large
 
 - Le porteur revient sur la règle des 80 cm : la limite de la scierie porte sur le diamètre au plus large, pas sur le Ø médian. Choix de l'option 2 : mesurer le diamètre au plus large dès 60 cm de Ø médian (plutôt qu'une question oui/non).
