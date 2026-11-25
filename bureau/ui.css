@@ -1355,3 +1355,72 @@ a.b-btn { display: inline-flex; align-items: center; text-decoration: none; box-
 /* ═══ Pictogrammes du menu : famille « cernes », trait à main levée (25 nov. 2026) ═══ */
 .b-nav-ico .b-picto-point { fill: var(--indigo); stroke: none; }
 .b-nav-ico .b-picto-fin   { stroke-width: 1.15; }
+
+/* ═══ Bureau épuré (25 nov. 2026) ═══
+   Même logique que le mobile : plus de cadres ni d'aplats, filets fins,
+   titres en minuscules et graisse fine, chiffres en colonne. Les repères
+   (pastilles) gardent un petit cadre aux hachures légères, comme le cubage
+   de l'accueil mobile : encre = validé, rouge = problème. */
+body { font-variant-numeric: tabular-nums; }
+
+/* Barre de gauche : fond clair, un filet à droite ; onglet actif sans fond, point indigo */
+.b-nav { background: var(--washi); border-right: 1px solid var(--brume); box-shadow: none; }
+.b-tab.active { background: none; color: var(--sumi); }
+.b-tab.active .b-nav-lbl { color: var(--sumi); font-weight: 500; }
+.b-tab.active .b-nav-num { background: var(--indigo); color: var(--washi); border-color: var(--indigo); }
+.b-nav-groupe, .b-nav-sous { text-transform: none; letter-spacing: .02em; color: var(--cendre); font-size: 13px; }
+.b-commune-badge { background-color: var(--indigo); background-image: var(--hachures-indigo-dense); color: var(--washi); border-radius: var(--rayon-main-doux); }
+
+/* Chiffres du haut : sans cadres, séparés par un filet */
+.b-chiffres { gap: 0; border-bottom: 1px solid var(--encre); padding-bottom: 18px; }
+.b-stat-block { border: none; border-left: 1px solid var(--brume); border-radius: 0; background: none; box-shadow: none; padding: 4px 24px; }
+.b-stat-block:first-child { border-left: none; padding-left: 0; }
+.b-stat-lbl { text-transform: none; letter-spacing: .02em; font-size: 14px; color: var(--sumi); font-weight: 500; }
+.b-stat-val { font-weight: 300; }
+.b-stat-sub { color: var(--cendre); }
+
+/* Titres : minuscules, graisse fine */
+.b-page-titre { text-transform: none; letter-spacing: -.01em; font-weight: 300; }
+.b-section-lbl { text-transform: none; letter-spacing: .02em; font-size: 17px; font-weight: 500; color: var(--sumi); }
+.b-page-accroche { color: var(--cendre); }
+
+/* Tableaux : plus de cadre ni de zébrures, un filet par ligne */
+.b-table-wrap { border: none; border-radius: 0; box-shadow: none; background: none; }
+.b-table th { background: none; text-transform: none; letter-spacing: .02em; color: var(--cendre); font-weight: 400; font-size: 13px; border-bottom: 1px solid var(--encre); }
+.b-table tbody tr:nth-child(even), .b-table tbody tr:nth-child(odd) { background: none; }
+.b-table td { border-bottom: 1px solid var(--brume); }
+.b-table tbody tr:hover { background: var(--neige); }
+
+/* Boutons : action pleine en cadre indigo hachuré, les autres au trait fin */
+.b-btn { text-transform: none; letter-spacing: .02em; border-radius: var(--rayon-main-doux); box-shadow: none; }
+.b-btn-primary { background-color: var(--washi); background-image: var(--hachures-indigo); border: 1px solid var(--indigo); color: var(--sumi); border-radius: var(--rayon-main); }
+.b-btn-ghost, .b-btn-petit { background: none; border: 1px solid var(--encre); color: var(--sumi); }
+
+/* Filtres : un trait dessous, plus d'aplat noir */
+.b-select-filtre, .b-select-sm, .b-input { background-color: transparent; color: var(--sumi); border: none; border-bottom: 1px solid var(--encre); border-radius: 0; }
+.b-filtre-card { border: none; background: none; box-shadow: none; padding-left: 0; }
+.b-filtre-card-titre, .b-field-lbl, .b-champ-lbl { text-transform: none; letter-spacing: .02em; color: var(--sumi); font-weight: 500; font-size: 15px; }
+.b-metro-topbar { background: none; }
+.b-vide { border: none; background: none; color: var(--cendre); text-align: left; padding-left: 0; }
+.b-export-filtres .b-filtre-card { padding-top: 0; }
+
+/* Repères : petit cadre aux hachures légères */
+.b-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 9px; border-radius: var(--rayon-main-doux);
+  background-color: var(--washi); background-image: var(--hachures-encre);
+  border: 1px solid var(--encre); color: var(--sumi);
+  text-transform: none; letter-spacing: .02em; font-weight: 400; box-shadow: none;
+}
+.b-badge-alerte, .b-badge-depasse {
+  background-image: var(--hachures-rouge); border-color: var(--rouge); color: var(--rouge);
+}
+/* État de la grume : petit carré rayé devant le mot */
+.b-badge-etat-standard::before, .b-badge-etat-exceptionnelle::before, .b-badge-etat-mauvais::before {
+  content: ''; width: 11px; height: 11px; border: 1px solid var(--encre); border-radius: 3px 2px 3px 2px;
+}
+.b-badge-etat-standard::before       { background: var(--pierre); }
+.b-badge-etat-exceptionnelle::before { background-image: var(--hachures-or); }
+.b-badge-etat-mauvais::before        { background-image: var(--hachures-ardoise); }
+/* Un trait très fin entre chaque grume (ou chaque ligne) des tableaux */
+.b-table td { border-bottom: 0.5px solid var(--cendre); }
