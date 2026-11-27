@@ -1720,9 +1720,15 @@ function bOuvrirCloture(c) {
     d = { campagne_id: c.id, grumes: {} };
     (c.lignes || []).forEach(function (l) { d.grumes[l.grume_id] = { sciee: true, produits: produitsDepuisDemande(l) }; });
   }
+  // Date réelle du sciage : la saisie peut se faire des jours après.
+  // Proposée : la date prévue, ou aujourd'hui si la date prévue est à venir.
+  if (!d.date_sciage) d.date_sciage = bDateSciageProposee(c);
   clotDraft = d;
   var md = bOuvrirModale('Clôturer — ' + (c.nom || 'Campagne'),
     'Le réalisé est pré-rempli avec le demandé. Corrigez seulement les écarts, puis validez.', true);
+  var iDate = bInput('date', clotDraft.date_sciage, { max: jourISO() });
+  iDate.oninput = function () { clotDraft.date_sciage = iDate.value; sauverClotDraft(); };
+  md.corps.appendChild(bChamp('Date du sciage', iDate, 'b-champ-court'));
   var sorties = clesGrumesSorties();
 
   (c.lignes || []).forEach(function (l) {
@@ -1745,6 +1751,11 @@ function bOuvrirCloture(c) {
 
   md.pied.appendChild(bouton('b-btn b-btn-ghost', 'Fermer', bFermerModale));
   md.pied.appendChild(bouton('b-btn b-btn-primary', 'Valider la clôture', function () { bValiderCloture(c); }));
+}
+
+function bDateSciageProposee(c) {
+  var auj = jourISO();
+  return (c.date_prevue && c.date_prevue <= auj) ? c.date_prevue : auj;
 }
 
 // Réalisé d'une grume : sciée ou non, puis ses produits
@@ -1830,7 +1841,12 @@ async function bValiderCloture(c) {
       vider(document.getElementById('b-modales')); bRendre(); return;
     }
     var sorties = clesGrumesSorties();
-    var now = new Date();
+    var jourSciage = clotDraft.date_sciage || '';
+    if (!jourSciage || jourSciage > jourISO() || jourSciage < '2000-01-01') {
+      bShowToast('Indiquez la date du sciage (aujourd\'hui ou un jour passé).', true); return;
+    }
+    // Aujourd'hui : l'heure réelle. Un autre jour : midi, pour que la date ne glisse pas d'un jour.
+    var now = jourSciage === jourISO() ? new Date() : new Date(jourSciage + 'T12:00:00');
     var envoi = [];
     var nbProduits = 0, nbNonSciees = 0;
     var ids = Object.keys(clotDraft.grumes);

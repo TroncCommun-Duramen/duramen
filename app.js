@@ -2313,6 +2313,9 @@ function ouvrirCloture(c) {
       d.grumes[l.grume_id] = { sciee: true, produits: produitsDepuisDemande(l) };
     });
   }
+  // Date réelle du sciage : la saisie peut se faire des jours après.
+  // Proposée : la date prévue, ou aujourd'hui si la date prévue est à venir.
+  if (!d.date_sciage) d.date_sciage = dateSciageProposee(c);
   clotDraft = d;
 
   var bg = document.getElementById('modal-cloture-bg');
@@ -2327,6 +2330,19 @@ function ouvrirCloture(c) {
   modal.appendChild(cel('h2', '', 'Clôturer — ' + (c.nom || 'Campagne')));
   modal.appendChild(cel('p', 'modal-sub',
     'Le réalisé est pré-rempli avec le demandé. Corrigez seulement les écarts, puis validez.'));
+
+  var fldDate = cel('div', 'field');
+  var labDate = cel('label', '', 'Date du sciage');
+  labDate.htmlFor = 'clot-date-sciage';
+  var inpDate = document.createElement('input');
+  inpDate.type  = 'date';
+  inpDate.id    = 'clot-date-sciage';
+  inpDate.max   = jourLocalISO();
+  inpDate.value = clotDraft.date_sciage;
+  inpDate.oninput = function () { clotDraft.date_sciage = inpDate.value; sauverClotDraft(); };
+  fldDate.appendChild(labDate);
+  fldDate.appendChild(inpDate);
+  modal.appendChild(fldDate);
 
   var sorties = {};
   extractions.forEach(function (e) { (e.grumes_keys || []).forEach(function (k) { sorties[k] = true; }); });
@@ -2361,6 +2377,17 @@ function ouvrirCloture(c) {
   modal.appendChild(acts);
   bg.appendChild(modal);
   document.body.appendChild(bg);
+}
+
+function dateSciageProposee(c) {
+  var auj = jourLocalISO();
+  return (c.date_prevue && c.date_prevue <= auj) ? c.date_prevue : auj;
+}
+
+// Date du sciage → horodatage enregistré. Aujourd'hui : l'heure réelle.
+// Un autre jour : midi, pour que la date ne glisse pas d'un jour.
+function horodatageSciage(jour) {
+  return jour === jourLocalISO() ? new Date() : new Date(jour + 'T12:00:00');
 }
 
 function fermerCloture() {
@@ -2468,7 +2495,12 @@ async function validerCloture(c) {
     var sorties = {};
     extractions.forEach(function (e) { (e.grumes_keys || []).forEach(function (k) { sorties[k] = true; }); });
 
-    var now = new Date();
+    var jourSciage = clotDraft.date_sciage || '';
+    if (!jourSciage || jourSciage > jourLocalISO() || jourSciage < '2000-01-01') {
+      showError('Indiquez la date du sciage (aujourd\'hui ou un jour passé).');
+      return;
+    }
+    var now = horodatageSciage(jourSciage);
     var lignesEnvoi = [];
     var nbProduits = 0, nbNonSciees = 0;
     var ids = Object.keys(clotDraft.grumes);
