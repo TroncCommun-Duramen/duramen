@@ -17,6 +17,18 @@ Règles du porteur (25 nov. 2026) :
 
 ---
 
+## Session 27 novembre 2026 (14 h 45 – 14 h 55) — Date réelle du sciage
+
+Mis en ligne vers 14 h 50 : `main` de `duramen`, commit `bf823bc` (cache **v96**). Session Feature (`app.js`, `bureau/app.js`, `sw.js`).
+
+- **Problème** (retour terrain) : à la clôture d'une campagne, l'app enregistrait la date du jour de la saisie comme date du sciage (sciage le 1er nov., saisie le 10 → « 10 nov. »). Cette date sert aussi au calcul du séchage à l'air.
+- **Correction** : champ « Date du sciage » dans la fenêtre « Clôturer », mobile et bureau. Proposé : la date prévue, ou aujourd'hui si la date prévue est à venir. Modifiable, date future refusée, gardé dans le brouillon de clôture.
+- Enregistrement : `extractions.date_iso` (et `date`) prennent la date choisie — midi pour un jour passé, l'heure réelle pour aujourd'hui (la date ne glisse pas d'un jour). Aucun changement dans la base ; une ancienne version en cache continue de clôturer sans le champ.
+- Inchangé : le nom « Campagne du [date prévue] » (la table `campagnes` n'accepte qu'ajout et suppression). Le tableau des campagnes clôturées du bureau affiche la date du sciage.
+- Constat : aucune pièce au stock métropole — normal : aucune campagne d'une vraie commune n'est clôturée (Saint-Sébastien : 3 en préparation) ; celle de Tronc Commun (commune de test) est exclue.
+
+---
+
 ## Session 25 novembre 2026 (17 h 10 – 17 h 45) — Épuré, suite (mobile en ligne, bureau en attente)
 
 Mis en ligne vers 17 h 45 : `main` de `duramen` (cache **v93**), bloc « Épuré, suite » à la fin de `ui.css`.

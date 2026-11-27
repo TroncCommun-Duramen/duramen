@@ -242,6 +242,16 @@ HH:MM — [commit: abc1234] résultat final
 18:08 — Camemberts du bureau à hachurer
 18:18 — Validé ; [commit: 95bac98] en ligne
 
+
+## Session 2026-11-27 (14 h 45) — Date réelle du sciage
+
+14:46 — Retour terrain : impossible d'indiquer la vraie date d'une campagne de sciage (sciage le 1er, saisie le 10 → « 10 nov. »)
+14:48 — Champ « Date du sciage » ajouté à la clôture (mobile et bureau), branche `fix/date-sciage-reelle`
+14:50 — Validé : [commit: bf823bc] fusion dans `main` (cache v96)
+14:52 — Proposer une réponse simple à envoyer pour cette mise à jour
+14:55 — Aucune pièce au stock métropole : aucune campagne d'une vraie commune clôturée (pas un bug)
+14:57 — Sauvegarde interne de ce changement
+
 ---
 
 ## Voir aussi

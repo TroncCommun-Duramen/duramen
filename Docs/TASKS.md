@@ -9,6 +9,7 @@
 
 | Tâche | Session | Date |
 |-------|---------|------|
+| Date réelle du sciage saisie à la clôture d'une campagne, mobile et bureau (cache v96) | Feature | 27 nov. 2026 |
 | Camemberts du bureau hachurés (essences et communes) | Feature + Design (bureau) | 25 nov. 2026 |
 | Qualité standard en rayures gris clair, chiffres du stock sans pastille (cache v95) | Design | 25 nov. 2026 |
 | Bureau épuré : repères hachurés (encre validé, rouge problème), intitulés en minuscules, trait fin entre les grumes (cache v94) | Design | 25 nov. 2026 |
